@@ -569,7 +569,10 @@ def remove_user(username: str, request: Request, admin: str = Depends(require_ad
     if username == "admin":
         raise HTTPException(status_code=400, detail="cannot delete admin")
     assert_can_manage_user(admin, username)  # secondary admins can't delete an admin/super-admin
-    db.delete_user(username)
+    try:
+        db.delete_user(username)
+    except db.ProvisionedAccountError:
+        raise HTTPException(status_code=409, detail="This account is linked to a Praxis trading identity; deprovision it (revoke keys) before deletion.")
     db.add_audit("user.delete", actor=admin, target=username, ip=_ip(request))
     return {"ok": True}
 
@@ -757,8 +760,11 @@ def delete_me(body: dict, request: Request, username: str = Depends(current_user
         raise HTTPException(status_code=400, detail="The root admin account cannot self-delete.")
     if user.get("role") == "admin" and db.count_admins() <= 1:
         raise HTTPException(status_code=400, detail="Cannot delete the last admin account.")
+    try:
+        db.delete_user(username)  # sessions + reset tokens cascade
+    except db.ProvisionedAccountError:
+        raise HTTPException(status_code=409, detail="Your account is linked to a live trading identity; it must be deprovisioned (keys revoked) before deletion.")
     db.add_audit("account.delete", actor=username, target=username, ip=_ip(request))
-    db.delete_user(username)  # sessions + reset tokens cascade
     return {"ok": True}
 
 

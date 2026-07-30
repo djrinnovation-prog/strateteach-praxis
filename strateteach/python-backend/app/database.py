@@ -1408,6 +1408,14 @@ $$ LANGUAGE plpgsql""",
     """CREATE TRIGGER trg_user_uid_immutable BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION prevent_user_uid_change()""",
     "ALTER TABLE users ENABLE ALWAYS TRIGGER trg_user_uid_immutable",
+    # ── Phase 2C (Option A) · M3 — StrateTeach→Praxis identity mapping columns ─────────────────
+    # praxis_user_id = the mapped Praxis auth.users id (TEXT UUID), set once by /praxis/link (idempotent,
+    # only when NULL). UNIQUE so no two StrateTeach users can map to one Praxis identity (many NULLs OK).
+    # praxis_env = highest env the OPERATOR approved for this user ('none'|'testnet'|'mainnet'); the mainnet
+    # ticket gate reads it. Never elevated by the user. praxis_linked_at = provisioning timestamp.
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS praxis_user_id TEXT UNIQUE",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS praxis_env TEXT NOT NULL DEFAULT 'none' CHECK (praxis_env IN ('none','testnet','mainnet'))",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS praxis_linked_at TEXT",
 )
 
 
@@ -1548,6 +1556,28 @@ def _backfill_runs_log() -> None:
         return
 
 
+def get_praxis_identity(username: str) -> Optional[dict[str, Any]]:
+    """The user's Praxis identity mapping: the IMMUTABLE user_uid, the mapped praxis_user_id (or None), and
+    the operator-approved praxis_env. Read server-side by the /praxis provisioning routes — never trusts a
+    client-supplied id."""
+    return fetch_one(
+        "SELECT user_uid::text AS user_uid, praxis_user_id, COALESCE(praxis_env, 'none') AS praxis_env "
+        "FROM users WHERE username = %s", (username,))
+
+
+def set_praxis_user_id(username: str, praxis_user_id: str) -> Optional[str]:
+    """Idempotently record the mapped Praxis identity — ONLY when not already set (never repoint an existing
+    mapping, even under a race). Returns the EFFECTIVE praxis_user_id (the pre-existing one if already set,
+    else the newly stored one), or None if the user row is gone. The caller compares to detect a conflict."""
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE users SET praxis_user_id = %s, praxis_linked_at = %s "
+            "WHERE username = %s AND praxis_user_id IS NULL",
+            (praxis_user_id, datetime.now(timezone.utc).isoformat(), username))
+        row = conn.execute("SELECT praxis_user_id FROM users WHERE username = %s", (username,)).fetchone()
+    return row["praxis_user_id"] if row else None
+
+
 def _seed_default_admin() -> None:
     # Imported lazily to avoid a cycle (auth_service imports nothing from here).
     from app.services.auth import hash_password
@@ -1651,8 +1681,25 @@ def update_user_role(username: str, role: str) -> None:
     execute("UPDATE users SET role = %s WHERE username = %s", (role, username))
 
 
+class ProvisionedAccountError(Exception):
+    """Raised when a hard delete is attempted on an account linked to a Praxis identity."""
+
+
 def delete_user(username: str) -> None:
-    execute("DELETE FROM users WHERE username = %s", (username,))
+    # Phase 2C-A · M3: a PROVISIONED account (mapped to a Praxis auth.users, and potentially holding
+    # credentials/bots/Vault keys) must NOT be hard-deleted — that orphans live Praxis state (the FK to
+    # auth.users is ON DELETE RESTRICT on the Praxis side, and the exchange key would survive in Vault).
+    # Such an account routes to the deprovision (soft-delete) flow, added in M7. Until then, refuse
+    # fail-closed rather than silently orphaning. Non-provisioned accounts delete normally.
+    # ATOMIC (audit): a single conditional DELETE closes the TOCTOU where a concurrent /praxis/link could
+    # provision the account between a separate SELECT and DELETE — which would orphan live Praxis state.
+    with get_conn() as conn:
+        deleted = conn.execute(
+            "DELETE FROM users WHERE username = %s AND praxis_user_id IS NULL", (username,)).rowcount
+        if deleted == 0:
+            still = conn.execute("SELECT 1 FROM users WHERE username = %s", (username,)).fetchone()
+            if still:   # row exists but wasn't deleted ⇒ it is provisioned ⇒ refuse (route to deprovision)
+                raise ProvisionedAccountError(username)
 
 
 # ── Subscriptions / tiers ──────────────────────────────────────────────────

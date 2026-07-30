@@ -32,6 +32,7 @@ from app.api.routes import (
     design,
     employees,
     exchange,
+    praxis_provision,
     finance,
     guide,
     layout,
@@ -74,7 +75,7 @@ def _init_sentry() -> None:
         logger.warning("sentry init failed: %s", exc)
 
 # Routers mounted in registration order. Each owns one slice of the API surface.
-ROUTERS = (meta, auth, strategy, runs, signals, telegram, exchange, paper, portfolio, social, billing, reels, bots, whatsapp, design, analytics, legal, portal, pm, mgmt, finance, employees, university, autopilots, audit, layout, guide, review)
+ROUTERS = (meta, auth, strategy, runs, signals, telegram, exchange, paper, portfolio, social, billing, reels, bots, whatsapp, design, analytics, legal, portal, pm, mgmt, finance, employees, university, autopilots, audit, layout, guide, review, praxis_provision)
 
 
 def create_app() -> FastAPI:

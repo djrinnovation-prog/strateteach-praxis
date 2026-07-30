@@ -20,6 +20,28 @@ def _sign(payload: dict) -> str:
     return body + "." + sig
 
 
+_STREF_DOMAIN = "praxis.stref.v1|"
+
+
+def derive_st_ref(user_uid: str) -> str:
+    """Opaque, deterministic, non-recyclable StrateTeach handle for Praxis: base64url(HMAC(key,
+    "praxis.stref.v1|" + user_uid)). Keyed off the IMMUTABLE user_uid (never the recyclable username), so a
+    freed/renamed username can never resolve to a prior identity. HMAC-SHA256 = 32 bytes → 43-char CANONICAL
+    base64url (the padding bits are zero), which is exactly what Praxis verifyTicket requires. Domain-
+    separated from ticket signing ('praxis.provision.ticket.v1' is the material domain; this is the message)."""
+    if not _KEY_HEX:
+        raise RuntimeError("PRAXIS_PROVISION_KEY_HEX not configured")
+    mac = hmac.new(bytes.fromhex(_KEY_HEX), (_STREF_DOMAIN + str(user_uid)).encode(), hashlib.sha256).digest()
+    return _b64url(mac)
+
+
+def provision_user_ticket(st_ref: str, ttl_s: int = 120) -> str:
+    """Identity BOOTSTRAP ticket (no praxis_user_id yet). Carries the st_ref; Praxis provision-user maps it
+    to one shadow auth.users."""
+    return _sign({"praxis_user_id": "", "action": "provision_user", "st_ref": st_ref,
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
 def create_bot_ticket(praxis_user_id: str, ttl_s: int = 120) -> str:
     return _sign({"praxis_user_id": praxis_user_id, "action": "create_bot",
                   "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})

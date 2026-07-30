@@ -82,7 +82,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       await audit("provision_denied_disabled", existing.praxis_user_id, { st_ref_fp: fp(stRef) });
       return json(403, { ok: false, error: "identity_disabled" });
     }
-    return json(200, { ok: true, praxis_user_id: existing.praxis_user_id, status: "already_linked" });
+    return json(200, { ok: true, praxis_user_id: existing.praxis_user_id, st_ref: stRef, status: "already_linked" });
   }
 
   // 4) Create the shadow auth user with the DETERMINISTIC email. On a duplicate-email (a prior crash after
@@ -117,5 +117,5 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (linked.status === "disabled") return json(403, { ok: false, error: "identity_disabled" });
 
   await audit("provision", linked.praxis_user_id, { st_ref_fp: fp(stRef), created: !!created?.user?.id });
-  return json(201, { ok: true, praxis_user_id: linked.praxis_user_id, status: "linked" });
+  return json(201, { ok: true, praxis_user_id: linked.praxis_user_id, st_ref: stRef, status: "linked" });
 });
