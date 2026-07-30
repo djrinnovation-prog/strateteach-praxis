@@ -1378,6 +1378,36 @@ _MIGRATIONS = (
                 ELSE '1_client'
               END AS access_layer
          FROM users""",
+    # ── Phase 2C (Option A) · M1 — immutable identity root (user_uid) ──────────────────────
+    # The Praxis-provisioning bridge derives st_ref from an IMMUTABLE, never-recycled surrogate,
+    # NOT from the recyclable `username` PK (the audited root-cause fix). Single-statement add so the
+    # volatile default fills every existing row atomically in the table rewrite; UNIQUE guards
+    # collisions; IF NOT EXISTS makes re-boots a no-op. gen_random_uuid() is core on PG13+ (this
+    # deploy is PG16). Validated idempotent (runs clean on the 2nd boot) against the live DB.
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS user_uid UUID NOT NULL UNIQUE DEFAULT gen_random_uuid()",
+    # Immutability guard (UPDATE only). We deliberately do NOT enforce on INSERT: an insert-side trigger
+    # that force-generates or rejects a supplied user_uid would corrupt a `pg_restore` (its COPY fires the
+    # trigger and would regenerate/refuse the original uids, shattering every Praxis st_ref→identity link).
+    # The insert-supplied-uid path is instead non-exploitable by construction: (a) no app code ever writes
+    # user_uid (guard test tests/test_user_uid_invariant.py), (b) UNIQUE rejects reuse of a LIVE uid, and
+    # (c) identity inheritance needs a *provisioned* uid — provisioned users are soft-deleted (M3, uid stays
+    # in the table → UNIQUE blocks reuse) while non-provisioned users have no Praxis identity to inherit.
+    """CREATE OR REPLACE FUNCTION prevent_user_uid_change() RETURNS trigger AS $$
+BEGIN
+  IF NEW.user_uid IS DISTINCT FROM OLD.user_uid THEN
+    RAISE EXCEPTION 'user_uid is immutable';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql""",
+    # DROP+CREATE (not CREATE OR REPLACE TRIGGER, which is PG14+ and would hard-brick boot on older PG):
+    # idempotent under the per-boot runner and version-portable. ENABLE ALWAYS so immutability still fires
+    # under session_replication_role='replica' (logical-replication apply / restore); UPDATE-only, so a
+    # restore's INSERT/COPY path is unaffected.
+    "DROP TRIGGER IF EXISTS trg_user_uid_immutable ON users",
+    """CREATE TRIGGER trg_user_uid_immutable BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION prevent_user_uid_change()""",
+    "ALTER TABLE users ENABLE ALWAYS TRIGGER trg_user_uid_immutable",
 )
 
 
