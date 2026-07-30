@@ -20,7 +20,8 @@ const dec = new TextDecoder();
 // jti-ledger cleanup can safely key off exp. Independent of what the issuer requests.
 export const MAX_TICKET_TTL_S = 300;
 
-export type TicketAction = "create_bot" | "connect_credential" | "provision_user";
+export type TicketAction =
+  | "create_bot" | "connect_credential" | "provision_user" | "read_status" | "pause_bot";
 
 export interface TicketPayload {
   praxis_user_id: string;                 // required for create_bot / connect_credential; ABSENT for provision_user
@@ -101,6 +102,11 @@ export async function verifyTicket(
           || typeof p.exchange_ccxt_id !== "string" || !p.exchange_ccxt_id
           || (p.env !== "testnet" && p.env !== "mainnet")) return null;
     }
+    if (expectedAction === "pause_bot") {
+      if (typeof p.praxis_bot_id !== "string" || !p.praxis_bot_id) return null;
+    }
+    // read_status needs only praxis_user_id (already checked above) — it is a MULTI-use read token
+    // (the caller does NOT claim its jti), so repeated status polls don't burn the ledger.
   }
   return p;
 }

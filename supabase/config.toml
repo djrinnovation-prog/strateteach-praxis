@@ -453,6 +453,16 @@ verify_jwt = false
 # auth.users. verify_jwt=false (the ticket is the authority).
 verify_jwt = false
 
+[functions.bot-status]
+# Phase 2C-A · M4: read the caller's own bot status. Public: authenticated by a MULTI-use read_status ticket
+# (StrateTeach-minted). Non-secret status only, scoped by praxis_user_id. verify_jwt=false.
+verify_jwt = false
+
+[functions.pause-bot]
+# Phase 2C-A · M4 / INV-8: pause (kill) ONE bot. Public: a single-use pause_bot ticket OR the long-lived
+# per-bot pause token the user holds (StrateTeach-independent). Pause-only. verify_jwt=false.
+verify_jwt = false
+
 # [experimental.pgdelta]
 # When enabled, pg-delta becomes the active engine for supported schema flows.
 # enabled = false

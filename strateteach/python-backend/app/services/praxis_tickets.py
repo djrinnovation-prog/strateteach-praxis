@@ -47,6 +47,21 @@ def create_bot_ticket(praxis_user_id: str, ttl_s: int = 120) -> str:
                   "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
 
 
+def read_status_ticket(praxis_user_id: str, ttl_s: int = 240) -> str:
+    """MULTI-use read token for bot-status (Praxis does NOT claim its jti). exp-bounded; kept BELOW the
+    Praxis MAX_TICKET_TTL_S (300s) so there is clock-skew + latency headroom (an exp exactly at the cap
+    would 401 the moment Praxis's clock trails StrateTeach). The dashboard re-mints per window."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "read_status",
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
+def pause_bot_ticket(praxis_user_id: str, praxis_bot_id: str, ttl_s: int = 120) -> str:
+    """Single-use KILL ticket for pause-bot (StrateTeach-minted path). The long-lived per-bot pause token
+    (from create-bot) is the StrateTeach-independent alternative (INV-8)."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "pause_bot", "praxis_bot_id": praxis_bot_id,
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
 def connect_credential_ticket(praxis_user_id: str, praxis_bot_id: str, exchange_ccxt_id: str,
                               env: str, ttl_s: int = 120) -> str:
     return _sign({"praxis_user_id": praxis_user_id, "action": "connect_credential",

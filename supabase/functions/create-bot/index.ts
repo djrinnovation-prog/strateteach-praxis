@@ -31,10 +31,10 @@ const numIn = (v: unknown, lo: number, hi: number): number | null => {
   const n = Number(v);
   return Number.isFinite(n) && n >= lo && n <= hi ? n : null;
 };
-function genToken(): string {
+function genToken(prefix = "prx_"): string {
   const b = new Uint8Array(24);
   crypto.getRandomValues(b);
-  return "prx_" + Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+  return prefix + Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -77,15 +77,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (maxNotional > dailyCap) return json(400, { ok: false, error: "max_exceeds_daily" });
   if (fixed !== null && fixed > maxNotional) return json(400, { ok: false, error: "fixed_exceeds_max" });
 
-  // 4) Mint the webhook token (stored ONLY as a hash) + create the bot with SAFE defaults.
+  // 4) Mint the webhook token + a long-lived per-bot KILL token (M4/INV-8). Both stored ONLY as hashes.
   const token = genToken();
   const webhook_secret_hash = await computeWebhookHash(PEPPER, token);
+  const pause_token = genToken("kill_");
+  const pause_token_hash = await computeWebhookHash(PEPPER, pause_token);
   const { data: bot, error: berr } = await sb.from("bots").insert({
     user_id: t.praxis_user_id,
     name: trading_pair + " bot",
     trading_pair,
     account_type: "spot",
     webhook_secret_hash,
+    pause_token_hash,
     status: "pending_setup",              // needs a credential (connect-credential) before active
     trading_enabled: false,               // must be explicitly armed
     webhook_body_signing_required: true,  // signed relay only
@@ -98,12 +101,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }).select("id").single();
   if (berr || !bot) return json(500, { ok: false, error: "bot_create_failed" });
 
-  // url_token shown ONCE — the caller MUST save it; only its hash is stored server-side.
+  // url_token + pause_token shown ONCE — the caller MUST save them; only their hashes are stored.
   return json(201, {
     ok: true,
     bot_id: bot.id,
     webhook_path: `/functions/v1/webhook/${bot.id}/${token}`,
     url_token: token,
+    pause_token,          // long-lived KILL token (INV-8) — stops this bot even if StrateTeach is down
     status: "pending_setup",
   });
 });

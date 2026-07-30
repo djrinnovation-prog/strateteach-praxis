@@ -102,3 +102,34 @@ Deno.test("a create_bot ticket fails on provision_user (no st_ref)", async () =>
   const t = await signTicket(m, { praxis_user_id: USER, action: "create_bot", jti: "nonce-cb-noref1", exp: now() + 120 });
   assertEquals(await verifyTicket(m, t, now(), "provision_user"), null);
 });
+
+// ── read_status + pause_bot (M4) ────────────────────────────────────────────────────────────────────
+Deno.test("valid read_status ticket verifies (only praxis_user_id)", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: USER, action: "read_status", jti: "nonce-read12345", exp: now() + 120 });
+  assert(await verifyTicket(m, t, now(), "read_status"));
+});
+
+Deno.test("valid pause_bot ticket verifies (praxis_user_id + praxis_bot_id)", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: USER, action: "pause_bot", praxis_bot_id: "b1", jti: "nonce-pause1234", exp: now() + 120 });
+  const v = await verifyTicket(m, t, now(), "pause_bot");
+  assert(v && v.praxis_bot_id === "b1");
+});
+
+Deno.test("pause_bot missing praxis_bot_id fails", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: USER, action: "pause_bot", jti: "nonce-pause-nob", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, t, now(), "pause_bot"), null);
+});
+
+Deno.test("action-bound: read_status ↔ pause_bot cross-use fails both ways", async () => {
+  const m = await mat();
+  const rt = await signTicket(m, { praxis_user_id: USER, action: "read_status", jti: "nonce-rs-xact1", exp: now() + 120 });
+  const pt = await signTicket(m, { praxis_user_id: USER, action: "pause_bot", praxis_bot_id: "b1", jti: "nonce-pb-xact1", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, rt, now(), "pause_bot"), null);
+  assertEquals(await verifyTicket(m, pt, now(), "read_status"), null);
+  // and neither is accepted as a create_bot / connect_credential
+  assertEquals(await verifyTicket(m, rt, now(), "create_bot"), null);
+  assertEquals(await verifyTicket(m, pt, now(), "connect_credential"), null);
+});

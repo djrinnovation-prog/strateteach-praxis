@@ -168,3 +168,32 @@ def praxis_credential_ticket(body: CredentialTicketReq, user: str = Depends(curr
     if env == "mainnet" and ident.get("praxis_env") != "mainnet":
         raise HTTPException(403, "mainnet_not_approved")
     return {"ticket": tickets.connect_credential_ticket(puid, bot_id, exchange, env)}
+
+
+@router.post("/praxis/status-ticket")
+def praxis_status_ticket(user: str = Depends(current_user)) -> dict:
+    """Mint a MULTI-use read_status ticket for the session user (dashboard → Praxis bot-status)."""
+    ident = _guard(user, "status-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    return {"ticket": tickets.read_status_ticket(puid)}
+
+
+class PauseTicketReq(BaseModel):
+    bot_id: str
+
+
+@router.post("/praxis/pause-ticket")
+def praxis_pause_ticket(body: PauseTicketReq, user: str = Depends(current_user)) -> dict:
+    """Mint a single-use pause_bot (KILL) ticket for the session user's bot. Ownership is enforced by Praxis
+    pause-bot via the praxis_user_id in the ticket. (The long-lived per-bot pause_token from create-bot is
+    the StrateTeach-independent kill path — INV-8.)"""
+    ident = _guard(user, "pause-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    bot_id = (body.bot_id or "").strip()
+    if not bot_id:
+        raise HTTPException(400, "bad_request")
+    return {"ticket": tickets.pause_bot_ticket(puid, bot_id)}
