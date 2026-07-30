@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>Strateteach · פורטל הבעלים — מדריך היכרות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* PEACH · LIGHT mode (theme.ts → PEACH_LIGHT) — pale cream/peach bg, dark-brown ink,
+     soft coral/gold accents. Exactly what Dan sees on his device. */
+  :root{
+    --bg:#FDF1E8; --surface:#FFFFFF; --surface2:#F9E3D4; --line:#EDC7B0;
+    --text:#3A1D10; --muted:#8B5942; --faint:#BE9077;
+    --gold:#CB6E54; --accent:#E5988A; --blue:#D98A6E;
+    --fan:linear-gradient(135deg,#F6DBC7 0%,#EDA88F 52%,#E5988A 100%);
+    --word:linear-gradient(135deg,#CB6E54 0%,#E5988A 55%,#D98A6E 100%);
+    --ink:#3A1D10; --bezel:#4A2E22;
+    --glass:rgba(255,255,255,0.74); --glassBd:rgba(203,110,84,0.22);
+    --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --shadow:0 16px 40px -26px rgba(120,60,30,0.30);
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  html,body{margin:0}
+  body{font-family:'Rubik',system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Hebrew",sans-serif;line-height:1.62;color:var(--text);
+    background:
+      radial-gradient(1100px 520px at 82% -8%, rgba(229,152,138,0.20), transparent 60%),
+      radial-gradient(900px 480px at 8% 6%, rgba(246,219,199,0.40), transparent 55%),
+      var(--bg);
+    padding:0 0 20px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  /* Bilingual toggle — Hebrew shows by default; English when <html lang="en">.
+     Every translatable block exists as a .he + .en pair; the inactive one is hidden. */
+  html[lang="he"] .en{display:none !important}
+  html[lang="en"] .he{display:none !important}
+  .langbar{display:flex;justify-content:center;padding:16px 16px 0}
+  .langtoggle{display:inline-flex;gap:2px;background:var(--surface);border:1px solid var(--glassBd);border-radius:999px;padding:3px;box-shadow:var(--shadow)}
+  .langtoggle button{border:none;background:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:13px;color:var(--muted);padding:7px 20px;border-radius:999px;transition:background .15s,color .15s}
+  .langtoggle button.on{background:var(--fan);color:var(--ink);box-shadow:0 8px 18px -10px rgba(229,152,138,.6)}
+  .diamond{width:9px;height:9px;background:var(--gold);transform:rotate(45deg);border-radius:2px;display:inline-block}
+
+  /* ── brand bar ── */
+  .brandbar{display:flex;align-items:center;gap:13px;justify-content:center;padding:24px 16px 0}
+  .mark{width:46px;height:46px;border-radius:14px;background:var(--fan);display:grid;place-items:center;box-shadow:0 12px 26px -12px rgba(229,152,138,.6)}
+  .mark::after{content:"";width:16px;height:16px;background:var(--ink);transform:rotate(45deg);border-radius:2px}
+  .brandtxt{text-align:center}
+  .brandtxt .a{font-size:11px;letter-spacing:.34em;color:var(--gold);font-weight:800}
+  .brandtxt .s{font-size:22px;letter-spacing:.16em;font-weight:900;margin-top:1px;background:var(--word);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* ── hero ── */
+  .hero{position:relative;margin:16px -16px 30px;padding:44px 26px 40px;overflow:hidden;text-align:center;
+    background:linear-gradient(165deg,#FFFFFF 0%,#FDF1E8 52%,#F9E3D4 100%);border-top:1px solid var(--glassBd);border-bottom:1px solid var(--glassBd)}
+  .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(520px 260px at 50% -18%,rgba(229,152,138,0.20),transparent 62%);pointer-events:none}
+  .hero .kick{position:relative;letter-spacing:.30em;font-size:11px;color:var(--gold);font-weight:800;text-transform:uppercase}
+  .hero h1{position:relative;font-size:clamp(22px,6vw,32px);font-weight:900;margin:12px 0 8px}
+  .hero .lead{position:relative;font-size:15px;color:var(--muted);max-width:560px;margin:0 auto}
+  .hero .tags{position:relative;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+  .htag{font-size:12px;font-weight:800;color:var(--ink);background:var(--fan);border-radius:999px;padding:7px 15px;box-shadow:0 8px 20px -12px rgba(229,152,138,.6)}
+  .flag{position:relative;margin:18px auto 0;max-width:600px;background:var(--surface);border:1px solid var(--glassBd);border-radius:13px;padding:11px 16px;font-size:13px;color:var(--muted);box-shadow:var(--shadow)}
+  .flag b{color:var(--gold)}
+
+  /* ── generic ── */
+  .secTitle{display:flex;align-items:center;gap:12px;margin:40px 0 8px}
+  .secTitle .bar{width:5px;height:26px;border-radius:3px;background:var(--fan);flex-shrink:0}
+  .secTitle .n{font-family:var(--mono);font-size:12px;font-weight:800;color:var(--gold)}
+  .secTitle h2{font-size:22px;font-weight:900;margin:0}
+  .secTitle .lbl{font-size:12px;color:var(--faint);font-weight:600;margin-inline-start:auto}
+  .secLead{font-size:14px;color:var(--muted);margin:0 0 18px;max-width:760px}
+  .card{background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--glassBd);border-radius:18px;padding:18px 17px;box-shadow:var(--shadow)}
+  .lead{font-size:15px;line-height:1.75}
+  .muted{color:var(--muted)}.faint{color:var(--faint)}.gold{color:var(--gold)}
+
+  .principles{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:8px 0 6px}
+  @media(max-width:720px){.principles{grid-template-columns:repeat(2,1fr)}}
+  .pr{background:var(--surface);border:1px solid var(--glassBd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+  .pr .ic{width:34px;height:34px;border-radius:11px;background:rgba(229,152,138,.14);display:grid;place-items:center;margin-bottom:9px}
+  .pr .ic svg{width:18px;height:18px;color:var(--gold)}
+  .pr .t{font-size:13.5px;font-weight:900}
+  .pr .d{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+
+  /* ── tour section (numbered card + phone + explanation) ── */
+  .tour{margin-bottom:18px}
+  .ohead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .num{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:16px;color:var(--ink);background:var(--fan);flex-shrink:0}
+  .ohead .ti{font-size:19px;font-weight:900}
+  .ohead .te{font-size:12px;color:var(--faint);font-weight:600}
+  .ohead .who{font-size:10.5px;font-weight:800;color:var(--gold);background:rgba(229,152,138,.12);border:1px solid var(--glassBd);border-radius:999px;padding:4px 11px;margin-inline-start:auto}
+  .stage{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .stageTxt{flex:1;min-width:250px}
+  .forwhat{font-size:14px;line-height:1.7;margin:0 0 12px}
+  .canlist{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .canlist li{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.55}
+  .canlist li .d{color:var(--gold);flex-shrink:0;margin-top:6px;font-size:9px}
+  .why{margin-top:13px;background:rgba(246,219,199,.5);border:1px solid var(--glassBd);border-radius:12px;padding:11px 13px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .why b{color:var(--gold)}
+
+  /* ── phone frame (stylized, NOT a pixel-perfect screenshot) ── */
+  .phone{width:212px;flex-shrink:0;margin:0 auto;background:var(--bezel);border-radius:30px;padding:8px;box-shadow:0 22px 46px -24px rgba(74,46,34,.55)}
+  .pnotch{width:74px;height:15px;background:var(--bezel);border-radius:0 0 11px 11px;margin:0 auto 0;position:relative;top:-1px;z-index:2}
+  .screen{background:var(--bg);border-radius:24px;overflow:hidden;height:400px;display:flex;flex-direction:column;margin-top:-8px}
+  .p-hd{padding:14px 12px 8px;text-align:center}
+  .p-hd .w{font-weight:900;letter-spacing:.14em;font-size:11px;background:var(--word);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .p-hd .s{font-size:8.5px;color:var(--muted);margin-top:2px}
+  .p-body{flex:1;overflow:hidden;padding:4px 11px}
+  .p-card{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:8px 9px;margin-bottom:7px;box-shadow:0 6px 14px -12px rgba(120,60,30,.4)}
+  .p-row{display:flex;align-items:center;gap:6px;font-size:8.5px;font-weight:700}
+  .p-row+.p-row{margin-top:6px}
+  .p-mono{font-family:var(--mono);font-size:8.5px}
+  .p-bar{height:6px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);overflow:hidden;margin-top:4px}
+  .p-bar>i{display:block;height:100%;border-radius:999px;background:var(--fan)}
+  .p-pill{font-size:8px;font-weight:800;border-radius:999px;padding:3px 8px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
+  .p-pill.on{background:var(--fan);color:var(--ink);border-color:transparent}
+  .p-chip{font-size:7.5px;font-weight:800;border-radius:5px;padding:1px 5px}
+  .p-av{width:16px;height:16px;border-radius:6px;background:var(--fan);flex-shrink:0}
+  .p-nav{flex-shrink:0;display:flex;justify-content:space-around;align-items:center;padding:7px 0 8px;background:var(--surface);border-top:1px solid var(--line)}
+  .p-nav i{width:13px;height:13px;border-radius:4px;background:var(--faint);opacity:.6;display:block}
+  .p-nav i.on{background:var(--gold);opacity:1}
+  .p-lbl{font-size:8px;font-weight:800;letter-spacing:.03em;color:var(--muted);margin:8px 2px 5px}
+
+  /* ── collaboration loop ── */
+  .loop{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:2px 0 14px}
+  .loopStep{flex:1 1 150px;background:var(--surface);border:1px solid var(--glassBd);border-radius:14px;padding:13px;position:relative;box-shadow:var(--shadow)}
+  .loopStep .k{font-family:var(--mono);font-size:11px;font-weight:800;color:var(--gold)}
+  .loopStep .t{font-size:14px;font-weight:900;margin:4px 0 3px}
+  .loopStep .d{font-size:12px;color:var(--muted);line-height:1.5}
+  .collabGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+  @media(max-width:680px){.collabGrid{grid-template-columns:1fr}}
+  .collabCard{background:var(--surface);border:1px solid var(--glassBd);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+  .collabCard .h{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:900;margin-bottom:6px}
+  .collabCard .h .ic{width:30px;height:30px;border-radius:10px;background:rgba(229,152,138,.14);display:grid;place-items:center;flex-shrink:0}
+  .collabCard .h .ic svg{width:16px;height:16px;color:var(--gold)}
+  .collabCard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.6}
+
+  /* ── partners ── */
+  .partner{margin-bottom:14px}
+  .ptop{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+  .avatar{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;flex-shrink:0;background:var(--fan);box-shadow:0 12px 26px -12px rgba(229,152,138,.55)}
+  .avatar svg{width:27px;height:27px;color:var(--ink)}
+  .ptop .nm{font-size:20px;font-weight:900}
+  .ptop .rl{font-size:12.5px;font-weight:800;color:var(--gold)}
+  .pgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
+  @media(max-width:680px){.pgrid{grid-template-columns:1fr}}
+  .goalBox{background:rgba(229,152,138,.10);border:1px solid var(--glassBd);border-radius:13px;padding:11px 13px;margin:12px 0}
+  .goalBox .k{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+  .goalBox .v{font-size:15px;font-weight:900;margin-top:2px}
+  .resp{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .resp li{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.55}
+  .resp li .d{color:var(--accent);flex-shrink:0;margin-top:6px;font-size:9px}
+  .subhead{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--gold);text-transform:uppercase;margin:0 0 7px}
+
+  /* ── steps ── */
+  .steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:13px}
+  .steps li{display:flex;gap:13px;align-items:flex-start}
+  .steps li .sn{counter-increment:s;flex-shrink:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--fan);color:var(--ink);font-weight:900;font-size:14px}
+  .steps li .sn::before{content:counter(s)}
+  .steps li .body{font-size:14px;line-height:1.65;padding-top:3px}
+  .steps li .body b{color:var(--text)}
+  .u{font-family:var(--mono);color:var(--gold);font-weight:800;direction:ltr;display:inline-block}
+
+  .closing{margin:40px -16px 0;padding:38px 24px;text-align:center;background:linear-gradient(165deg,#FFFFFF,#FDF1E8 55%,#F9E3D4);border-top:1px solid var(--glassBd)}
+  .closing h2{font-size:22px;font-weight:900;margin:0 0 8px}
+  .closing p{font-size:14px;color:var(--muted);max-width:520px;margin:0 auto}
+  .foot{text-align:center;font-size:11px;color:var(--faint);margin-top:22px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<!-- language switch — flips the whole deck HE ↔ EN (dir + lang) -->
+<div class="langbar">
+  <div class="langtoggle" role="group" aria-label="Language / שפה">
+    <button id="btn-he" type="button" onclick="setLang('he')" class="on">עברית</button>
+    <button id="btn-en" type="button" onclick="setLang('en')">English</button>
+  </div>
+</div>
+
+<div class="brandbar">
+  <div class="mark"></div>
+  <div class="brandtxt"><div class="a">OWNERS PORTAL</div><div class="s">STRATETEACH</div></div>
+</div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="kick"><span class="he">מדריך היכרות</span><span class="en">Onboarding Guide</span></div>
+  <h1><span class="he">פורטל הבעלים</span><span class="en">Owners Portal</span></h1>
+  <p class="lead he">כל מה שבנינו, המראה הנקי החדש, וסיור מלא בחדר הבקרה המשותף שלנו — איך כל שותף נכנס, מבין את המערכת, נותן משוב ומצביע, ומזיז אותנו יחד עד ההשקה.</p>
+  <p class="lead en">Everything we've built, the clean new look, and a full tour of our shared control room — how each partner logs in, understands the system, gives feedback and votes, and moves us together toward launch.</p>
+  <div class="tags"><span class="htag he">מוצר אחד</span><span class="htag en">One product</span><span class="htag he">מערכת אחת</span><span class="htag en">One system</span><span class="htag he">דרך אחת להשקה</span><span class="htag en">One path to launch</span></div>
+  <div class="flag he"><b>ממשל:</b> החלטות הבעלים מתקבלות לאחר התייעצות עם רז (משפטי) ואורן (טכני).</div>
+  <div class="flag en"><b>Governance:</b> owners' decisions are made after consulting Raz (legal) and Oren (technical).</div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ 01 · WHAT IT IS ══ -->
+  <div class="secTitle"><span class="bar"></span><span class="n">01</span><h2 class="he">מה זה הפורטל</h2><h2 class="en">What it is</h2><span class="lbl he">What it is</span><span class="lbl en">מה זה הפורטל</span></div>
+  <div class="card" style="margin-bottom:14px">
+    <p class="lead he" style="margin:0 0 12px">בנינו מערכת מסחר ואוטומציה אלגוריתמית שלמה — סריקה יומית של כל הנכסים, מנוע מסחר, סיגנל בוט, בדיקות היסטוריות ומעבדת אסטרטגיות, שכבת בטיחות פיננסית, מפתחות מוצפנים, קונסולת משפט חיה, אנליטיקה, והתראות רב-ערוציות. עכשיו אנחנו הופכים אותה ל<b class="gold">מוצר מוכן למכירה</b>.</p>
+    <p class="lead en" style="margin:0 0 12px">We've built a complete algorithmic trading and automation system — a daily scan of every asset, a trading engine, a signal bot, backtests and a strategy lab, a financial-safety layer, encrypted keys, a live legal console, analytics, and multi-channel alerts. Now we're turning it into a <b class="gold">product that's ready to sell</b>.</p>
+    <p class="lead he" style="margin:0">פורטל הבעלים הוא <b>חדר הבקרה המשותף</b> שבו אנחנו מנהלים את הדרך הזו יחד: מקום אחד שבו כל שותף רואה מה נבנה, מעדכן את המשימות שלו, מוסיף הערות, <b>מצביע על ההחלטות והמסכים</b>, וקורא בכל בוקר את סיכום ההתקדמות — הכול בזמן אמת, בעברית, בעיצוב הנקי החדש.</p>
+    <p class="lead en" style="margin:0">The Owners Portal is the <b>shared control room</b> where we run this journey together: one place where every partner sees what's been built, updates their tasks, adds notes, <b>votes on the decisions and screens</b>, and reads the morning progress summary each day — all in real time, in the clean new design.</p>
+  </div>
+
+  <div class="principles">
+    <div class="pr"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></svg></div><div class="t"><span class="he">חדר בקרה משותף</span><span class="en">Shared control room</span></div><div class="d"><span class="he">מקום אחד לכל השותפים — לראות, לעדכן, ולהחליט.</span><span class="en">One place for all partners — to see, update, and decide.</span></div></div>
+    <div class="pr"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-5"/><path d="M5 21h14a2 2 0 0 0 2-2V7l-4-4H7L3 7v12a2 2 0 0 0 2 2z"/></svg></div><div class="t"><span class="he">החלטות בהצבעה</span><span class="en">Decisions by vote</span></div><div class="d"><span class="he">מסכים בשיפוט, והחלטות כבחירה אמיתית בין אפשרויות.</span><span class="en">Screens are judged, and decisions are a real choice between options.</span></div></div>
+    <div class="pr"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h4"/></svg></div><div class="t"><span class="he">משימה לכל שותף</span><span class="en">A task for each partner</span></div><div class="d"><span class="he">כל אחד רואה ומעדכן את מה שבאחריותו — חי.</span><span class="en">Everyone sees and updates what they're responsible for — live.</span></div></div>
+    <div class="pr"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 22a8 8 0 1 0-8-8"/><path d="M12 14l4-4"/></svg></div><div class="t"><span class="he">% עד להשקה</span><span class="en">% to launch</span></div><div class="d"><span class="he">התקדמות מדודה — עד שחרור גרסה 1 למכירה.</span><span class="en">Measured progress — until v1 is released for sale.</span></div></div>
+  </div>
+
+  <!-- ══ 02 · THE TOUR ══ -->
+  <div class="secTitle"><span class="bar"></span><span class="n">02</span><h2 class="he">סיור בפורטל</h2><h2 class="en">The full tour</h2><span class="lbl he">The full tour</span><span class="lbl en">סיור בפורטל</span></div>
+  <p class="secLead he">תשעה אזורים. לכל אחד: איור נקי בסקין Peach, מה הוא נועד לו, מה עושים בו, ולמי הוא מיועד.</p>
+  <p class="secLead en">Nine areas. For each: a clean illustration in the Peach skin, what it's for, what you do there, and who it's for.</p>
+
+  <!-- Daily -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">1</span><div><div class="ti"><span class="he">יומי</span><span class="en">Daily</span></div><div class="te"><span class="he">סריקת הבוקר</span><span class="en">The morning scan</span></div></div><span class="who he">בעלים ומנהלים</span><span class="who en">Owners & admins</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">יומי · היום</div><div class="s">חמישי · 5 ביולי</div></div>
+        <div class="p-body">
+          <div class="p-card"><div class="p-row"><span>עד להשקה</span><span class="p-mono gold" style="margin-inline-start:auto">47%</span></div><div class="p-bar"><i style="width:47%"></i></div></div>
+          <div class="p-lbl">דורש תשומת לב</div>
+          <div class="p-card"><div class="p-row"><span class="p-chip" style="color:var(--loss,#DB3B49);background:rgba(219,59,73,.12)">חסום</span><span>תשלומים — Stripe</span><span class="gold" style="margin-inline-start:auto">לוח ›</span></div></div>
+          <div class="p-card"><div class="p-row"><span class="p-chip" style="color:var(--gold);background:rgba(229,152,138,.14)">סומן</span><span>מסך הבית</span><span class="gold" style="margin-inline-start:auto">הצבעה ›</span></div></div>
+        </div>
+        <div class="p-nav"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">הסריקה של הבוקר — מבט מהיר על מה שדורש החלטה או ביצוע היום. נקודת הפתיחה של כל בוקר: <b>דן ורפי</b> סורקים אותה כדי להחליט מה מבצעים.</p>
+        <p class="forwhat en">The morning scan — a quick look at what needs a decision or action today. The starting point every morning: <b>Dan and Rafi</b> scan it to decide what to do.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>לראות את אחוז ההתקדמות עד להשקה ואת מצב המשימות.</li><li class="en"><span class="d">◆</span>See the progress % to launch and the state of the tasks.</li>
+          <li class="he"><span class="d">◆</span>לעבור על "דורש תשומת לב" ולקפוץ ישר ללוח או להצבעה.</li><li class="en"><span class="d">◆</span>Go through "needs attention" and jump straight to the board or a vote.</li>
+          <li class="he"><span class="d">◆</span>לקרוא את דופק ההצבעה ולהעתיק/לשלוח את סיכום הבוקר.</li><li class="en"><span class="d">◆</span>Read the voting pulse and copy/send the morning summary.</li>
+        </ul>
+        <div class="why he"><b>למה זה חשוב:</b> במקום לרדוף אחרי סטטוסים בפזורה — כל מה שדורש תשומת לב היום מרוכז במסך אחד, עם קפיצה ישירה למקום שבו מטפלים בו.</div>
+        <div class="why en"><b>Why it matters:</b> instead of chasing scattered statuses — everything that needs attention today is on one screen, with a direct jump to where it's handled.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">2</span><div><div class="ti"><span class="he">מה בנינו</span><span class="en">What we built</span></div><div class="te"><span class="he">תצוגת השוו-קייס</span><span class="en">The showcase view</span></div></div><span class="who he">כולם</span><span class="who en">Everyone</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">מה בנינו</div><div class="s">הסיפור לפי תחומים</div></div>
+        <div class="p-body">
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>המוצר — Strateteach</b></div><div style="font-size:7.5px;color:var(--muted);margin-top:4px">מערכת מסחר ואוטומציה · "לסחור במקום אחד"</div></div>
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>ליבת המסחר</b></div><div style="font-size:7.5px;color:var(--muted);margin-top:4px">סריקה → מנוע → בוט → בדיקות</div></div>
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>אמון ובטיחות</b></div><div style="font-size:7.5px;color:var(--muted);margin-top:4px">שכבת בטיחות · מפתחות מוצפנים · משפטי</div></div>
+        </div>
+        <div class="p-nav"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">התצוגה המקצועית של מה שנבנה — להתמצאות ולהצגה לשותף או משקיע. הסיפור המלא של המוצר לפי תחומים: מוצר, חוויית משתמש, ליבת מסחר, אמון ובטיחות, צמיחה, ומה שפתוח להשקה.</p>
+        <p class="forwhat en">The professional view of what's been built — to orient yourself and to present to a partner or investor. The full product story by area: product, user experience, trading core, trust and safety, growth, and what's still open before launch.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>לקרוא את סיפור המוצר לפי תחומים.</li><li class="en"><span class="d">◆</span>Read the product story by area.</li>
+          <li class="he"><span class="d">◆</span>להראות במהירות מה כבר קיים ומה פתוח להשקה.</li><li class="en"><span class="d">◆</span>Quickly show what already exists and what's still open for launch.</li>
+        </ul>
+        <div class="why he"><b>למה זה חשוב:</b> כרטיס הביקור של המערכת — כשמציגים למשקיע או שותף חדש, הכול מסודר ומנוסח מראש.</div>
+        <div class="why en"><b>Why it matters:</b> the system's business card — when presenting to an investor or a new partner, everything is organized and phrased in advance.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">3</span><div><div class="ti"><span class="he">צוות</span><span class="en">Team</span></div><div class="te"><span class="he">שותפים ותפקידים</span><span class="en">Partners and roles</span></div></div><span class="who he">בעלים ומנהלים</span><span class="who en">Owners & admins</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">צוות</div><div class="s">חמישה שותפים</div></div>
+        <div class="p-body">
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>דן</b><span class="faint" style="margin-inline-start:auto;font-size:7.5px">בעלים ומנהל</span></div></div>
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>יואב</b><span class="faint" style="margin-inline-start:auto;font-size:7.5px">ראש קריאייטיב</span></div></div>
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>אורן</b><span class="faint" style="margin-inline-start:auto;font-size:7.5px">מפתח ראשי</span></div></div>
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>רז</b><span class="faint" style="margin-inline-start:auto;font-size:7.5px">יועצת משפטית</span></div></div>
+        </div>
+        <div class="p-nav"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">מי השותפים, התפקידים, והיעד האישי של כל אחד. משם נכנסים למסך האישי של כל שותף, ומנהלים הרשאות צוות (מי מנהל, מי עורך תוכן, מי בעלים).</p>
+        <p class="forwhat en">Who the partners are, their roles, and each one's personal goal. From here you open each partner's personal screen and manage team permissions (who's an admin, who's a content editor, who's an owner).</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>לראות כל שותף ואת היעד שלו.</li><li class="en"><span class="d">◆</span>See each partner and their goal.</li>
+          <li class="he"><span class="d">◆</span>להיכנס למסך האישי של שותף.</li><li class="en"><span class="d">◆</span>Open a partner's personal screen.</li>
+          <li class="he"><span class="d">◆</span>לנהל הרשאות צוות (מנהל ראשי).</li><li class="en"><span class="d">◆</span>Manage team permissions (main admin).</li>
+        </ul>
+        <div class="why he"><b>למה זה חשוב:</b> ההרשאות כאן הן מה שפותח לכל אחד את הכלים שלו — למשל, מכאן דן נותן ליואב גישת "עורך תוכן".</div>
+        <div class="why en"><b>Why it matters:</b> the permissions here unlock each person's tools — for example, this is where Dan grants Yoav "content editor" access.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">4</span><div><div class="ti"><span class="he">לוח משימות</span><span class="en">Task board</span></div><div class="te"><span class="he">כל העבודה עד להשקה</span><span class="en">All the work to launch</span></div></div><span class="who he">מנהלים + שותף מעדכן את שלו</span><span class="who en">Admins + each partner updates their own</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">לוח משימות</div><div class="s">מקובץ לפי שותף</div></div>
+        <div class="p-body">
+          <div class="p-lbl">אורן · 45%</div>
+          <div class="p-card"><div class="p-row"><span>תשתית לפרודקשן</span><span class="p-mono" style="margin-inline-start:auto">70%</span></div><div class="p-bar"><i style="width:70%"></i></div></div>
+          <div class="p-card"><div class="p-row"><span>IP/מקוריות המנוע</span><span class="p-mono" style="margin-inline-start:auto">15%</span></div><div class="p-bar"><i style="width:15%"></i></div></div>
+          <div class="p-lbl">רז · 22%</div>
+          <div class="p-card"><div class="p-row"><span>טקסטים משפטיים</span><span class="p-mono" style="margin-inline-start:auto">30%</span></div><div class="p-bar"><i style="width:30%"></i></div></div>
+        </div>
+        <div class="p-nav"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">לוח המשימות החי — כל העבודה עד להשקה, מקובצת לפי שותף. יוצרים משימה ומשייכים אותה לכמה שותפים, מעדכנים סטטוס, אחוז והערות — וכל שינוי מתגלגל מיד לתמונת ההתקדמות.</p>
+        <p class="forwhat en">The live task board — all the work to launch, grouped by partner. You create a task and assign it to several partners, update status, percentage and notes — and every change rolls straight into the progress picture.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>ליצור משימה ולשייך אותה לכמה שותפים.</li><li class="en"><span class="d">◆</span>Create a task and assign it to several partners.</li>
+          <li class="he"><span class="d">◆</span>לעדכן סטטוס, אחוז התקדמות והערות.</li><li class="en"><span class="d">◆</span>Update status, progress percentage and notes.</li>
+          <li class="he"><span class="d">◆</span>לראות התקדמות מקובצת לכל שותף.</li><li class="en"><span class="d">◆</span>See progress grouped per partner.</li>
+        </ul>
+        <div class="why he"><b>איך זה עובד:</b> בעלים/מנהלים מנהלים את כל הלוח; כל שותף מעדכן את הסטטוס, האחוז וההערות של <b>המשימות שלו</b> — כך התמונה תמיד מעודכנת מהמקור.</div>
+        <div class="why en"><b>How it works:</b> owners/admins manage the whole board; each partner updates the status, percentage and notes of <b>their own tasks</b> — so the picture is always current from the source.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vote -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">5</span><div><div class="ti"><span class="he">הצבעה</span><span class="en">Vote</span></div><div class="te"><span class="he">החלטות אמיתיות</span><span class="en">Real decisions</span></div></div><span class="who he">בעלים ומנהלים מצביעים</span><span class="who en">Owners & admins vote</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">הצבעה</div><div class="s">החלטה · סקין ברירת מחדל</div></div>
+        <div class="p-body">
+          <div class="p-card"><div style="font-size:8.5px;font-weight:800;margin-bottom:6px">איזה סקין יהיה ברירת המחדל?</div>
+            <div class="p-row" style="flex-wrap:wrap;gap:5px"><span class="p-pill on">✓ Navy</span><span class="p-pill">אפרסק</span><span class="p-pill">ים</span><span class="p-pill">צהוב</span></div></div>
+          <div class="p-lbl">מסך · שיפוט</div>
+          <div class="p-card"><div class="p-row" style="gap:5px"><span>מסך הבית</span><span class="p-pill on" style="margin-inline-start:auto">👍 מאשר</span><span class="p-pill">✎</span><span class="p-pill">👎</span></div></div>
+        </div>
+        <div class="p-nav"><i></i><i></i><i></i><i class="on"></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">כאן מכריעים. <b>מסכים ומשימות</b> — בשיפוט: 👍 מאשר · ✎ צריך שינוי · 👎 דוחה. <b>החלטות</b> — כבחירה אמיתית בין אפשרויות מתחרות: איזה סקין ברירת מחדל, איך להציג רווח/הפסד, מסלול תשלומים, וכו'. מוסיפים הערה, נמנעים, או משנים הצבעה בכל עת.</p>
+        <p class="forwhat en">This is where we decide. <b>Screens and tasks</b> — judged: 👍 approve · ✎ needs change · 👎 reject. <b>Decisions</b> — a real choice between competing options: which default skin, how to show profit/loss, the payments route, and so on. Add a note, abstain, or change your vote at any time.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>לשפוט מסך: מאשר · צריך שינוי · דוחה.</li><li class="en"><span class="d">◆</span>Judge a screen: approve · needs change · reject.</li>
+          <li class="he"><span class="d">◆</span>לבחור אפשרות אחת בכל החלטה.</li><li class="en"><span class="d">◆</span>Pick one option in each decision.</li>
+          <li class="he"><span class="d">◆</span>להוסיף הערה, להימנע, או לשנות הצבעה.</li><li class="en"><span class="d">◆</span>Add a note, abstain, or change your vote.</li>
+        </ul>
+        <div class="why he"><b>למה זה הלב:</b> כאן כל שותף נותן משוב אמיתי — לא רק "אהבתי/לא אהבתי", אלא בחירה בין אפשרויות קונקרטיות. ההצבעה שלך מעצבת ישירות מה נבנה.</div>
+        <div class="why en"><b>Why it's the heart:</b> this is where every partner gives real feedback — not just "liked/didn't like", but a choice between concrete options. Your vote directly shapes what gets built.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">6</span><div><div class="ti"><span class="he">תוצאות</span><span class="en">Results</span></div><div class="te"><span class="he">האפשרות המנצחת</span><span class="en">The winning option</span></div></div><span class="who he">בעלים הכל · שותפים קריאה</span><span class="who en">Owners full · partners read-only</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">תוצאות</div><div class="s">קונצנזוס · 78%</div></div>
+        <div class="p-body">
+          <div class="p-card"><div class="p-row"><span>סקין ברירת מחדל</span><span class="p-chip" style="color:var(--gold);background:rgba(229,152,138,.14);margin-inline-start:auto">🏆 Navy · 60%</span></div><div class="p-bar"><i style="width:60%"></i></div></div>
+          <div class="p-lbl">דורש עבודה</div>
+          <div class="p-card"><div class="p-row"><span>מסך הבית · ✎2</span><span class="gold" style="margin-inline-start:auto;font-size:8px">צור משימה +</span></div></div>
+        </div>
+        <div class="p-nav"><i></i><i></i><i></i><i></i><i class="on"></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">התוצאה המצטברת — אחוז אישור, האפשרות המנצחת בכל החלטה, ומה שדורש עבודה. פריט שסומן "צריך שינוי/דוחה" הופך למשימה בלוח בלחיצה — כך ההצבעה מזינה את ההמשך.</p>
+        <p class="forwhat en">The aggregated result — approval percentage, the winning option in each decision, and what needs work. An item marked "needs change/reject" becomes a board task in one click — so the vote feeds what comes next.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>לראות את האפשרות המנצחת בכל החלטה.</li><li class="en"><span class="d">◆</span>See the winning option in each decision.</li>
+          <li class="he"><span class="d">◆</span>לזהות מסכים שסומנו "דורש עבודה".</li><li class="en"><span class="d">◆</span>Spot screens flagged "needs work".</li>
+          <li class="he"><span class="d">◆</span>להפוך פריט למשימה בלוח בלחיצה.</li><li class="en"><span class="d">◆</span>Turn an item into a board task in one click.</li>
+        </ul>
+        <div class="why he"><b>הסגירה של המעגל:</b> ההצבעה לא נשארת "דעה" — פריט שדורש עבודה הופך למשימה אמיתית בלוח, ומשם לאחוז ההתקדמות.</div>
+        <div class="why en"><b>Closing the loop:</b> a vote doesn't stay an "opinion" — an item that needs work becomes a real board task, and from there into the progress percentage.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">7</span><div><div class="ti"><span class="he">התקדמות</span><span class="en">Progress</span></div><div class="te"><span class="he">התמונה הגדולה</span><span class="en">The big picture</span></div></div><span class="who he">בעלים ומנהלים</span><span class="who en">Owners & admins</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">התקדמות</div><div class="s">עד לשחרור למכירה</div></div>
+        <div class="p-body">
+          <div class="p-card"><div class="p-row"><span>שלב 0 · השקה רכה</span><span class="p-mono" style="margin-inline-start:auto">90%</span></div><div class="p-bar"><i style="width:90%"></i></div></div>
+          <div class="p-card"><div class="p-row"><span>שלב 1 · בטיחות+משפטי</span><span class="p-mono" style="margin-inline-start:auto">75%</span></div><div class="p-bar"><i style="width:75%"></i></div></div>
+          <div class="p-card"><div class="p-row"><span>שלב 2 · הרחבה</span><span class="p-mono" style="margin-inline-start:auto">20%</span></div><div class="p-bar"><i style="width:20%"></i></div></div>
+          <div class="p-card"><div class="p-row"><span>שלב 3 · צמיחה</span><span class="p-mono" style="margin-inline-start:auto">10%</span></div><div class="p-bar"><i style="width:10%"></i></div></div>
+        </div>
+        <div class="p-nav"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">התמונה הגדולה — אחוז עד להשקה, לפי שלבים במפת הדרכים ולפי סטטוס. <b>השלמה = שחרור גרסה 1 למשתמשים למכירה.</b> ארבעה שלבים: השקה רכה (דמו) · בטיחות + משפטי · הרחבה (Scaling) · צמיחה.</p>
+        <p class="forwhat en">The big picture — the percentage to launch, by roadmap phase and by status. <b>Completion = releasing v1 to users for sale.</b> Four phases: soft launch (demo) · safety + legal · scaling · growth.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>לראות אחוז כולל עד לשחרור למכירה.</li><li class="en"><span class="d">◆</span>See the overall percentage to release for sale.</li>
+          <li class="he"><span class="d">◆</span>התקדמות לכל שלב במפת הדרכים.</li><li class="en"><span class="d">◆</span>Progress for each roadmap phase.</li>
+          <li class="he"><span class="d">◆</span>פירוט המשימות לפי סטטוס.</li><li class="en"><span class="d">◆</span>A breakdown of tasks by status.</li>
+        </ul>
+        <div class="why he"><b>למה זה חשוב:</b> מספר אחד שכולם מסכימים עליו — כמה קרובים אנחנו למכירה. הוא נבנה אוטומטית מהמשימות שכולם מעדכנים.</div>
+        <div class="why en"><b>Why it matters:</b> one number everyone agrees on — how close we are to selling. It's built automatically from the tasks everyone updates.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guide -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">8</span><div><div class="ti"><span class="he">איך זה עובד</span><span class="en">How it works</span></div><div class="te"><span class="he">מדריך הפורטל + הדרכה אישית</span><span class="en">Portal guide + personal walkthrough</span></div></div><span class="who he">כל השותפים</span><span class="who en">All partners</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">איך זה עובד</div><div class="s">כרטיס לכל אזור</div></div>
+        <div class="p-body">
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>יומי</b></div><div style="font-size:7.5px;color:var(--muted);margin-top:3px">סריקת הבוקר → פתח ›</div></div>
+          <div class="p-card"><div class="p-row"><span class="p-av"></span><b>הצבעה</b></div><div style="font-size:7.5px;color:var(--muted);margin-top:3px">החלטות אמיתיות → פתח ›</div></div>
+          <div class="p-card" style="background:var(--fan);border:none"><div class="p-row" style="color:var(--ink)"><b>הדרכה — סייר לי במסך</b></div></div>
+        </div>
+        <div class="p-nav"><i></i><i></i><i class="on"></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">הסבר מפורט על הפורטל עצמו — כרטיס ממוספר לכל אזור (מה הוא נועד לו, מה עושים בו, ולמי). ובכל מסך אישי יש כפתור <b>"הדרכה — סייר לי במסך"</b> שפותח סיור מודרך אישי, מותאם לנתונים שלך: מסביר את היעד שלך, המשימות שלך, ואיך להצביע.</p>
+        <p class="forwhat en">A detailed explanation of the portal itself — a numbered card for each area (what it's for, what you do there, and for whom). And on every personal screen there's a <b>"Guide — walk me through this screen"</b> button that opens a personal guided tour tailored to your data: it explains your goal, your tasks, and how to vote.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>כרטיס הסבר לכל אזור בפורטל.</li><li class="en"><span class="d">◆</span>An explainer card for every portal area.</li>
+          <li class="he"><span class="d">◆</span>סיור מודרך אישי מתוך המסך שלך.</li><li class="en"><span class="d">◆</span>A personal guided tour from your own screen.</li>
+        </ul>
+        <div class="why he"><b>למה זה חשוב:</b> אף אחד לא הולך לאיבוד — גם שותף שנכנס בפעם הראשונה מקבל הדרכה קלה, מותאמת אליו.</div>
+        <div class="why en"><b>Why it matters:</b> no one gets lost — even a partner logging in for the first time gets easy, tailored guidance.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports -->
+  <div class="tour card">
+    <div class="ohead"><span class="num">9</span><div><div class="ti"><span class="he">שליחת דוחות</span><span class="en">Send reports</span></div><div class="te"><span class="he">סיכומים לצוות</span><span class="en">Summaries for the team</span></div></div><span class="who he">בעלים בלבד</span><span class="who en">Owners only</span></div>
+    <div class="stage">
+      <div class="phone"><div class="pnotch"></div><div class="screen">
+        <div class="p-hd"><div class="w">שליחת דוח</div><div class="s">לצוות</div></div>
+        <div class="p-body">
+          <div class="p-lbl">נמענים</div>
+          <div class="p-row" style="flex-wrap:wrap;gap:4px;margin-bottom:7px"><span class="p-pill on">כל אחד לחוד</span><span class="p-pill">כולם יחד</span></div>
+          <div class="p-card"><div style="font-size:7.5px;color:var(--muted);line-height:1.5">שלום אורן 👋 · היעד: תשתית לפרודקשן · 33% · 9 משימות פתוחות…</div></div>
+          <div class="p-card" style="background:var(--fan);border:none;text-align:center"><b style="font-size:8.5px;color:var(--ink)">תצוגה מקדימה · שליחה</b></div>
+        </div>
+        <div class="p-nav"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      </div></div>
+      <div class="stageTxt">
+        <p class="forwhat he">שליחת סיכום לצוות — לכל שותף לחוד (סיכום אישי: היעד, האחוז, המשימות שלו) או לכולם יחד (סיכום הבוקר המשותף). תמיד תצוגה מקדימה ואישור לפני שליחה; הדוח מגיע כהודעה ישירה בתוך האפליקציה.</p>
+        <p class="forwhat en">Send a summary to the team — to each partner individually (a personal summary: their goal, percentage, and tasks) or to everyone together (the shared morning summary). Always a preview and confirmation before sending; the report arrives as a direct message inside the app, and by email to partners who've opted in.</p>
+        <ul class="canlist">
+          <li class="he"><span class="d">◆</span>סיכום אישי לכל שותף, או סיכום צוות משותף.</li><li class="en"><span class="d">◆</span>A personal summary per partner, or a shared team summary.</li>
+          <li class="he"><span class="d">◆</span>תצוגה מקדימה + אישור לפני כל שליחה.</li><li class="en"><span class="d">◆</span>A preview + confirmation before every send.</li>
+        </ul>
+        <div class="why he"><b>בטיחות:</b> שום דבר לא נשלח אוטומטית — רק לאחר לחיצה ואישור מפורש. שמור לבעלים.</div>
+        <div class="why en"><b>Safety:</b> nothing is sent automatically — only after an explicit click and confirmation. Reserved for owners.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 03 · HOW WE WORK TOGETHER ══ -->
+  <div class="secTitle"><span class="bar"></span><span class="n">03</span><h2 class="he">איך אנחנו עובדים יחד</h2><h2 class="en">How we work together</h2><span class="lbl he">How we work together</span><span class="lbl en">איך אנחנו עובדים יחד</span></div>
+  <p class="secLead he">הפורטל הוא לולאה אחת: כל שותף נותן משוב ומצביע, המסקנה הופכת למשימה, המשימה נכנסת ללוח, וההתקדמות מתקדמת עד להשקה. הנה המעגל, ואיך כל אחד משתתף בו.</p>
+  <p class="secLead en">The portal is one loop: every partner gives feedback and votes, the outcome becomes a task, the task enters the board, and progress advances toward launch. Here's the cycle, and how each person takes part in it.</p>
+
+  <div class="loop">
+    <div class="loopStep"><div class="k">01</div><div class="t"><span class="he">מצביעים</span><span class="en">Vote</span></div><div class="d"><span class="he">כל שותף מצביע על מסכים (מאשר/צריך שינוי/דוחה) ובוחר אפשרות בכל החלטה, עם הערה.</span><span class="en">Each partner votes on screens (approve/needs change/reject) and picks an option in each decision, with a note.</span></div></div>
+    <div class="loopStep"><div class="k">02</div><div class="t"><span class="he">דורש עבודה</span><span class="en">Needs work</span></div><div class="d"><span class="he">התוצאות מרכזות מה שקיבל "צריך שינוי/דוחה" — רשימת "דורש עבודה" מדורגת.</span><span class="en">Results gather everything marked "needs change/reject" — a ranked "needs work" list.</span></div></div>
+    <div class="loopStep"><div class="k">03</div><div class="t"><span class="he">הופך למשימה</span><span class="en">Becomes a task</span></div><div class="d"><span class="he">בלחיצה, פריט שדורש עבודה נהפך למשימה בלוח, משויכת לשותף האחראי.</span><span class="en">In one click, an item that needs work becomes a board task, assigned to the responsible partner.</span></div></div>
+    <div class="loopStep"><div class="k">04</div><div class="t"><span class="he">בלוח</span><span class="en">On the board</span></div><div class="d"><span class="he">השותף מעדכן סטטוס, אחוז והערות — העבודה זזה קדימה, גלוי לכולם.</span><span class="en">The partner updates status, percentage and notes — the work moves forward, visible to all.</span></div></div>
+    <div class="loopStep"><div class="k">05</div><div class="t"><span class="he">התקדמות</span><span class="en">Progress</span></div><div class="d"><span class="he">כל עדכון מזין את אחוז ההתקדמות עד להשקה — וחוזר לסריקת הבוקר.</span><span class="en">Every update feeds the progress percentage to launch — and loops back to the morning scan.</span></div></div>
+  </div>
+
+  <div class="collabGrid">
+    <div class="collabCard"><div class="h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4z"/></svg></span><span class="he">מוסיפים הערות ומשוב</span><span class="en">Add notes and feedback</span></div><p class="he">בכל הצבעה אפשר לצרף הערה קצרה ("למה"). ההערה נשמרת עם ההצבעה ומופיעה בתוצאות, כך שכולם רואים את הנימוק — לא רק את המספר.</p><p class="en">With every vote you can attach a short note ("why"). It's saved with the vote and appears in the results, so everyone sees the reasoning — not just the number.</p></div>
+    <div class="collabCard"><div class="h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-5"/><path d="M5 21h14a2 2 0 0 0 2-2V7l-4-4H7L3 7v12a2 2 0 0 0 2 2z"/></svg></span><span class="he">מצביעים ומחליטים</span><span class="en">Vote and decide</span></div><p class="he">מסכים בשיפוט, החלטות בבחירת אפשרות. אפשר לשנות הצבעה או להימנע בכל עת. כך משוב הופך להכרעה משותפת, מתועדת.</p><p class="en">Screens are judged, decisions are a choice of option. You can change your vote or abstain at any time. That's how feedback becomes a shared, documented decision.</p></div>
+    <div class="collabCard"><div class="h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 10h6M9 14h4"/></svg></span><span class="he">מעדכנים משימות</span><span class="en">Update tasks</span></div><p class="he">כל שותף מעדכן את הסטטוס, האחוז וההערות של המשימות שבאחריותו — מהמסך האישי או מהלוח. התמונה מתעדכנת מהמקור.</p><p class="en">Each partner updates the status, percentage and notes of their own tasks — from their personal screen or the board. The picture updates from the source.</p></div>
+    <div class="collabCard"><div class="h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 15a5 5 0 0 0-10 0M12 3v3M2 15h3M19 15h3"/><path d="M2 19h20"/></svg></span><span class="he">קוראים את הבוקר</span><span class="en">Read the morning</span></div><p class="he">כל בוקר, לשונית "יומי" מרכזת מה דורש תשומת לב, דופק ההצבעה, וסיכום קצר. דן ורפי סורקים אותה כדי להחליט מה מבצעים היום.</p><p class="en">Each morning, the "Daily" tab gathers what needs attention, the voting pulse, and a short summary. Dan and Rafi scan it to decide what to do today.</p></div>
+    <div class="collabCard"><div class="h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3L11 14M22 3l-7 19-4-8-8-4z"/></svg></span><span class="he">דוחות לצוות</span><span class="en">Reports to the team</span></div><p class="he">בעלים יכולים לשלוח סיכום — לכל שותף את הסיכום האישי שלו, או לכולם את סיכום הצוות. תמיד עם תצוגה מקדימה ואישור.</p><p class="en">Owners can send a summary — to each partner their personal summary, or the team summary to everyone. Always with a preview and confirmation.</p></div>
+    <div class="collabCard"><div class="h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 22a8 8 0 1 0-8-8"/></svg></span><span class="he">מתקדמים להשקה</span><span class="en">Move toward launch</span></div><p class="he">כל הפעולות האלה מזינות מספר אחד: אחוז ההתקדמות עד לשחרור גרסה 1 למכירה. זה המצפן המשותף שלנו.</p><p class="en">All these actions feed one number: the progress percentage to releasing v1 for sale. That's our shared compass.</p></div>
+  </div>
+
+  <!-- ══ 04 · YOUR PERSONAL PAGE ══ -->
+  <div class="secTitle"><span class="bar"></span><span class="n">04</span><h2 class="he">הדף האישי שלך</h2><h2 class="en">Your page</h2><span class="lbl he">Your page</span><span class="lbl en">הדף האישי שלך</span></div>
+  <p class="secLead he">לכל שותף מסך אישי משלו: היעד, המשימות שבאחריותך, אחוז ההתקדמות שלך, וכפתור הדרכה. הנה מה שמחכה לכל אחד — אישית.</p>
+  <p class="secLead en">Every partner has their own personal screen: the goal, the tasks you're responsible for, your progress percentage, and a guide button. Here's what awaits each person — personally.</p>
+
+  <!-- Dan -->
+  <div class="partner card">
+    <div class="ptop"><span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 3 5-6 5 6 4-3-1 11H4z"/></svg></span><div><div class="nm">דן</div><div class="rl"><span class="he">בעלים ומנהל</span><span class="en">Owner & Admin</span></div></div></div>
+    <div class="pgrid">
+      <div>
+        <p class="subhead he">מה עושים ביום-יום</p><p class="subhead en">What you do day-to-day</p>
+        <p class="muted he" style="margin:0;font-size:13.5px;line-height:1.7">מייסד-מפעיל. אתה מנהל את כל הפורטל — פותח את "יומי" בבוקר, מנהל את הלוח (יוצר ומשייך משימות), מצביע על כל ההחלטות והמסכים, שולח דוחות לצוות, ומגדיר הרשאות (מי מנהל, מי עורך תוכן, מי בעלים). המסך האישי שלך מציג את היעד, המשימות שלך, ואחוז ההתקדמות שלך.</p>
+        <p class="muted en" style="margin:0;font-size:13.5px;line-height:1.7">Founder-operator. You run the whole portal — open "Daily" in the morning, manage the board (create and assign tasks), vote on all decisions and screens, send reports to the team, and set permissions (who's an admin, who's a content editor, who's an owner). Your personal screen shows your goal, your tasks, and your progress percentage.</p>
+        <div class="goalBox"><div class="k"><span class="he">היעד שלך</span><span class="en">Your goal</span></div><div class="v"><span class="he">להשיק את המוצר</span><span class="en">Launch the product</span></div></div>
+      </div>
+      <div>
+        <p class="subhead he">באחריותך</p><p class="subhead en">You're responsible for</p>
+        <ul class="resp">
+          <li class="he"><span class="d">◆</span>השקת גרסה 1 למכירה למשתמשים.</li><li class="en"><span class="d">◆</span>Release v1 for sale to users.</li>
+          <li class="he"><span class="d">◆</span>תשלומים — מפתחות Stripe.</li><li class="en"><span class="d">◆</span>Payments — Stripe keys.</li>
+          <li class="he"><span class="d">◆</span>רישום חברה.</li><li class="en"><span class="d">◆</span>Company registration.</li>
+          <li class="he"><span class="d">◆</span>הסרת שער התחזוקה בהשקה.</li><li class="en"><span class="d">◆</span>Remove the maintenance gate at launch.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rafi -->
+  <div class="partner card">
+    <div class="ptop"><span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M12 3L9 9l3 12 3-12z"/></svg></span><div><div class="nm">רפי</div><div class="rl"><span class="he">משקיע ובעלים</span><span class="en">Investor & Owner</span></div></div></div>
+    <div class="pgrid">
+      <div>
+        <p class="subhead he">מה עושים ביום-יום</p><p class="subhead en">What you do day-to-day</p>
+        <p class="muted he" style="margin:0;font-size:13.5px;line-height:1.7">תפיסת השקעה מדורגת. אתה עוקב אחרי הדרך להשקה דרך מסך "התקדמות" ו"יומי", מצביע על ההחלטות העסקיות (תשלומים, רישום חברה, WhatsApp), ומוסיף הערות ומשוב מנקודת מבט של משקיע. המסך האישי שלך מציג את היעד והמשימות שלך.</p>
+        <p class="muted en" style="margin:0;font-size:13.5px;line-height:1.7">A staged investment approach. You follow the path to launch through the "Progress" and "Daily" screens, vote on the business decisions (payments, company registration, WhatsApp), and add notes and feedback from an investor's perspective. Your personal screen shows your goal and tasks.</p>
+        <div class="goalBox"><div class="k"><span class="he">היעד שלך</span><span class="en">Your goal</span></div><div class="v"><span class="he">אבני דרך בהשקעה</span><span class="en">Investment milestones</span></div></div>
+      </div>
+      <div>
+        <p class="subhead he">באחריותך</p><p class="subhead en">You're responsible for</p>
+        <ul class="resp">
+          <li class="he"><span class="d">◆</span>אבני דרך בהשקעה (מדורג).</li><li class="en"><span class="d">◆</span>Investment milestones (staged).</li>
+          <li class="he"><span class="d">◆</span>שותף מכריע בהחלטות העסקיות הפתוחות — תשלומים, רישום חברה, WhatsApp פרודקשן.</li><li class="en"><span class="d">◆</span>A deciding partner on the open business decisions — payments, company registration, production WhatsApp.</li>
+          <li class="he"><span class="d">◆</span>קול משקיע בהצבעות על הכיוון והתעדוף.</li><li class="en"><span class="d">◆</span>An investor's voice in votes on direction and prioritization.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yoav -->
+  <div class="partner card">
+    <div class="ptop"><span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 9h18M7 6l1.5 3M12 6l1.5 3M17 6l1.5 3"/></svg></span><div><div class="nm">יואב</div><div class="rl"><span class="he">בעלים וראש קריאייטיב</span><span class="en">Owner & Head of Creative</span></div></div></div>
+    <div class="pgrid">
+      <div>
+        <p class="subhead he">מה עושים ביום-יום</p><p class="subhead en">What you do day-to-day</p>
+        <p class="muted he" style="margin:0;font-size:13.5px;line-height:1.7">רילים וקורסים. אתה גם <b class="gold">עורך התוכן</b> של המערכת — יש לך גישה מהתפריט (קבוצת "תוכן") לעורכי הרילים והאוניברסיטה, ואתה עורך את התוכן ישירות באפליקציה, בלי צורך בפיתוח. במסך האישי שלך: היעד, המשימות שלך, וההתקדמות.</p>
+        <p class="muted en" style="margin:0;font-size:13.5px;line-height:1.7">Reels and courses. You're also the system's <b class="gold">content editor</b> — you have access from the menu (the "Content" group) to the reels and university editors, and you edit content directly in the app, with no development needed. On your personal screen: the goal, your tasks, and progress.</p>
+        <div class="goalBox"><div class="k"><span class="he">היעד שלך</span><span class="en">Your goal</span></div><div class="v"><span class="he">ספריית תוכן — רילים וקורסים</span><span class="en">Content library — reels and courses</span></div></div>
+      </div>
+      <div>
+        <p class="subhead he">באחריותך</p><p class="subhead en">You're responsible for</p>
+        <ul class="resp">
+          <li class="he"><span class="d">◆</span>ספריית תוכן — רילים וקורסים.</li><li class="en"><span class="d">◆</span>Content library — reels and courses.</li>
+          <li class="he"><span class="d">◆</span>עריכת תוכן הרילים (וידאו) ישירות באפליקציה.</li><li class="en"><span class="d">◆</span>Editing the reels content (video) directly in the app.</li>
+          <li class="he"><span class="d">◆</span>עריכת תוכן האוניברסיטה/הסברים — צעדים, מושגים, מילון.</li><li class="en"><span class="d">◆</span>Editing the university/explainer content — steps, concepts, glossary.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Oren -->
+  <div class="partner card">
+    <div class="ptop"><span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></span><div><div class="nm">אורן</div><div class="rl"><span class="he">מפתח ראשי וראש IT</span><span class="en">Lead Developer & Head of IT</span></div></div></div>
+    <div class="pgrid">
+      <div>
+        <p class="subhead he">מה עושים ביום-יום</p><p class="subhead en">What you do day-to-day</p>
+        <p class="muted he" style="margin:0;font-size:13.5px;line-height:1.7">פיתוח וטכנולוגיה. במסך האישי שלך מרוכזים הפריטים הטכניים הפתוחים ומוכנות לפרודקשן — לפי האודיט (מפרט הפינטק + סקירת הפערים). אתה מעדכן סטטוס ואחוז לכל אחד, ומצביע על החלטות טכניות. אתה גם יועץ טכני להחלטות הבעלים.</p>
+        <p class="muted en" style="margin:0;font-size:13.5px;line-height:1.7">Development and technology. Your personal screen gathers the open technical items and production readiness — per the audit (the fintech spec + the gap review). You update status and percentage for each, and vote on technical decisions. You're also the technical advisor for the owners' decisions.</p>
+        <div class="goalBox"><div class="k"><span class="he">היעד שלך</span><span class="en">Your goal</span></div><div class="v"><span class="he">תשתית מוכנה לפרודקשן</span><span class="en">Production-ready infrastructure</span></div></div>
+      </div>
+      <div>
+        <p class="subhead he">באחריותך</p><p class="subhead en">You're responsible for</p>
+        <ul class="resp">
+          <li class="he"><span class="d">◆</span>רשימת פערים למוכנות לפרודקשן + פריסה/תשתית.</li><li class="en"><span class="d">◆</span>Production-readiness gap list + deployment/infrastructure.</li>
+          <li class="he"><span class="d">◆</span>IP/מקוריות המנוע (המנוע המוטמע ופורט ה-PineScript).</li><li class="en"><span class="d">◆</span>Engine IP/originality (the embedded engine and the PineScript port).</li>
+          <li class="he"><span class="d">◆</span>הקשחת אבטחה וסקיילינג להשקה.</li><li class="en"><span class="d">◆</span>Security hardening and scaling for launch.</li>
+          <li class="he"><span class="d">◆</span>אימייל (SendGrid) · WhatsApp פרודקשן · Apple IAP.</li><li class="en"><span class="d">◆</span>Email (SendGrid) · production WhatsApp · Apple IAP.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raz -->
+  <div class="partner card">
+    <div class="ptop"><span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M4 7h16M6 7l-3 6a3 3 0 0 0 6 0zM18 7l-3 6a3 3 0 0 0 6 0z"/></svg></span><div><div class="nm">רז</div><div class="rl"><span class="he">יועצת משפטית, ריטיינר</span><span class="en">Legal Counsel (retainer)</span></div></div></div>
+    <div class="pgrid">
+      <div>
+        <p class="subhead he">מה עושים ביום-יום</p><p class="subhead en">What you do day-to-day</p>
+        <p class="muted he" style="margin:0;font-size:13.5px;line-height:1.7">רישום זכויות ופטנטים תחילה. במסך האישי שלך מרוכזים הפריטים המשפטיים/רגולטוריים — לפי האודיט. את עורכת את הטקסטים המשפטיים ישירות ב<b class="gold">קונסולת המשפט</b> (בלי deploy), מעדכנת סטטוס ואחוז, ומייעצת בהחלטות הבעלים.</p>
+        <p class="muted en" style="margin:0;font-size:13.5px;line-height:1.7">Rights and patents registration first. Your personal screen gathers the legal/regulatory items — per the audit. You edit the legal texts directly in the <b class="gold">Legal Console</b> (no deploy), update status and percentage, and advise on the owners' decisions.</p>
+        <div class="goalBox"><div class="k"><span class="he">היעד שלך</span><span class="en">Your goal</span></div><div class="v"><span class="he">רישום זכויות ופטנטים; השלמת הטקסטים המשפטיים</span><span class="en">Rights and patents registration; completing the legal texts</span></div></div>
+      </div>
+      <div>
+        <p class="subhead he">באחריותך</p><p class="subhead en">You're responsible for</p>
+        <ul class="resp">
+          <li class="he"><span class="d">◆</span>השלמת הטקסטים המשפטיים בקונסולת המשפט (פרטיות · תנאי שימוש · הבהרות סיכון).</li><li class="en"><span class="d">◆</span>Completing the legal texts in the Legal Console (privacy · terms of use · risk disclosures).</li>
+          <li class="he"><span class="d">◆</span>גילויים ורגולציה ישראלית — אזהרות סיכון ועמלות.</li><li class="en"><span class="d">◆</span>Disclosures and Israeli regulation — risk warnings and fees.</li>
+          <li class="he"><span class="d">◆</span>עמדה רגולטורית למפתחות מסחר-בלבד בשרת.</li><li class="en"><span class="d">◆</span>A regulatory position on trade-only keys on the server.</li>
+          <li class="he"><span class="d">◆</span>סקירת מקוריות/בעלות ל-IP של המנוע · רישוי נתונים.</li><li class="en"><span class="d">◆</span>An originality/ownership review for the engine IP · data licensing.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 05 · GETTING STARTED ══ -->
+  <div class="secTitle"><span class="bar"></span><span class="n">05</span><h2 class="he">איך מתחברים ומתחילים</h2><h2 class="en">Getting started</h2><span class="lbl he">Getting started</span><span class="lbl en">איך מתחברים ומתחילים</span></div>
+  <div class="card">
+    <ol class="steps">
+      <li><span class="sn"></span><span class="body he">פתחו את האפליקציה בכתובת <span class="u">app.strateteach.com</span> — עובד ישירות מהדפדפן בטלפון, בלי התקנה. אפשר להוסיף למסך הבית של הטלפון כמו אפליקציה.</span><span class="body en">Open the app at <span class="u">app.strateteach.com</span> — it works straight from your phone's browser, with no install. You can add it to your phone's home screen like an app.</span></li>
+      <li><span class="sn"></span><span class="body he">התחברו עם <b>שם המשתמש והסיסמה</b> שדן ייתן לכם. הצעד הראשון בפנים — החליפו לסיסמה חזקה (הגדרות → פרופיל).</span><span class="body en">Log in with the <b>username and password</b> Dan gives you. First thing inside — change to a strong password (Settings → Profile).</span></li>
+      <li><span class="sn"></span><span class="body he">פתחו את התפריט <b>(☰)</b> → קבוצת <b>"בעלים"</b> → <b>"פורטל בעלים"</b> (לבעלים) או <b>"המסך שלי"</b> (לשותף). כאן חי כל הפורטל — יומי, לוח, הצבעה, תוצאות, התקדמות.</span><span class="body en">Open the menu <b>(☰)</b> → the <b>"Owners"</b> group → <b>"Owners Portal"</b> (for owners) or <b>"My screen"</b> (for a partner). The whole portal lives here — Daily, Board, Vote, Results, Progress.</span></li>
+      <li><span class="sn"></span><span class="body he">כלים לפי תפקיד: <b>יואב</b> (עורך תוכן) יראה גם קבוצת <b>"תוכן (עריכה)"</b> עם עורכי הרילים והאוניברסיטה. בעלים מקבלים את הפורטל המלא כולל שליחת דוחות. <b>רז</b> מגיעה גם ל"קונסולת המשפט".</span><span class="body en">Tools by role: <b>Yoav</b> (content editor) also sees a <b>"Content (editing)"</b> group with the reels and university editors. Owners get the full portal including report sending. <b>Raz</b> also reaches the "Legal Console".</span></li>
+      <li><span class="sn"></span><span class="body he">התחילו: בכל בוקר עברו על <b>"יומי"</b>; עדכנו את <b>המשימות שלכם</b> במסך האישי; והצביעו על <b>ההחלטות והמסכים</b> הפתוחים — עם הערה. לחצו על <b>"הדרכה — סייר לי במסך"</b> בכל מסך אישי לסיור מודרך.</span><span class="body en">Get going: every morning go through <b>"Daily"</b>; update <b>your tasks</b> on your personal screen; and vote on the open <b>decisions and screens</b> — with a note. Tap <b>"Guide — walk me through this screen"</b> on any personal screen for a guided tour.</span></li>
+    </ol>
+  </div>
+
+</div>
+
+<!-- ══ CLOSING ══ -->
+<div class="closing">
+  <h2><span class="he">נבנה יחד — עד להשקה 🚀</span><span class="en">Built together — all the way to launch 🚀</span></h2>
+  <p class="he">זו הגרסה הראשונה של המדריך. היכנסו, הכירו את המסך האישי שלכם, עדכנו והצביעו — כל הערה, כל בחירה וכל עדכון מזיזים אותנו קדימה.</p>
+  <p class="en">This is the first version of the guide. Log in, get to know your personal screen, update and vote — every note, every choice and every update moves us forward.</p>
+</div>
+
+<div class="wrap">
+  <div class="foot"><span class="he">Strateteach · פורטל הבעלים — מדריך היכרות (גרסה 2, לבדיקת דן) · מעוצב בסקין Peach (Light) של האפליקציה.</span><span class="en">Strateteach · Owners Portal — onboarding guide (v2, for Dan's review) · styled in the app's Peach (Light) skin.</span></div>
+</div>
+
+<script>
+  // Whole-deck language switch: flips <html lang> + dir, and the .he/.en CSS pair
+  // visibility follows. Remembers the choice. Default = Hebrew.
+  function setLang(l){
+    var h=document.documentElement;
+    h.setAttribute('lang', l);
+    h.setAttribute('dir', l==='en' ? 'ltr' : 'rtl');
+    var be=document.getElementById('btn-en'), bh=document.getElementById('btn-he');
+    if(be) be.classList.toggle('on', l==='en');
+    if(bh) bh.classList.toggle('on', l==='he');
+    try{ localStorage.setItem('og_lang', l); }catch(e){}
+  }
+  (function(){
+    var saved; try{ saved=localStorage.getItem('og_lang'); }catch(e){}
+    setLang(saved==='en' ? 'en' : 'he');
+  })();
+</script>
+
+</body>
+</html>

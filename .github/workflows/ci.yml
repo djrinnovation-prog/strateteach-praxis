@@ -1,0 +1,123 @@
+name: CI
+
+# Praxis gap-closure T1 — additive test/typecheck gate. Runs NO real-money code,
+# uses NO secrets: worker + edge + frontend tests are fully mocked; the SQL job runs
+# against a throwaway local Supabase stack. Money-path e2e against real Binance
+# testnet is a separate, manually-triggered job (see T3c / ops runbook), never here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Cancel superseded PR runs; let main (merge-gate) runs finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  worker:
+    name: worker (typecheck + jest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test -- --ci
+      # Provisioning/credential script tests are node:test .mjs files that jest's
+      # testMatch (**/*.test.ts) does not pick up — run them explicitly (guarded).
+      - name: worker script tests (node:test .mjs)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(scripts/*.test.mjs)
+          [ "${#files[@]}" -gt 0 ] || { echo "no worker script tests found"; exit 1; }
+          node --test "${files[@]}"
+
+  edge:
+    name: edge functions (Deno + node:test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      # Discover every edge test file, split by runtime (node:test vs Deno), and run
+      # each set. Dynamic discovery + non-empty guards so a NEW test file can never
+      # silently go unrun (would fail the count guard instead of passing green).
+      - name: Run edge tests
+        run: |
+          set -euo pipefail
+          # Portable (bash 3.2+) array build via while-read — robust to spaces/newlines,
+          # no mapfile/word-splitting. node:test files run under node, the rest under Deno.
+          node_files=(); deno_files=()
+          while IFS= read -r f; do
+            if grep -q 'node:test' "$f"; then node_files+=("$f"); else deno_files+=("$f"); fi
+          done < <(find supabase/functions -name '*.test.ts' | sort)
+          echo "node:test files: ${node_files[*]:-<none>}"
+          echo "deno files: ${deno_files[*]:-<none>}"
+          [ "${#node_files[@]}" -gt 0 ] || { echo "no node:test edge files found"; exit 1; }
+          [ "${#deno_files[@]}" -gt 0 ] || { echo "no deno edge files found"; exit 1; }
+          node --test "${node_files[@]}"
+          deno test --allow-read --allow-env --allow-net "${deno_files[@]}"
+
+  frontend:
+    name: frontend (typecheck + vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  sql:
+    name: database (migrations + SQL assertion tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          # Pinned for reproducibility (matches the known-good local CLI).
+          version: 2.101.0
+      # Boots the full local stack (Postgres 17 + pgmq/vault/pgsodium/auth) and
+      # applies every migration in supabase/migrations by sorted filename.
+      - run: supabase start
+      # Run each plain-SQL assertion file; ON_ERROR_STOP makes any failed
+      # assert/raise/expected-privilege-error fail the job (no silent green).
+      - name: Run SQL tests
+        run: |
+          set -euo pipefail
+          # Deterministic local-stack connection: `supabase start` always serves Postgres at
+          # 127.0.0.1:<[db].port> as postgres/postgres. Port 54322 matches supabase/config.toml
+          # [db] port. Avoids depending on the exact `supabase status -o env` output format.
+          DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          # Fail fast with a clear message if the DB is not actually reachable.
+          psql "${DB_URL}" -v ON_ERROR_STOP=1 -c 'select 1;' >/dev/null \
+            || { echo "local Supabase DB not reachable at ${DB_URL}"; exit 1; }
+          shopt -s nullglob
+          files=(supabase/tests/*.test.sql)
+          [ "${#files[@]}" -gt 0 ] || { echo "no SQL tests found"; exit 1; }
+          fail=0
+          for f in "${files[@]}"; do
+            echo "== $f"
+            if ! psql "${DB_URL}" -v ON_ERROR_STOP=1 -f "$f"; then
+              echo "FAILED: $f"
+              fail=1
+            fi
+          done
+          exit "${fail}"

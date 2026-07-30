@@ -1,0 +1,137 @@
+name: Deploy to server
+
+# Auto-deploys to the live VPS (app.strateteach.com) on every push to main.
+# Secrets required: SSH_HOST, SSH_USER, SSH_PASSWORD.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull latest code and rebuild on the server
+        uses: appleboy/ssh-action@v1.2.0
+        # Twilio/WhatsApp secrets are handed to the remote script as env vars via
+        # `envs:` (appleboy exports them inside the SSH session). Because they are
+        # GitHub Actions secrets, their VALUES are masked and never printed in the
+        # Actions log. Unset secrets arrive empty — harmless (channel stays dormant).
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+          TWILIO_WA_TEMPLATE_SID: ${{ secrets.TWILIO_WA_TEMPLATE_SID }}
+          TWILIO_INBOUND_URL: ${{ secrets.TWILIO_INBOUND_URL }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SENDGRID_FROM: ${{ secrets.SENDGRID_FROM }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          envs: TWILIO_SID,TWILIO_TOKEN,TWILIO_FROM,TWILIO_WHATSAPP_FROM,TWILIO_WA_TEMPLATE_SID,TWILIO_INBOUND_URL,SENDGRID_API_KEY,SENDGRID_FROM
+          script_stop: true
+          command_timeout: 20m
+          script: |
+            cd /opt/algo770
+            # Mirror the server to origin/main. `reset --hard` discards any stuck
+            # local edits to TRACKED files (which made `git pull` abort with
+            # "local changes would be overwritten"); it never touches .env, named
+            # volumes, or untracked files.
+            git fetch origin main && git reset --hard origin/main
+            # Upsert Twilio/WhatsApp + SendGrid env vars into /opt/algo770/.env so the
+            # recreated container picks them up. Values arrive via appleboy
+            # `envs:` (masked in the Actions log). Per key: strip any existing
+            # "^KEY=" line, then append the current value — every OTHER line is
+            # kept verbatim, so the file is NEVER clobbered. The value only ever
+            # flows through printf's %s arg (never a sed/regex replacement), so
+            # any special chars (/, :, +, &, %, \) are safe. We rebuild in a temp
+            # file and write back with `cat > "$F"`, preserving the .env inode,
+            # owner, and permissions. Idempotent: re-running yields the same file.
+            F=/opt/algo770/.env
+            touch "$F"
+            upsert() {
+              key="$1"; val="$2"
+              tmp="$(mktemp)"
+              grep -v "^${key}=" "$F" > "$tmp" 2>/dev/null || true
+              printf '%s=%s\n' "$key" "$val" >> "$tmp"
+              cat "$tmp" > "$F"
+              rm -f "$tmp"
+            }
+            # SECRET upsert — SKIP when the value is empty. A missing/empty GitHub secret must
+            # NEVER clobber a live value in /opt/algo770/.env (an empty upsert once wiped the
+            # Twilio creds → every SMS/2FA/notify path silently no-op'd). If the secret is
+            # absent this deploy, we simply leave whatever is already in .env untouched.
+            upsert_secret() {
+              key="$1"; val="$2"
+              if [ -z "$val" ]; then
+                echo "skip ${key}: empty secret — keeping existing .env value"
+                return 0
+              fi
+              upsert "$key" "$val"
+            }
+            upsert_secret TWILIO_SID "${TWILIO_SID:-}"
+            upsert_secret TWILIO_TOKEN "${TWILIO_TOKEN:-}"
+            upsert_secret TWILIO_FROM "${TWILIO_FROM:-}"
+            upsert_secret TWILIO_WHATSAPP_FROM "${TWILIO_WHATSAPP_FROM:-}"
+            upsert_secret TWILIO_WA_TEMPLATE_SID "${TWILIO_WA_TEMPLATE_SID:-}"
+            upsert_secret TWILIO_INBOUND_URL "${TWILIO_INBOUND_URL:-}"
+            upsert_secret SENDGRID_API_KEY "${SENDGRID_API_KEY:-}"
+            upsert_secret SENDGRID_FROM "${SENDGRID_FROM:-}"
+            # Non-secret config flags (literals — safe to keep in the workflow):
+            #  • PUBLIC_BASE_URL: the app public origin. REQUIRED for the HTML report link in
+            #    the scheduled owners email (the 09:00 job has no request to derive it from).
+            #  • OWNERS_REPORT_AUTOSEND: Dan approved the report design → turn the daily
+            #    09:00 Israel-time owners-report auto-send ON.
+            upsert PUBLIC_BASE_URL "https://app.strateteach.com"
+            upsert OWNERS_REPORT_AUTOSEND "1"
+            #  • MAINTENANCE_BYPASS_USERNAMES: let the labelled demo END-USER preview the app
+            #    while the maintenance gate stays ON for everyone else. NOT a secret (just a
+            #    username), grants ZERO admin power — every require_admin/require_owner still
+            #    resolves from the real DB role; it only exempts this one account from the wall.
+            upsert MAINTENANCE_BYPASS_USERNAMES "demo.user@strateteach.com"
+            # Resilient recreate. An interrupted deploy can leave a stale
+            # container holding a service name ("name already in use by ..."),
+            # which fails the next `up`. Try the normal rebuild first; if it
+            # fails, do a clean `down` (keeps named volumes, so Postgres data is
+            # safe) to release the names, then retry once. The `if` condition is
+            # exempt from `script_stop`/set -e, so the fallback always runs.
+            if ! docker compose up -d --build --remove-orphans; then
+              echo "compose up failed — clean down (data volumes kept) + retry"
+              docker compose down --remove-orphans
+              docker compose up -d --build --remove-orphans
+            fi
+            # Force-refresh the FRONTEND so the served bundle ALWAYS matches origin/main.
+            # Why this is required (and `up -d --build` above is NOT enough): on run #937 the
+            # `up -d --build` recreated the backend (its code changed) but left the frontend on
+            # the PREVIOUS image — the served JS bundle lagged origin/main by a commit. The
+            # frontend build layer cache-hit (so no new image → no recreate), a race we can't
+            # rely away. Rebuild the frontend from the freshly-reset source with NO cache, then
+            # recreate ONLY its container. Mirrors the Caddy force-recreate rationale below.
+            # --no-deps: leave the just-built backend (and caddy) untouched; a frontend recreate
+            # is a ~1s blip served by caddy. Trade-off: adds ~1-2 min (npm install) per deploy —
+            # acceptable for "the live bundle is never stale"; can later be scoped to a GIT_SHA
+            # build-arg that busts only the vite layer if deploy time becomes a concern.
+            docker compose build --no-cache frontend
+            docker compose up -d --no-deps --force-recreate frontend
+            # Force-recreate Caddy so a changed Caddyfile ALWAYS goes live on deploy.
+            # Why this is required (and --watch / reload / restart are NOT enough):
+            #  • The Caddyfile is a SINGLE-FILE bind mount (./Caddyfile:/etc/caddy/Caddyfile).
+            #    Docker pins that mount to the file's inode at container creation.
+            #  • `git reset --hard` above REPLACES the working-tree file (new inode), so the
+            #    running caddy container keeps seeing the OLD inode — `--watch` never fires,
+            #    and `caddy reload` / `docker compose restart` re-read that same stale inode.
+            #  • A plain `docker compose up -d` does NOT recreate caddy (its image + service
+            #    definition are unchanged), so it too keeps the old config.
+            # Recreating the container re-binds the mount to the CURRENT Caddyfile inode, so the
+            # new config (e.g. the /it/* proxy for Oren's IT portal) boots live — no manual SSH.
+            # --no-deps: don't disturb backend/frontend (just rebuilt above); a caddy recreate is
+            # a ~1s blip and TLS certs persist in the caddy_data volume.
+            docker compose up -d --no-deps --force-recreate caddy
+            docker compose ps

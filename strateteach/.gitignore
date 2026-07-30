@@ -1,0 +1,16 @@
+# Local dev artifacts — never committed
+node_modules/
+__pycache__/
+*.pyc
+.env
+dist/
+pgdata/
+caddy_data/
+caddy_config/
+.DS_Store
+docker-compose.override.yml
+
+# Heavy marketing/demo media — belong on a CDN or git-lfs, not in git history
+dashboard/public/media/*.mp4
+dashboard/public/media/home-tour.html
+dashboard/public/guide-test/

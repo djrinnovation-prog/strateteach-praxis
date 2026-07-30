@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+<meta name="referrer" content="no-referrer" />
+<title>StrateTeach — דף ניהול · מיפוי SheraCore → StrateTeach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1220; --bg2:#141a2e; --card:#161d33; --card2:#1b2340;
+    --ink:#eef2fb; --soft:#b7c0d8; --faint:#8590ad; --line:#2a3352;
+    --accent:#f7b500; --accent2:#7cc04e; --blue:#5cb3ff; --pink:#ec4899;
+    --gain:#39e08d; --loss:#ff6d7a;
+    --maxw:860px;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:
+      radial-gradient(60% 40% at 12% 0%, rgba(92,179,255,0.09), transparent 60%),
+      radial-gradient(50% 40% at 92% 4%, rgba(236,72,153,0.07), transparent 60%),
+      radial-gradient(60% 50% at 80% 100%, rgba(124,192,78,0.06), transparent 60%),
+      linear-gradient(170deg, #0e1220 0%, #10152a 60%, #0c1020 100%);
+    color:var(--ink);
+    font-family:"Heebo", "Segoe UI", "Assistant", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size:16px; line-height:1.7; letter-spacing:-0.003em;
+    padding:28px 16px 80px; min-height:100vh;
+  }
+  .wrap{ max-width:var(--maxw); margin:0 auto; }
+
+  /* header */
+  .head{
+    background:linear-gradient(160deg, var(--card2), var(--card));
+    border:1px solid var(--line); border-radius:20px; padding:26px 24px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,0.7);
+    position:relative; overflow:hidden;
+  }
+  .head::before{ content:""; position:absolute; inset:0 0 auto 0; height:4px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2) 45%, var(--blue)); }
+  .head h1{ font-size:1.62rem; font-weight:900; margin:6px 0 4px; line-height:1.28; letter-spacing:-0.01em; }
+  .head .sub{ font-size:1.02rem; font-weight:700; color:var(--soft); margin:0 0 14px; }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .chip{ font-size:0.82rem; font-weight:700; color:var(--soft);
+    background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:999px; padding:5px 12px; }
+  .chip b{ color:var(--ink); font-weight:800; }
+  .chip .st{ color:var(--accent); }
+
+  /* sections */
+  section{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:22px 22px; margin-top:18px;
+    box-shadow:0 18px 44px -34px rgba(0,0,0,0.7);
+  }
+  h2{ font-size:1.24rem; font-weight:900; margin:2px 0 14px; padding-bottom:12px;
+    border-bottom:1px solid var(--line); line-height:1.3; }
+  h2 .n{ display:inline-flex; align-items:center; justify-content:center;
+    min-width:30px; height:30px; padding:0 8px; margin-inline-end:10px; border-radius:9px;
+    background:rgba(247,181,0,0.14); color:var(--accent); font-size:0.95rem; font-weight:900; vertical-align:2px; }
+  h3{ font-size:1.05rem; font-weight:800; color:var(--soft); margin:0 0 10px; }
+
+  p{ margin:0 0 12px; }
+  strong,b{ color:#fff; font-weight:800; }
+  code{ font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size:0.88em; background:rgba(124,192,78,0.10); color:#cfe9b6;
+    border:1px solid rgba(124,192,78,0.22); border-radius:6px; padding:1px 6px; direction:ltr; unicode-bidi:isolate; }
+
+  ul,ol{ margin:0 0 10px; padding-inline-start:0; padding-inline-end:22px; }
+  li{ margin:0 0 9px; }
+  li::marker{ color:var(--accent); }
+
+  /* tables */
+  .tblwrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:6px 0 6px; border-radius:12px; border:1px solid var(--line); }
+  table{ border-collapse:collapse; width:100%; min-width:520px; font-size:0.94rem; }
+  thead th{ background:linear-gradient(180deg, #212a49, #1a2140); color:#fff; font-weight:800;
+    text-align:start; padding:11px 13px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody td{ padding:11px 13px; border-bottom:1px solid var(--line); color:var(--soft); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:nth-child(even) td{ background:rgba(255,255,255,0.015); }
+  tbody td:first-child{ color:var(--ink); font-weight:700; }
+  td strong, th strong{ color:#fff; }
+
+  /* code block */
+  pre{ background:#0b0f1e; border:1px solid var(--line); border-radius:12px; padding:16px 16px;
+    overflow-x:auto; direction:ltr; text-align:left; margin:8px 0 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04); }
+  pre code{ background:none; border:none; padding:0; color:#d7e2f5; font-size:0.82rem; line-height:1.6; white-space:pre; }
+
+  /* blockquote (footer note) */
+  blockquote{ margin:10px 0 0; padding:14px 16px; border-inline-start:3px solid var(--accent);
+    background:rgba(247,181,0,0.06); border-radius:0 12px 12px 0; color:var(--soft); font-style:italic; }
+  blockquote em{ font-style:italic; }
+
+  hr{ border:none; }
+
+  .foot{ text-align:center; color:var(--faint); font-size:0.8rem; margin-top:26px; line-height:1.6; }
+  .confidential{ display:inline-block; margin-bottom:6px; font-weight:800; color:var(--accent); letter-spacing:0.04em; font-size:0.78rem; }
+
+  @media (max-width:560px){
+    body{ font-size:15px; padding:18px 11px 64px; }
+    .head{ padding:20px 17px; border-radius:16px; }
+    .head h1{ font-size:1.34rem; }
+    section{ padding:18px 15px; border-radius:14px; }
+    h2{ font-size:1.12rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div class="confidential">● סודי · לעיני הבעלים בלבד</div>
+    <h1>StrateTeach — מערכת‑ניהול אחת במבנה SheraCore</h1>
+    <p class="sub">דף ניהול · מיפוי SheraCore → StrateTeach · טיוטה לאישור‑final של הבעלים</p>
+    <div class="meta">
+      <span class="chip"><b>תאריך:</b> 2026‑07‑16</span>
+      <span class="chip"><b>בעלים:</b> דן · רפי · יואב</span>
+      <span class="chip"><b>סטטוס:</b> <span class="st">טיוטה — ממתין לאישור‑final של הדפוס</span></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span>ההחלטה בקצרה</h2>
+    <ul>
+      <li><strong>StrateTeach מקבלת מערכת‑ניהול אחת במבנה SheraCore</strong> — אותו דפוס שמריץ את מרכז‑הניהול של Sheraton Grand TLV (<code>sgtlv.com</code>): תפקידים, פרויקטים, שרשראות‑אישור, קונסולה אחת.</li>
+      <li><strong>מאמצים את הדפוס — לא את המימוש.</strong> הכול נבנה בתוך ה‑stack הקיים (React + FastAPI + Postgres). <strong>לא</strong> משכפלים את מבנה שני‑הקבצים / אחסון ה‑JSON של SheraCore.</li>
+      <li><strong>קונסולת‑הבעלים היא ה‑shell.</strong> כל תחום‑עבודה הוא <strong>פרויקט</strong> בתוכה. <strong>StrateTeach‑Execution הוא פרויקט #1</strong> — שירות‑הביצוע שכבר בבנייה (Phase 1, slice 1 merged).</li>
+      <li><strong>אורן = מפעיל‑ביצוע מתוחם</strong> בתוך פרויקט #1, לפי גבול‑אורן המאושר (ראה §5).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>הדפוס שמאמצים מ‑SheraCore</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>עמוד‑תווך</th><th>מה זה נותן</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>מודל‑תפקידים + scope</strong></td><td>לכל משתמש תפקיד אחד ברור + תיחום לפרויקטים ספציפיים. אין הרשאות אד‑הוק.</td></tr>
+          <tr><td><strong>פרויקטים כ‑first‑class</strong></td><td>יצירת פרויקט חדש = פעולה מסודרת בקונסולה; גישה לכל פרויקט מתוחמת לפי תפקיד+scope.</td></tr>
+          <tr><td><strong>שרשראות‑אישור</strong></td><td>פעולה רגישה לא זזה בלי שרשרת אישורים מוגדרת‑מראש. אצלנו: <strong>3‑מ‑3 על הון‑הבעלים</strong>.</td></tr>
+          <tr><td><strong>קונסולת‑ניהול אחת</strong></td><td>מסך‑אם אחד: dashboard · team · approvals · reports · budget. לא עשרה כלים מפוזרים.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>טבלת המיפוי — SheraCore → StrateTeach</h2>
+    <h3>3.1 · תפקידים</h3>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>SheraCore</th><th>StrateTeach</th><th>מי</th><th>הערות</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>admin / ceo / cfo</strong></td><td><code>owner</code> (שכבה 3)</td><td>דן · רפי · יואב</td><td>שלושה שווים. אין "מנכ"ל־על" — כל החלטת‑כסף היא 3‑מ‑3.</td></tr>
+          <tr><td><strong>vp / manager</strong> (תפעול)</td><td><code>execution_operator</code> (שכבה 2א)</td><td>אורן</td><td>מתוחם לפרויקט הביצוע. רואה את המבנה הפיננסי, לא את הון‑הבעלים (§5).</td></tr>
+          <tr><td><strong>staff</strong> (לפי מחלקה)</td><td><code>team</code> (שכבה 2ב) + scope</td><td>ראז‑משפטי · עסקי · תוכן</td><td>כל אחד רואה רק את הפרויקט/פורטל שלו. בלי כספים.</td></tr>
+          <tr><td><strong>supplier</strong></td><td><code>client</code> (שכבה 1)</td><td>משתמשי‑קצה</td><td>המקבילה של "גורם חיצוני עם חשבון": רואה רק את החשבון שלו.</td></tr>
+          <tr><td>—</td><td><code>demo</code> (שכבה 0)</td><td>מבקרים</td><td>אין מקבילה ב‑SheraCore; נשאר כשכבת השיווק/סימולציה שלנו.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>3.2 · פרויקטים</h3>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>SheraCore</th><th>StrateTeach</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>פרויקט רכש</strong> (יצירה + צוות + תקציב)</td><td><strong>פרויקט #1: StrateTeach‑Execution</strong> — שירות‑הביצוע המבודד (Phase 1). צוות: הבעלים + אורן (מתוחם).</td></tr>
+          <tr><td>פרויקטים נוספים לפי צורך</td><td>הבאים בתור: <strong>הקרן המשותפת</strong> (owner‑only) · <strong>משפטי/רישוי</strong> (ראז) · <strong>תוכן/שיווק</strong>. יצירת פרויקט = פעולת בעלים בקונסולה.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>3.3 · שרשראות‑אישור</h3>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>SheraCore</th><th>StrateTeach</th><th>סטטוס</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>שרשרת‑אישור לפי סכום/סוג</td><td><strong>3‑מ‑3 פה‑אחד על כל פעולה בהון‑הבעלים</strong> — <code>owner_approvals</code></td><td><strong>כבר קיים ב‑DB</strong> (slice 1): CHECK שדוחה approved/executed עם פחות מ‑3 אישורים. ב‑P2 נוסיף אכיפת <strong>3 בעלים שונים</strong> (הערת‑סקירה פתוחה).</td></tr>
+          <tr><td>אישורים תפעוליים</td><td>אישורי‑תפעול בפרויקט (למשל שינוי caps) — שרשרת קלה יותר, בעלים אחד + audit</td><td>יוגדר ב‑P2; כל אישור נרשם ב‑<code>audit_log</code> (append‑only, קיים).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>3.4 · מסכי הקונסולה</h3>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>מסך SheraCore</th><th>מקבילה ב‑StrateTeach</th><th>בסיס קיים</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Dashboard</strong></td><td>קונסולת‑הבעלים — מצב כל הפרויקטים במבט אחד</td><td>הרחבה של <code>/owners</code> הקיים</td></tr>
+          <tr><td><strong>Team</strong></td><td>ניהול תפקידים + scope (הענקה = קליק של בעלים, לא של Claude)</td><td>פאנל‑התפקידים הקיים, מיושר לשכבות 0–3</td></tr>
+          <tr><td><strong>Approvals</strong></td><td>תור אישורים: בקשות 3‑מ‑3 ממתינות, היסטוריה, פג‑תוקף</td><td><code>owner_approvals</code> + <code>audit_log</code> (קיימים ב‑DB)</td></tr>
+          <tr><td><strong>Reports</strong></td><td>דוחות לפי scope: ביצוע/reconciliation לכולם‑בפרויקט; קרן/NAV — owner‑only</td><td>דוחות קיימים + טבלאות slice 1</td></tr>
+          <tr><td><strong>Budget</strong></td><td>כספי‑חברה (הכנסות/הוצאות) — owner‑only; caps תפעוליים — בפרויקט הביצוע</td><td><code>exec_bots</code> caps (קיים) + מודול כספי‑חברה (P3)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>מה במפורש לא מאמצים</h2>
+    <ul>
+      <li><strong>מבנה שני‑הקבצים / אחסון JSON</strong> של SheraCore — אצלנו הכול Postgres עם constraints (כמו שכבר נבנה ב‑slice 1), FastAPI ו‑React קיימים.</li>
+      <li><strong>תפקידי‑רכש מלונאיים</strong> (supplier‑workflows, הזמנות‑רכש) — לא רלוונטיים; לוקחים רק את השלד.</li>
+      <li><strong>אין שכפול משתמשים/הרשאות בשני מקומות</strong> — מודל‑התפקידים הקיים מיושר לשכבות, לא נבנה מערך מקביל.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>גבול‑אורן (מאושר — תזכורת)</h2>
+    <ul>
+      <li>אורן (<code>execution_operator</code>) רואה את <strong>כל המבנה הפיננסי</strong>: כספי‑חברה, מישור‑הביצוע (בוטים, סיגנלים, הזמנות, caps, reconciliation), דוחות מבניים.</li>
+      <li><strong>חסום ממנו — owner‑only:</strong> הקרן המשותפת, השקעות‑הבעלים <strong>וכל תנועותיהן</strong> (הפקדות/משיכות/מסחר/NAV/אישורי‑3‑מ‑3).</li>
+      <li>ב‑DB זה כבר נאכף (slice 1: <code>access.py</code> + grants). <strong>בקוד‑האפליקציה עדיין הפוך</strong> (<code>it_editor</code> = full‑view‑minus‑finances) — יישור הגבול הוא חלק מעבודת P2 שמתוכננת כאן.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>תוכנית מימוש — P2 בפרוסות</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>פרוסה</th><th>מה</th><th>מגע בכסף?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>2.1</strong></td><td><strong>Schema:</strong> טבלאות <code>projects</code> + <code>role_scopes</code> (תפקיד ↔ פרויקט), יישור מודל‑התפקידים הקיים לשכבות 0–3</td><td>לא. DDL בלבד.</td></tr>
+          <tr><td><strong>2.2</strong></td><td><strong>קונסולה (shell):</strong> מסך‑אם ב‑<code>/owners</code> — Dashboard/Team/Approvals/Reports/Budget, mobile‑first, skin בהיר</td><td>לא. תצוגה בלבד.</td></tr>
+          <tr><td><strong>2.3</strong></td><td><strong>יישור גבול‑אורן</strong> בקוד‑האפליקציה (החלפת ההיפוך של <code>it_editor</code>) + אכיפת 3 בעלים <strong>שונים</strong> ב‑3‑מ‑3</td><td>לא. הרשאות‑קריאה.</td></tr>
+          <tr><td><strong>2.4</strong></td><td><strong>Approvals UI</strong> מחווט ל‑<code>owner_approvals</code> — יצירת בקשה, 3 אישורים, פג‑תוקף, audit</td><td>לא. הביצוע עצמו נשאר disarmed עד P4–P5.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>כל פרוסה: build → deploy → אימות חי → אישור שלכם. הגייט החי נשאר כבוי לכל אורך הדרך; שום פרוסה כאן לא נוגעת בביצוע, במפתחות או בכסף.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>מה ממתין לאישור‑final שלכם</h2>
+    <ol>
+      <li><strong>אישור הדפוס</strong> — SheraCore כמבנה מערכת‑הניהול, בתוך ה‑stack הקיים (סעיפים 1–2).</li>
+      <li><strong>טבלת התפקידים</strong> (3.1) — השמות והשיוכים.</li>
+      <li><strong>רשימת הפרויקטים הראשונים</strong> (3.2) — Execution · קרן · משפטי · תוכן.</li>
+      <li><strong>סדר הפרוסות של P2</strong> (סעיף 6) — או שינוי סדר לפי מה שדחוף לכם.</li>
+    </ol>
+    <blockquote><em>מסמך זה הוא טיוטה לאישור. אינו מבצע שום פעולה, אינו מזיז כסף, ואינו משנה הרשאות. הענקת תפקידים נשארת קליק של בעלים בפאנל.</em></blockquote>
+  </section>
+
+  <div class="foot">
+    StrateTeach · דף ניהול פנימי · טיוטה לאישור הבעלים<br>
+    מסמך סודי — לא לשיתוף מחוץ למעגל הבעלים
+  </div>
+
+</div>
+</body>
+</html>

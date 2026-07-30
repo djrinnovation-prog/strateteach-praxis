@@ -1,0 +1,36 @@
+-- ============================================================================
+-- 010_reconciliation_dlq_select_grant.sql
+-- Sprint 3 / WB8 — grant service_role SELECT on reconciliation_jobs + trades_dlq
+--
+-- WHY: WB8 (boot reconciliation exercised) found the worker DETECTS stuck
+-- pending/unknown trades but FAILS to create reconciliation_jobs — every upsert
+-- raises 42501 (insufficient_privilege). 006_worker_grants granted these two
+-- tables INSERT/UPDATE only. The worker's PostgREST insert/upsert path also needs
+-- SELECT: PostgREST wraps writes in a source CTE that uses RETURNING, which
+-- requires SELECT on the table even when the client asks for return=minimal.
+-- This is proven empirically — the 42501 occurs against a role that already holds
+-- INSERT/UPDATE, so SELECT is the only missing privilege. trades_dlq carries the
+-- same INSERT-only gap (latent: never exercised, because no WB7 trade reached the
+-- DLQ); granting it here prevents an identical failure on first DLQ insert.
+--
+-- EVIDENCE (WB8, Railway deploy 6514786f, 2026-06-17):
+--   boot_reconciliation_complete stuck_count:2
+--   reconciliation_job_upsert_error error:42501   (x2 — pending + unknown seeds)
+--   reconciliation_jobs created = 0
+--   live grants: reconciliation_jobs/service_role = INSERT,UPDATE (no SELECT)
+--                trades_dlq/service_role           = INSERT       (no SELECT)
+--                trades/service_role               = SELECT,INSERT,UPDATE (works)
+--
+-- NUMBERING: this is 010, not 009. 009 is reserved for the in-progress
+-- security-hardening draft (frozen, not yet applied). This narrow grant fix is
+-- intentionally a separate, later migration so it ships without unfreezing,
+-- editing, or reordering 009. 010 does not depend on or modify 009.
+--
+-- SCOPE: additive GRANTs only. No table/column/RLS/data change. service_role has
+-- BYPASSRLS, so the missing SELECT is the only gap. Grants take effect immediately
+-- and are enforced per-request at query time, so no PostgREST schema reload is
+-- required.
+-- ============================================================================
+
+GRANT SELECT ON TABLE public.reconciliation_jobs TO service_role;
+GRANT SELECT ON TABLE public.trades_dlq          TO service_role;

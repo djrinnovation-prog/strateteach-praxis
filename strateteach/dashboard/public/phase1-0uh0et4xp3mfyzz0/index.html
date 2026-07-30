@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+<meta name="referrer" content="no-referrer" />
+<title>Phase 1 — שירות‑הביצוע המבודד · מפרט טכני · StrateTeach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1220; --bg2:#141a2e; --card:#161d33; --card2:#1b2340;
+    --ink:#eef2fb; --soft:#b7c0d8; --faint:#8590ad; --line:#2a3352;
+    --accent:#f7b500; --accent2:#7cc04e; --blue:#5cb3ff; --pink:#ec4899;
+    --gain:#39e08d; --loss:#ff6d7a;
+    --maxw:860px;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:
+      radial-gradient(60% 40% at 12% 0%, rgba(92,179,255,0.09), transparent 60%),
+      radial-gradient(50% 40% at 92% 4%, rgba(236,72,153,0.07), transparent 60%),
+      radial-gradient(60% 50% at 80% 100%, rgba(124,192,78,0.06), transparent 60%),
+      linear-gradient(170deg, #0e1220 0%, #10152a 60%, #0c1020 100%);
+    color:var(--ink);
+    font-family:"Heebo", "Segoe UI", "Assistant", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size:16px; line-height:1.7; letter-spacing:-0.003em;
+    padding:28px 16px 80px; min-height:100vh;
+  }
+  .wrap{ max-width:var(--maxw); margin:0 auto; }
+
+  /* header */
+  .head{
+    background:linear-gradient(160deg, var(--card2), var(--card));
+    border:1px solid var(--line); border-radius:20px; padding:26px 24px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,0.7);
+    position:relative; overflow:hidden;
+  }
+  .head::before{ content:""; position:absolute; inset:0 0 auto 0; height:4px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2) 45%, var(--blue)); }
+  .head h1{ font-size:1.62rem; font-weight:900; margin:6px 0 4px; line-height:1.28; letter-spacing:-0.01em; }
+  .head .sub{ font-size:1.02rem; font-weight:700; color:var(--soft); margin:0 0 14px; }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .chip{ font-size:0.82rem; font-weight:700; color:var(--soft);
+    background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:999px; padding:5px 12px; }
+  .chip b{ color:var(--ink); font-weight:800; }
+  .chip .st{ color:var(--accent); }
+
+  /* sections */
+  section{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:22px 22px; margin-top:18px;
+    box-shadow:0 18px 44px -34px rgba(0,0,0,0.7);
+  }
+  h2{ font-size:1.24rem; font-weight:900; margin:2px 0 14px; padding-bottom:12px;
+    border-bottom:1px solid var(--line); line-height:1.3; }
+  h2 .n{ display:inline-flex; align-items:center; justify-content:center;
+    min-width:30px; height:30px; padding:0 8px; margin-inline-end:10px; border-radius:9px;
+    background:rgba(247,181,0,0.14); color:var(--accent); font-size:0.95rem; font-weight:900; vertical-align:2px; }
+  h3{ font-size:1.05rem; font-weight:800; color:var(--soft); margin:0 0 10px; }
+
+  p{ margin:0 0 12px; }
+  strong,b{ color:#fff; font-weight:800; }
+  code{ font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size:0.88em; background:rgba(124,192,78,0.10); color:#cfe9b6;
+    border:1px solid rgba(124,192,78,0.22); border-radius:6px; padding:1px 6px; direction:ltr; unicode-bidi:isolate; }
+
+  ul,ol{ margin:0 0 10px; padding-inline-start:0; padding-inline-end:22px; }
+  li{ margin:0 0 9px; }
+  li::marker{ color:var(--accent); }
+
+  /* tables */
+  .tblwrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:6px 0 6px; border-radius:12px; border:1px solid var(--line); }
+  table{ border-collapse:collapse; width:100%; min-width:520px; font-size:0.94rem; }
+  thead th{ background:linear-gradient(180deg, #212a49, #1a2140); color:#fff; font-weight:800;
+    text-align:start; padding:11px 13px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody td{ padding:11px 13px; border-bottom:1px solid var(--line); color:var(--soft); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:nth-child(even) td{ background:rgba(255,255,255,0.015); }
+  tbody td:first-child{ color:var(--ink); font-weight:700; }
+  td strong, th strong{ color:#fff; }
+
+  /* code block */
+  pre{ background:#0b0f1e; border:1px solid var(--line); border-radius:12px; padding:16px 16px;
+    overflow-x:auto; direction:ltr; text-align:left; margin:8px 0 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04); }
+  pre code{ background:none; border:none; padding:0; color:#d7e2f5; font-size:0.82rem; line-height:1.6; white-space:pre; }
+
+  /* blockquote (notes) */
+  blockquote{ margin:10px 0 0; padding:14px 16px; border-inline-start:3px solid var(--accent);
+    background:rgba(247,181,0,0.06); border-radius:0 12px 12px 0; color:var(--soft); font-style:italic; }
+  blockquote em{ font-style:italic; }
+  blockquote a{ color:var(--blue); font-weight:700; text-decoration:none; border-bottom:1px solid rgba(92,179,255,0.4); }
+  blockquote a:hover{ border-bottom-color:var(--blue); }
+  .head blockquote{ margin-top:14px; font-style:normal; }
+
+  hr{ border:none; }
+
+  .foot{ text-align:center; color:var(--faint); font-size:0.8rem; margin-top:26px; line-height:1.6; }
+  .confidential{ display:inline-block; margin-bottom:6px; font-weight:800; color:var(--accent); letter-spacing:0.04em; font-size:0.78rem; }
+
+  @media (max-width:560px){
+    body{ font-size:15px; padding:18px 11px 64px; }
+    .head{ padding:20px 17px; border-radius:16px; }
+    .head h1{ font-size:1.34rem; }
+    section{ padding:18px 15px; border-radius:14px; }
+    h2{ font-size:1.12rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div class="confidential">● סודי · לעיני הבעלים בלבד</div>
+    <h1>Phase 1 — שירות‑הביצוע המבודד · מפרט טכני</h1>
+    <p class="sub">(Isolated Execution Service · Technical Spec) · טיוטה לאישור בעלים + אורן</p>
+    <div class="meta">
+      <span class="chip"><b>תאריך:</b> 2026‑07‑16</span>
+      <span class="chip"><b>בעלים:</b> דן · רפי · יואב</span>
+      <span class="chip"><b>מפעיל‑ביצוע:</b> אורן (תפקיד מתוחם)</span>
+      <span class="chip"><b>סטטוס:</b> <span class="st">טיוטה — לפני קוד</span></span>
+    </div>
+    <blockquote>נלווה ל<a href="https://app.strateteach.com/decision-5n3vawomgakx20yf/">דף‑ההחלטה</a>. כל מה שכאן נבנה <strong>DISARMED · testnet בלבד · אפס כסף‑אמיתי</strong>. המסמך לא מבצע כלום.</blockquote>
+  </header>
+
+  <section>
+    <h2><span class="n">0</span>עקרונות‑בטיחות (מוטבעים בקוד, לא אופציונליים)</h2>
+    <ol>
+      <li><strong>גייט‑ראשי <code>EXECUTION_ARMED=false</code></strong> — ברירת‑מחדל כבוי. שום הזמנה לא יוצאת כשהוא כבוי. הדלקה = פעולת‑בעלים מפורשת, לא שלי.</li>
+      <li><strong><code>ENVIRONMENT=testnet</code></strong> עד go‑live מפורש. mainnet חסום בקוד (env‑guard) — חשבון‑testnet לעולם לא נוגע ב‑credential של mainnet.</li>
+      <li><strong>הפרונט לא מחזיק מפתחות.</strong> מפתחות‑בורסה חיים <strong>רק</strong> בכספת צד‑שרת. אני (הסוכן) לא רואה, לא מזין, ולא נוגע במפתחות בשום שלב.</li>
+      <li><strong>Envelope‑only:</strong> הסיגנל נושא כוונה בלבד — לא כמות, לא סימבול חופשי, לא מפתח. הכמות מחושבת בצד‑שרת מה‑config.</li>
+      <li><strong>הון‑בעלים = 3‑מ‑3.</strong> כל arming/ביצוע על הקרן המשותפת דורש 3 אישורים מפורשים. אין ביצוע אוטונומי על כסף‑אמיתי.</li>
+      <li><strong>Kill‑switch + audit + reconciliation</strong> מהיום הראשון. כל פעולה נכתבת ל‑audit בלתי‑הפיך.</li>
+      <li><strong>הפרדה מוחלטת</strong> מכספי‑לקוחות ומ‑AutoPilots‑הדמו.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span>ארכיטקטורה (רכיבים)</h2>
+    <pre><code>StrateTeach (סורק / UI / advisory)                    שירות‑הביצוע (מבודד, בבעלות החברה)
+        │  כוונת‑מסחר (signal)                                │
+        └──►  Signal Ingress  ──HMAC──►  Queue  ──►  Worker  ──►  Vault(keys)  ──►  Exchange (ccxt, testnet)
+                    │                       │           │                              │
+                 dedup/                  durable     sizing/caps                     fills →
+                 freshness              (no loss)    kill‑switch                   reconciliation
+                    └──────────────────────────── audit_log (append‑only) ──────────────────────┘</code></pre>
+    <ul>
+      <li><strong>Signal Ingress</strong> — מקבל כוונת‑מסחר חתומה (HMAC). מאמת חתימה, dedup, freshness, rate‑limit. <strong>לא מבצע</strong> — רק מכניס לתור.</li>
+      <li><strong>Queue</strong> — עמיד (durable), בלי איבוד שקט. סמן‑התאוששות (sweeper) על כשל.</li>
+      <li><strong>Worker</strong> — תהליך <strong>נפרד</strong>. מושך מהתור, מחשב כמות (config), אוכף caps + גייט + env, שולף מפתח מהכספת, שולח הזמנה, כותב תוצאה + audit.</li>
+      <li><strong>Vault</strong> — כספת צד‑שרת למפתחות. הבעלים מזינים; ה‑worker בלבד קורא; שום מקום אחר.</li>
+      <li><strong>Audit / Reconciliation</strong> — כל אירוע נכתב; התאמה מול הבורסה (requested↔executed) לתפיסת סטיות.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>מודל‑דאטה (סכימת שכבת‑הביצוע — נפרד)</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>טבלה</th><th>תוכן</th><th>הערות</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>exec_bots</code></td><td>הגדרת בוט‑ביצוע: pair, fixed_notional, max_order_cap, daily_cap, env, <code>trading_enabled</code></td><td>policy = config, לא payload</td></tr>
+          <tr><td><code>exec_signals</code></td><td>סיגנלים נכנסים: <code>signal_id</code> (מקור, reject‑if‑absent), action, ts, status</td><td><code>UNIQUE(bot,signal_id)</code> = dedup</td></tr>
+          <tr><td><code>exec_orders</code></td><td>הזמנות: requested/executed qty, price, client_order_id, fills, state</td><td>מקור‑אמת לביצוע</td></tr>
+          <tr><td><code>exec_credentials</code></td><td><strong>הפניה</strong> לכספת (vault ref), env, owner — <strong>לא</strong> המפתח עצמו</td><td>מפתח לעולם לא ב‑DB בטקסט</td></tr>
+          <tr><td><code>exec_state</code></td><td>גייט‑ראשי, kill‑switch, worker heartbeat, env</td><td>fail‑closed</td></tr>
+          <tr><td><code>owner_fund</code></td><td>הקרן המשותפת: הפקדות per‑owner, אחוז‑בעלות, NAV</td><td>מנותק מכספי‑לקוחות · <strong>owner‑only (חסום מאורן)</strong></td></tr>
+          <tr><td><code>owner_approvals</code></td><td>בקשות‑ביצוע על הקרן + 3 האישורים</td><td>3‑מ‑3 gate · <strong>owner‑only (חסום מאורן)</strong></td></tr>
+          <tr><td><code>audit_log</code></td><td>append‑only: כל פעולה, מי/מה/מתי/before‑after</td><td>בלתי‑הפיך</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>חוזה‑הסיגנל (Signed Signal Contract)</h2>
+    <ul>
+      <li><strong>תחבורה:</strong> POST חתום HMAC‑SHA256 (מפתח‑חתימה צד‑שרת, מתחלף, לא ב‑UI).</li>
+      <li><strong>מטען (envelope‑only):</strong> <code>signal_id</code> (חובה, ממקור), <code>action</code> (buy/sell), אופציונלי <code>fire_time</code>/freshness.</li>
+      <li><strong>אסור במטען:</strong> מפתחות, כמות, חשבון, סימבול‑חופשי. הכמות והסימבול נקבעים בצד‑שרת מה‑<code>exec_bots</code>.</li>
+      <li><strong>תגובה:</strong> אחידה (200 לכל תוצאה עסקית, בלי דליפת‑מבנה). כשל‑תשתית = 5xx לפני הכתיבה (retry).</li>
+      <li><strong>הגנות:</strong> dedup (<code>signal_id</code>), חלון‑freshness, rate‑limit לכל בוט.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>גייט + סיכון + kill‑switch</h2>
+    <ul>
+      <li><strong>גייט‑ראשי:</strong> <code>EXECUTION_ARMED</code> (כבוי). כבוי → כל ביצוע no‑op עם audit.</li>
+      <li><strong>Env‑guard:</strong> <code>testnet</code> → אסור לגעת ב‑credential של <code>mainnet</code>.</li>
+      <li><strong>Caps (צד‑שרת, fail‑closed):</strong> per‑order notional, daily notional, מקסימום פוזיציות. חריגה = דחייה + audit.</li>
+      <li><strong>Kill‑switch:</strong> בכפתור אחד — <code>trading_enabled=false</code> לכל הבוטים + השהיית‑תור. מבוקר, כותב audit, לא מזיין‑מחדש לבד.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>מסלול הון‑הבעלים (הקרן המשותפת · 3‑מ‑3)</h2>
+    <pre><code>בקשת‑פעולה (owner) → 3 אישורים מפורשים → חלון‑זמן → ביצוע דרך ה‑worker → audit + reconciliation</code></pre>
+    <ul>
+      <li>קרן <strong>אחת</strong> משותפת; ledger הפקדות → אחוז‑בעלות → NAV; לכל בעל חלקו היחסי.</li>
+      <li><strong>בלי 3 אישורים — שום דבר לא זז.</strong> האישור נכתב ל‑<code>owner_approvals</code> + <code>audit_log</code>.</li>
+      <li>מנותק לחלוטין מכספי‑לקוחות.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>מפתחות / כספת</h2>
+    <ul>
+      <li>מפתחות‑בורסה: <strong>הבעלים מזינים ישירות לכספת צד‑שרת</strong> (לא דרכי, לא דרך ה‑UI‑הישן). ה‑worker בלבד קורא בזמן‑ביצוע.</li>
+      <li><strong>החלטה פתוחה (§10):</strong> בחירת הכספת — Vault / cloud‑KMS / הצפנה‑ברמת‑אפליקציה עם מפתח‑KMS. (המלצה: כספת ייעודית עם הפרדת‑הרשאות.)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>תפקיד אורן — "מפעיל‑ביצוע" (מתוחם)</h2>
+    <ul>
+      <li><strong>יכול:</strong> לנטר (dashboard/status), להגדיר בוטים (pair/caps בתוך המדיניות), להפעיל kill‑switch, לנהל את הפרויקט הזה.</li>
+      <li><strong>רואה את כל המבנה הפיננסי של המערכת:</strong> כספי‑חברה, מישור‑הביצוע כולו (<code>exec_bots</code>, <code>exec_orders</code>, <code>exec_signals</code>, <code>exec_state</code>, caps, reconciliation), תזרימי‑כסף ודוחות מבניים. הוא מנהל את המכונה הפיננסית.</li>
+      <li><strong>לא רואה — owner‑only:</strong> <code>owner_fund</code> ו‑<code>owner_approvals</code> — הקרן המשותפת, השקעות‑הבעלים <strong>וכל תנועותיהן</strong> (הפקדות, משיכות, מסחר על הון‑הבעלים, חלוקה/NAV, אישורי ה‑3‑מ‑3). ההון הפרטי של הבעלים ותנועותיו <strong>חסומים ממנו</strong> ברמת‑ההרשאות.</li>
+      <li><strong>לא יכול:</strong> בעלות‑IP, החזקת‑מפתחות מחוץ למערכת, arming על הון‑בעלים בלי 3‑מ‑3, שינוי governance.</li>
+      <li>הכול בתוך מערכת‑האם, עם audit לכל פעולה.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">8</span>תוכנית testnet (שערי‑אימות לפני mainnet)</h2>
+    <ol>
+      <li>Smoke: הזמנת‑testnet אחת, exactly‑once, caps מכובדים, disarm מיד.</li>
+      <li>קמפיין: N מילויים, dedup/freshness/rate‑limit, reconciliation ירוק.</li>
+      <li>Kill‑switch drill + rollback drill.</li>
+      <li>רק אז — שער go‑live נפרד (Phase 5), אישור‑בעלים בכתב + provenance/רישוי סגור.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">9</span>סדר הבנייה (slices, כל אחד disarmed)</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>Slice</th><th>מה נבנה</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>שלד השירות + סכימת‑DB + <code>exec_state</code> (גייט כבוי) + audit skeleton.</td></tr>
+          <tr><td><strong>2</strong></td><td>Signal Ingress + חוזה‑חתום + dedup/freshness (בלי worker).</td></tr>
+          <tr><td><strong>3</strong></td><td>Queue עמיד + sweeper.</td></tr>
+          <tr><td><strong>4</strong></td><td>Worker skeleton + sizing/caps + env‑guard (testnet mock, בלי מפתחות אמיתיים).</td></tr>
+          <tr><td><strong>5</strong></td><td>Vault‑ref + חיבור‑worker לכספת (מפתחות‑testnet, הבעלים מזינים).</td></tr>
+          <tr><td><strong>6</strong></td><td>Kill‑switch + reconciliation.</td></tr>
+          <tr><td><strong>7</strong></td><td>Owner‑fund ledger + זרימת 3‑מ‑3.</td></tr>
+          <tr><td><strong>8</strong></td><td>testnet smoke → campaign (שערי §8).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>פתוח / דורש החלטה</h2>
+    <ol>
+      <li><strong>מיקום:</strong> שירות נפרד (repo/deploy משלו) — מומלץ — או מודול מבודד בתוך ה‑backend הקיים לתחילת‑דרך.</li>
+      <li><strong>כספת:</strong> Vault / KMS / app‑encryption. (בעלים/אורן.)</li>
+      <li><strong>תור:</strong> pgmq (Postgres) או תור‑Python. (המלצה: pgmq — עמיד, פשוט.)</li>
+      <li><strong>סורק‑הסיגנלים:</strong> StrateTeach שולח כוונות דרך ה‑Ingress החתום (server‑side token).</li>
+    </ol>
+    <blockquote><em>טיוטה. לא מבצעת פעולה, לא מזיזה כסף, לא מדליקה mainnet. כל arming/go‑live/הזנת‑מפתחות = פעולת‑בעלים מפורשת, תחת 3‑מ‑3 להון‑בעלים.</em></blockquote>
+  </section>
+
+  <div class="foot">
+    StrateTeach · Phase 1 — מפרט טכני פנימי · טיוטה לאישור הבעלים + אורן<br>
+    מסמך סודי — לא לשיתוף מחוץ למעגל הבעלים
+  </div>
+
+</div>
+</body>
+</html>

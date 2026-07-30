@@ -1,0 +1,39 @@
+# Caddy terminates TLS (auto Let's Encrypt) for your domain.
+# API paths go to the FastAPI backend; everything else serves the React dashboard.
+# DOMAIN comes from .env. Requires: DNS A record -> this server, ports 80/443 open.
+{$DOMAIN} {
+	encode gzip
+
+	# Backend API surface (FastAPI routers + interactive docs).
+	# NOTE: bare /strategy /telegram /exchange /dashboard are NOT proxied here — they
+	# are SPA routes. The backend is only reached via their sub-paths (e.g. /dashboard/summary).
+	# NOTE: only the EXACT poll endpoints /design/vote and /design/results go to the
+	# backend — the static presentation pages (/design/, /design/index.html,
+	# /design/en.html) are NOT matched here and keep being served by the frontend.
+	# NOTE: /legal/*, /it/* AND /biz/* are ALL proxied — they are the three collaborator
+	# portals (Raz legal · Oren IT · Raful business-dev). Without /biz/* here, /biz/portal/*
+	# (incl. POST report/send) falls through to the static frontend and POSTs return 405.
+	@api path /healthz /system/* /auth/* /analytics/* /autopilots/* /audit/* /legal /legal/* /it /it/* /biz /biz/* /symbols/* /config/* /strategy/* /runs /runs/* /signals/* /telegram/* /exchange/* /portfolio/* /dashboard/* /design/vote /design/results /docs /docs/* /openapi.json /redoc /redoc/* /v1/*
+	handle @api {
+		reverse_proxy backend:5000
+	}
+
+	# /bots is BOTH an API path (POST /bots create, GET /bots, /bots/{id}/...) AND a
+	# client-side SPA route (the Signal Bots screen). Routing all /bots to the backend
+	# broke browser refresh (returned raw JSON); routing all to the SPA broke POST (405).
+	# Header-based split: the frontend client always sends `Authorization: Bearer <token>`
+	# on bot API calls, but browser page navigations/refreshes do NOT. So proxy to the
+	# backend ONLY when the Bearer header is present; otherwise fall through to the SPA.
+	@botsapi {
+		path /bots /bots/*
+		header Authorization Bearer*
+	}
+	handle @botsapi {
+		reverse_proxy backend:5000
+	}
+
+	# Everything else: the static React dashboard (SPA).
+	handle {
+		reverse_proxy frontend:80
+	}
+}

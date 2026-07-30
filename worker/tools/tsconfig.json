@@ -1,0 +1,14 @@
+{
+  "//": "Static typecheck for worker/tools/** only. Isolated from the trading build (../tsconfig.json builds src/** into dist). Run: npx tsc -p tools/tsconfig.json --noEmit",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./.tsc-tools-out",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}

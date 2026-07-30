@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Content-Security-Policy (defense-in-depth). The key protection is
+         `script-src 'self'` (+ Stripe): an injected inline <script> XSS payload can no
+         longer execute, so it can't read the bearer token / exchange keys out of
+         localStorage. Every other directive is set permissively enough to NOT break
+         what the app already loads: Google Fonts (stylesheet + files), inline theme
+         styles (`style-src 'unsafe-inline'`), data:/blob: images + media (avatars,
+         base64 music/demo clips), same-origin API/worker, and Stripe (pre-allowed
+         for the upcoming payments). index.html has no inline <script>, so 'self'
+         alone is sufficient — do NOT add 'unsafe-inline' to script-src. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://js.stripe.com https://s3.tradingview.com https://s.tradingview.com https://www.tradingview.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tradingview.com; media-src 'self' data: blob: https:; connect-src 'self' https://api.stripe.com https://js.stripe.com https://s3.tradingview.com https://s.tradingview.com https://www.tradingview.com https://*.tradingview.com; frame-src https://js.stripe.com https://s3.tradingview.com https://s.tradingview.com https://www.tradingview.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <title>Strateteach</title>
+    <meta name="description" content="Strateteach — algo trading, backtesting & profit engine." />
+    <meta property="og:title" content="Strateteach" />
+    <meta property="og:description" content="Strateteach — algo trading, backtesting & profit engine." />
+    <meta property="og:site_name" content="Strateteach" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://app.strateteach.com" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Strateteach" />
+    <meta name="twitter:description" content="Strateteach — algo trading, backtesting & profit engine." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Primary UI font: Rubik (reverted from Jost for readability) + Heebo (Hebrew
+         fallback). JetBrains Mono kept for numeric tickers/prices. CSP already allows
+         fonts.googleapis.com (style-src) + fonts.gstatic.com (font-src). -->
+    <!-- 'Baloo 2' 800 drives the CARVED wordmark titles (CarvedTitle) for Latin. Baloo 2
+         has NO Hebrew glyphs, so Hebrew titles use 'Fredoka' (rounded/chunky, HAS Hebrew) —
+         the closest match that carries the same 3D carve + white-cut recipe; 'Heebo' 900 is
+         the heavy Hebrew fallback if Fredoka's Hebrew subset is unavailable. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Heebo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Baloo+2:wght@800&family=Fredoka:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Lock the OUTER page. A percentage height chain (height:100%) cascades correctly
+         through `html { zoom }` — the large-text a11y mode sets zoom:1.15 (see theme.ts)
+         — whereas viewport units (100dvh/svh) do NOT scale with zoom and render ~15%
+         too tall. `overflow:hidden` here means html/body NEVER scroll: the app-shell
+         owns the single inner scroll region. This kills the empty scroll area below the
+         mobile tab bar and the zoom-driven bottom cut-off on long screens. */
+      html, body, #root { height: 100%; overflow: hidden; margin: 0; background: #F1F6FA; }
+      * { box-sizing: border-box; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

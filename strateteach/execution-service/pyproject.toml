@@ -1,0 +1,22 @@
+# Its own package, deliberately: the execution service is extractable to its
+# own repo/deploy (spec §10.1) without unpicking a shared dependency graph. It
+# does NOT depend on the main backend's package, and the main backend does not
+# depend on it.
+[project]
+name = "strateteach-execution-service"
+version = "0.1.0"
+description = "Isolated crypto execution service — Phase 1 slice 1 (DISARMED scaffold, testnet-only)"
+requires-python = ">=3.11"
+# Postgres only. No ccxt, no HTTP client: this slice reaches nothing but its
+# own database. An exchange dependency arrives with the adapter (slice 4+),
+# under owner review.
+dependencies = [
+    "psycopg[binary]>=3.3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

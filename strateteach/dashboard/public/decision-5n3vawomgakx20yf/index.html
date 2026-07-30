@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+<meta name="referrer" content="no-referrer" />
+<title>StrateTeach — דף החלטה · ארכיטקטורת גישה שכבתית + ניהול בעלים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1220; --bg2:#141a2e; --card:#161d33; --card2:#1b2340;
+    --ink:#eef2fb; --soft:#b7c0d8; --faint:#8590ad; --line:#2a3352;
+    --accent:#f7b500; --accent2:#7cc04e; --blue:#5cb3ff; --pink:#ec4899;
+    --gain:#39e08d; --loss:#ff6d7a;
+    --maxw:860px;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:
+      radial-gradient(60% 40% at 12% 0%, rgba(92,179,255,0.09), transparent 60%),
+      radial-gradient(50% 40% at 92% 4%, rgba(236,72,153,0.07), transparent 60%),
+      radial-gradient(60% 50% at 80% 100%, rgba(124,192,78,0.06), transparent 60%),
+      linear-gradient(170deg, #0e1220 0%, #10152a 60%, #0c1020 100%);
+    color:var(--ink);
+    font-family:"Heebo", "Segoe UI", "Assistant", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size:16px; line-height:1.7; letter-spacing:-0.003em;
+    padding:28px 16px 80px; min-height:100vh;
+  }
+  .wrap{ max-width:var(--maxw); margin:0 auto; }
+
+  /* header */
+  .head{
+    background:linear-gradient(160deg, var(--card2), var(--card));
+    border:1px solid var(--line); border-radius:20px; padding:26px 24px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,0.7);
+    position:relative; overflow:hidden;
+  }
+  .head::before{ content:""; position:absolute; inset:0 0 auto 0; height:4px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2) 45%, var(--blue)); }
+  .head h1{ font-size:1.62rem; font-weight:900; margin:6px 0 4px; line-height:1.28; letter-spacing:-0.01em; }
+  .head .sub{ font-size:1.02rem; font-weight:700; color:var(--soft); margin:0 0 14px; }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .chip{ font-size:0.82rem; font-weight:700; color:var(--soft);
+    background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:999px; padding:5px 12px; }
+  .chip b{ color:var(--ink); font-weight:800; }
+  .chip .st{ color:var(--accent); }
+
+  /* sections */
+  section{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:22px 22px; margin-top:18px;
+    box-shadow:0 18px 44px -34px rgba(0,0,0,0.7);
+  }
+  h2{ font-size:1.24rem; font-weight:900; margin:2px 0 14px; padding-bottom:12px;
+    border-bottom:1px solid var(--line); line-height:1.3; }
+  h2 .n{ display:inline-flex; align-items:center; justify-content:center;
+    min-width:30px; height:30px; padding:0 8px; margin-inline-end:10px; border-radius:9px;
+    background:rgba(247,181,0,0.14); color:var(--accent); font-size:0.95rem; font-weight:900; vertical-align:2px; }
+  h3{ font-size:1.05rem; font-weight:800; color:var(--soft); margin:0 0 10px; }
+
+  p{ margin:0 0 12px; }
+  strong,b{ color:#fff; font-weight:800; }
+  code{ font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size:0.88em; background:rgba(124,192,78,0.10); color:#cfe9b6;
+    border:1px solid rgba(124,192,78,0.22); border-radius:6px; padding:1px 6px; direction:ltr; unicode-bidi:isolate; }
+
+  ul,ol{ margin:0 0 10px; padding-inline-start:0; padding-inline-end:22px; }
+  li{ margin:0 0 9px; }
+  li::marker{ color:var(--accent); }
+
+  /* tables */
+  .tblwrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:6px 0 6px; border-radius:12px; border:1px solid var(--line); }
+  table{ border-collapse:collapse; width:100%; min-width:520px; font-size:0.94rem; }
+  thead th{ background:linear-gradient(180deg, #212a49, #1a2140); color:#fff; font-weight:800;
+    text-align:start; padding:11px 13px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody td{ padding:11px 13px; border-bottom:1px solid var(--line); color:var(--soft); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:nth-child(even) td{ background:rgba(255,255,255,0.015); }
+  tbody td:first-child{ color:var(--ink); font-weight:700; }
+  td strong, th strong{ color:#fff; }
+
+  /* code block */
+  pre{ background:#0b0f1e; border:1px solid var(--line); border-radius:12px; padding:16px 16px;
+    overflow-x:auto; direction:ltr; text-align:left; margin:8px 0 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04); }
+  pre code{ background:none; border:none; padding:0; color:#d7e2f5; font-size:0.82rem; line-height:1.6; white-space:pre; }
+
+  /* blockquote (footer note) */
+  blockquote{ margin:10px 0 0; padding:14px 16px; border-inline-start:3px solid var(--accent);
+    background:rgba(247,181,0,0.06); border-radius:0 12px 12px 0; color:var(--soft); font-style:italic; }
+  blockquote em{ font-style:italic; }
+
+  hr{ border:none; }
+
+  .foot{ text-align:center; color:var(--faint); font-size:0.8rem; margin-top:26px; line-height:1.6; }
+  .confidential{ display:inline-block; margin-bottom:6px; font-weight:800; color:var(--accent); letter-spacing:0.04em; font-size:0.78rem; }
+
+  @media (max-width:560px){
+    body{ font-size:15px; padding:18px 11px 64px; }
+    .head{ padding:20px 17px; border-radius:16px; }
+    .head h1{ font-size:1.34rem; }
+    section{ padding:18px 15px; border-radius:14px; }
+    h2{ font-size:1.12rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div class="confidential">● סודי · לעיני הבעלים בלבד</div>
+    <h1>StrateTeach — ארכיטקטורת גישה שכבתית + ניהול בעלים</h1>
+    <p class="sub">דף החלטה (Decision Record) · טיוטה לאישור הבעלים</p>
+    <div class="meta">
+      <span class="chip"><b>תאריך:</b> 2026‑07‑16</span>
+      <span class="chip"><b>בעלים:</b> דן · רפי · יואב</span>
+      <span class="chip"><b>סטטוס:</b> <span class="st">טיוטה — ממתין לחתימת 3 הבעלים</span></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span>ההחלטה (סיכום מנהלים)</h2>
+    <ul>
+      <li><strong>מערכת אחת, בבעלות מלאה של הבעלים.</strong> לא מפצלים לשתי פלטפורמות. כל הליבה — אסטרטגיה, UX, וגם הביצוע — יושבת תחת בעלות אחת ו‑governance אחד.</li>
+      <li><strong>בידוד‑הביצוע נשמר בתוך המערכת.</strong> כסף נסחר <strong>רק</strong> דרך שירות‑ביצוע מבודד (<code>signed message → queue → worker → Vault</code>), <strong>אף פעם לא ממפתחות שמוחזקים בדפדפן</strong>. זה העיקרון היחיד שאסור לוותר עליו.</li>
+      <li><strong>ממשק גישה שכבתי מסודר</strong> (4 שכבות, מטריצת הרשאות ברורה).</li>
+      <li><strong>מודול ניהול‑בעלים</strong> + <strong>שכבת השקעת‑בעלים</strong>: <strong>קרן משותפת אחת</strong>, חלוקה יחסית, <strong>אישור ביצוע 3‑מ‑3 (פה אחד)</strong>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>עקרונות‑על (Non‑negotiable)</h2>
+    <ol>
+      <li><strong>הפרדה מוחלטת בין כספי‑לקוחות לכספי‑בעלים</strong> — חשבונות, רשומות, דוחות ו‑P&amp;L נפרדים לגמרי. אף פעם לא מתערבבים.</li>
+      <li><strong>אין מסלול ביצוע ישיר מהדפדפן.</strong> מפתחות‑בורסה חיים <strong>רק</strong> ב‑Vault צד‑שרת. הפרונט לא מחזיק מפתחות ולא קורא ל‑<code>create_order</code>.</li>
+      <li><strong>כל ביצוע על הון‑הבעלים דורש אישור 3‑מ‑3 מפורש.</strong> אין ביצוע אוטונומי, אין עקיפה.</li>
+      <li><strong>Kill‑switch + audit מלא + גבולות</strong> (per‑order cap, daily cap) + <strong>הפרדת סביבות</strong> (testnet → mainnet, gated).</li>
+      <li><strong>mainnet/כסף‑אמיתי חסום</strong> עד שכל שערי‑הבטיחות + שאלות ה‑provenance/רישוי נסגרים בכתב.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>שכבות הגישה (Access Layers)</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>שכבה</th><th>מי</th><th>רואה / עושה</th><th>כספים</th><th>ביצוע</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>0 · דמו/ציבורי</strong></td><td>מבקרים, דמו</td><td>סימולציה, שיווק, למידה</td><td>אין</td><td>סימולציה בלבד</td></tr>
+          <tr><td><strong>1 · לקוח</strong></td><td>משתמשי‑קצה</td><td>התיק שלו, מנוע, סיגנלים, למידה</td><td>החשבון שלו בלבד</td><td>דרך שירות‑הביצוע המבודד</td></tr>
+          <tr><td><strong>2א · IT / מפעיל‑ביצוע</strong></td><td>אורן</td><td><strong>כל המבנה הפיננסי של המערכת</strong>: כספי‑חברה, מישור‑הביצוע (בוטים, הזמנות, caps, reconciliation), תזרימי‑כסף, דוחות מבניים</td><td><strong>גישה למבנה הפיננסי</strong> — <strong>למעט הקרן המשותפת והשקעות‑הבעלים ותנועותיהן (owner‑only, חסום ממנו)</strong></td><td>תפעול הביצוע בלבד; <strong>אין arming על הון‑בעלים</strong></td></tr>
+          <tr><td><strong>2ב · צוות/משתפים</strong></td><td>משפטי (ראז) · עסקי · תוכן</td><td>רק הפורטל של הדומיין שלו</td><td><strong>אין גישה לכספים</strong></td><td>אין</td></tr>
+          <tr><td><strong>3 · בעלים</strong></td><td>דן · רפי · יואב</td><td>הכול: קונסולת ניהול, כספי‑חברה, governance, <strong>שכבת השקעת‑הבעלים</strong></td><td>כספי‑חברה + <strong>הקרן המשותפת (בלעדי לבעלים)</strong></td><td>הון‑בעלים — <strong>רק ב‑3‑מ‑3</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>בונה על מודל‑התפקידים הקיים (<code>isOwner</code> / <code>isFullViewer</code> / <code>it_editor</code> / <code>legal_editor</code> / …) — מסדר אותו לשכבות נקיות עם מטריצה מפורשת, בלי לשבור את מה שכבר עובד.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>מודול ניהול‑בעלים (שכבה 3)</h2>
+    <p>הרחבה של פורטל הבעלים הקיים (<code>/owners</code>):</p>
+    <ul>
+      <li><strong>כספי‑חברה</strong> (הכנסות, הוצאות, budget) — owner‑only.</li>
+      <li><strong>Governance / הצבעות</strong> — החלטות, אישורים, יומן‑החלטות (Decision Log פנימי).</li>
+      <li><strong>ניהול תפקידים</strong> — הענקת/שינוי גישה (הפאנל הקיים).</li>
+      <li><strong>דוחות</strong> — עסקי + השקעה.</li>
+      <li><strong>שכבת השקעת‑הבעלים</strong> ↓</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>שכבת השקעת‑הבעלים — הקרן המשותפת</h2>
+    <ul>
+      <li><strong>מבנה:</strong> <strong>קרן אחת משותפת</strong> (דן+רפי+יואב). לא חשבון נפרד לכל אחד.</li>
+      <li><strong>בעלות יחסית:</strong> ledger של הפקדות לכל בעל → אחוז‑בעלות יחסי בקרן. NAV משותף; לכל בעל מוצג חלקו היחסי.</li>
+      <li><strong>הפקדות/משיכות:</strong> מתועדות ומבוקרות (מי, כמה, מתי). משיכה = פעולה מבוקרת (לא כאן בטיוטה — נסגור מדיניות בהמשך).</li>
+      <li><strong>ביצוע על הון‑הקרן (arm/trade):</strong> <strong>פה אחד, 3‑מ‑3.</strong> הזרימה:<br>
+        <code>הצעת‑פעולה → 3 אישורים מפורשים → חלון‑זמן → ביצוע דרך שירות‑הביצוע המבודד → audit + התאמה (reconciliation)</code>.<br>
+        ללא 3 אישורים — שום דבר לא זז.</li>
+      <li><strong>דוחות:</strong> ביצועים, חלוקה, P&amp;L של הקרן, וחלק יחסי לכל בעל.</li>
+      <li><strong>הפרדה:</strong> מנותק לחלוטין מכספי‑לקוחות <strong>ומ‑AutoPilots‑הדמו</strong> (שנשארים סימולציה).</li>
+      <li><strong>owner‑only — כולל מול אורן:</strong> הקרן המשותפת, השקעות‑הבעלים <strong>וכל תנועותיהן</strong> (הפקדות, משיכות, מסחר על הון‑הבעלים, חלוקה/NAV, אישורי ה‑3‑מ‑3) גלויות <strong>לשלושת הבעלים בלבד</strong>. אורן מנהל את המכונה הפיננסית (שכבה 2א) אך ההון הפרטי של הבעלים ותנועותיו <strong>חסומים ממנו</strong>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>ארכיטקטורת הביצוע הבטוחה (המנוע שמאחורי הכול)</h2>
+    <p>הדפוס (מוכח, כפי שראינו ב‑Praxis — כאן <strong>בבעלותכם</strong>):</p>
+    <pre><code>פרונט (בלי מפתחות)  →  הודעה חתומה (HMAC)  →  תור (queue)  →  worker  →  מפתחות מ‑Vault  →  בורסה
+                                                                   ↑
+                                       sizing/caps בצד‑שרת · kill‑switch · audit · reconciliation</code></pre>
+    <ul>
+      <li><strong>Envelope‑only:</strong> הפרונט/הסיגנל שולח כוונה (signal + action), <strong>לא</strong> כמות, <strong>לא</strong> מפתחות. הכמות מחושבת בצד‑שרת מה‑config.</li>
+      <li><strong>מקור הקוד — 2 דרכים (החלטת בעלים, §8):</strong> (א) להביא את עבודת‑הביצוע של Praxis תחת בעלותכם (<strong>IP assignment</strong> — שומר את ההקשחה שכבר נבדקה ב‑testnet) · (ב) לבנות in‑house לפי אותו דפוס (Praxis = שרטוט‑ייחוס). מומלץ (א) אם ה‑IP ניתן להעברה — זול ובטוח יותר מ‑rewrite.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>שלבי הבנייה (Strangler‑Fig · בטיחות ראשונה)</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>מה</th><th>למה עכשיו</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>0</strong></td><td><strong>להקפיא את מסלול‑הביצוע‑מהדפדפן</strong> ב‑StrateTeach → advisory‑only / route‑to‑service. הגייט החי נשאר כבוי.</td><td>הכי דחוף — סוגר את הסיכון הגדול היום (מפתחות בדפדפן)</td></tr>
+          <tr><td><strong>1</strong></td><td><strong>שירות‑הביצוע המבודד</strong> (signed→queue→worker→Vault) + kill‑switch + audit + testnet</td><td>הליבה הבטוחה שהכול נשען עליה</td></tr>
+          <tr><td><strong>2</strong></td><td><strong>שכבות הגישה + מטריצת הרשאות</strong> (מסדר את role‑model הקיים)</td><td>ממשק‑הגישה המסודר שביקשתם</td></tr>
+          <tr><td><strong>3</strong></td><td><strong>מודול ניהול‑בעלים + הקרן המשותפת</strong> (ledger, NAV, דוחות, הפרדה מלאה)</td><td>ניהול‑הבעלים + הון‑הבעלים</td></tr>
+          <tr><td><strong>4</strong></td><td><strong>זרימת אישור 3‑מ‑3</strong> לביצוע על הון‑הקרן</td><td>ה‑governance של הכסף</td></tr>
+          <tr><td><strong>5</strong></td><td><strong>mainnet go‑live — gated</strong></td><td>רק אחרי שכל שער‑בטיחות + provenance/רישוי נסגרו</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">8</span>פתוח / דורש חתימת/החלטת בעלים</h2>
+    <ol>
+      <li><strong>IP של Praxis</strong> — assignment לחברה (מועדף) או build in‑house. עין של עו״ד (ראז) על ההקצאה בכתב.</li>
+      <li><strong>provenance + רישוי של המנוע/אסטרטגיות</strong> (שאלות S1–S7) — חסם מסחרי אמיתי, לא ניתן לעקוף עם ארכיטקטורה.</li>
+      <li><strong>מדיניות הפקדה/משיכה</strong> מהקרן המשותפת (מי מאשר משיכה, חלון‑זמן).</li>
+      <li><strong>אישור סופי</strong> לפני כל מעבר ל‑mainnet/כסף‑אמיתי.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">9</span>הצעד המיידי</h2>
+    <p><strong>Phase 0</strong> — להפוך את StrateTeach ל‑advisory ולנתב כל ביצוע לשירות המבודד, עם הגייט החי כבוי. שינוי קטן, תשואת‑בטיחות עצומה, ובלי סיכון לכסף. ממתין לאישורכם כדי להתחיל.</p>
+    <blockquote><em>מסמך זה הוא טיוטה לאישור. אינו מבצע שום פעולה, אינו מזיז כסף, ואינו מפעיל mainnet. כל ביצוע נשאר תחת אישור מפורש שלכם.</em></blockquote>
+  </section>
+
+  <div class="foot">
+    StrateTeach · דף החלטה פנימי · טיוטה לאישור הבעלים<br>
+    מסמך סודי — לא לשיתוף מחוץ למעגל הבעלים
+  </div>
+
+</div>
+</body>
+</html>

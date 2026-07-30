@@ -1,0 +1,343 @@
+/* Global UI consistency — applies uniform interaction feedback across every
+   screen without touching each component (UX-audit: button/state consistency). */
+
+:root { color-scheme: dark; }
+
+/* Bound the page scroll to its CONTENT. Without this, iOS Safari's elastic
+   "rubber-band" over-scroll lets you drag PAST the end of the page into an empty
+   void (the body background shows through as a black band) and momentarily floats
+   `position: fixed` chrome — most visibly the persistent bottom tab bar — away from
+   the viewport edge. `overscroll-behavior: none` removes that elastic overshoot so
+   the scroll stops exactly at the content and the fixed bottom bar always stays put.
+   (This was reported on /bots, but the cause is the shared document scroll, so the
+   boundary is applied app-wide.) */
+html, body { overscroll-behavior: none; }
+
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* ── ♿ Reduce motion — OPT-IN only (toggled from the accessibility panel, which sets
+   `html.a11y-reduce-motion`). This is the canonical, safe reduce-motion snippet: it
+   neutralises animation + transition + smooth-scroll ONLY. It NEVER touches position,
+   display, pointer-events, opacity or layout, so — unlike the reverted full-screen
+   accessibility overlay that froze prod — it categorically cannot cover the page or
+   trap clicks; it just stops motion. Gated behind the opt-in class so default users
+   are completely unaffected. */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* consistent button feedback everywhere */
+button { transition: filter .15s ease, transform .06s ease, box-shadow .15s ease; }
+button:not(:disabled):hover { filter: brightness(1.08); }
+button:not(:disabled):active { transform: translateY(1px); }
+button:disabled { cursor: default; }
+
+/* ── One canonical CLEAN, FLAT button — skin- & mode-aware via the --btn-* vars
+   set in theme.ts (applyThemePrefs): a solid accent fill + a darker accent border
+   so the button pops. No gloss, no sheen, no glow — just a clean flat surface.
+   Put className="gbtn" on any accent/action button; inline borderRadius / padding /
+   font-size stay (only fill, border and ink are enforced), so it drops in without
+   breaking layout, in light + dark and in RTL. */
+.gbtn {
+  background: var(--btn-bg) !important;
+  border: 1px solid var(--btn-bd) !important;
+  color: var(--btn-ink) !important;
+  box-shadow: none !important;
+}
+.gbtn:disabled { opacity: .5; }
+.gbtn svg { color: var(--btn-ink); }
+
+/* Semantic variants — SAME flat structure (fill, darker border, radius), only the
+   hue changes: destructive stays red, success stays green, across every skin.
+   Use together with the base class, e.g. className="gbtn gbtn-loss". */
+.gbtn-loss {
+  background: var(--btn-loss-bg) !important;
+  border-color: var(--btn-loss-bd) !important;
+  color: var(--btn-loss-ink) !important;
+}
+.gbtn-loss svg { color: var(--btn-loss-ink); }
+.gbtn-gain {
+  background: var(--btn-gain-bg) !important;
+  border-color: var(--btn-gain-bd) !important;
+  color: var(--btn-gain-ink) !important;
+}
+.gbtn-gain svg { color: var(--btn-gain-ink); }
+
+/* ── Premium tile-family finish — layer on top of .gbtn / .gbtn-gain (or any button)
+   so the top-of-Home action buttons read as the SAME design family as the social
+   springboard tiles below: a tile-family corner radius, a clearer 1.5px accent
+   border and soft depth (inner top highlight + inner bottom shade + a soft drop
+   shadow). It is NOT social-brand coloured — the fill stays the active skin's
+   --btn-* accent (or whatever inline fill the button carries). Declared AFTER .gbtn
+   so its box-shadow wins the !important cascade against .gbtn's flat `none`. */
+.ptile {
+  border-radius: 14px !important;
+  border-width: 1.5px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -11px 22px -14px rgba(0, 0, 0, 0.34),
+    0 9px 22px -13px rgba(0, 0, 0, 0.34) !important;
+}
+.ptile:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.06); }
+.ptile:not(:disabled):active { transform: translateY(0) scale(.99); }
+
+/* ── LIQUID GLASS — CLEAR wet glass, high-shine, animated (STAGE 1, mobile-performant) ──
+   REFRAME (Dan): "liquid" = the WET / flowing / high-shine / LIVING quality (not refraction,
+   impossible on mobile). This pass pushes it CLEARER + more premium: a mostly SEE-THROUGH
+   frosted-clear body (strong backdrop-blur so it reads as clear water, not muddy tint), a
+   bigger/brighter wet reflection, a livelier shimmer, a more vivid accent pool at the base,
+   a crisper bright rim + deeper floating shadow. Pure CSS (gradients + one transform/opacity
+   keyframe + backdrop-blur, NO heavy url() filters) → same on phones as desktop.
+
+   LEGIBILITY WITH A CLEAR BODY: because the body is see-through, a MODE-AWARE contrast veil
+   (a soft radial behind the centre — DARK in dark mode, LIGHT in light mode) sits behind the
+   icon/label so text stays readable over whatever shows through / the Home texture. Combined
+   with the strong blur + the wet highlights, the label holds contrast on both dark and Peach.
+
+   MODE-AWARE via [data-mode]. Content crisp: highlight + shimmer + veil all BEHIND the label
+   (isolate + z-index:-1 / bg layers). Declared AFTER .ptile so !important wins. */
+@keyframes lq-shimmer {
+  0%   { transform: translate3d(-24%, -8%, 0) scale(1);    opacity: .5; }
+  50%  { transform: translate3d(26%, 6%, 0)   scale(1.2);  opacity: .92; }
+  100% { transform: translate3d(-24%, -8%, 0) scale(1);    opacity: .5; }
+}
+.lqglass {
+  position: relative;
+  isolation: isolate;
+  border-radius: clamp(18px, 30%, 40px) !important;        /* very rounded → blobby/wet form */
+  /* CLEAR wet glass: vivid accent pool at the base · a dark contrast-veil behind the centre ·
+     a mostly see-through glossy body (strong blur behind reads as clear water, not muddy tint). */
+  background:
+    radial-gradient(128% 84% at 50% 120%,
+      color-mix(in srgb, var(--btn-bg) 85%, transparent) 0%,
+      color-mix(in srgb, var(--btn-bg) 30%, transparent) 34%,
+      transparent 62%),                                    /* VIVID ACCENT LIQUID POOL at the base */
+    radial-gradient(102% 90% at 50% 56%,
+      rgba(0,0,0,0.34) 0%, rgba(0,0,0,0.12) 44%, transparent 76%),  /* text contrast-veil (dark mode) */
+    linear-gradient(179deg,
+      rgba(255,255,255,0.26) 0%,
+      rgba(255,255,255,0.06) 26%,
+      rgba(255,255,255,0) 52%,
+      rgba(8,10,18,0.12) 100%) !important;                 /* mostly-clear glossy body */
+  -webkit-backdrop-filter: blur(16px) saturate(1.9) !important;   /* STRONG frost → clear, not muddy */
+  backdrop-filter: blur(16px) saturate(1.9) !important;
+  border-color: color-mix(in srgb, var(--btn-bg) 34%, #ffffff) !important;  /* crisp bright wet rim */
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.9),                                   /* crisp bright top-edge shine */
+    inset 0 0 0 1px rgba(255,255,255,0.24),                                  /* crisp inner glass ring */
+    inset 0 26px 38px -22px rgba(255,255,255,0.62),                          /* big soft inner top gloss */
+    inset 0 -12px 28px -8px color-mix(in srgb, var(--btn-bg) 66%, transparent), /* vivid accent glow pooling up */
+    0 0 28px -4px color-mix(in srgb, var(--btn-bg) 55%, transparent),        /* outer accent halo */
+    0 26px 52px -14px rgba(0,0,0,0.55) !important;                           /* deep floating drop shadow */
+  transition: box-shadow .2s ease, filter .2s ease, transform .16s ease !important;
+}
+/* BIG BRIGHT WET highlight — large high-contrast reflection across the top (the wet read) */
+.lqglass::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(122% 84% at 50% -28%,
+      rgba(255,255,255,0.88) 0%,
+      rgba(255,255,255,0.44) 20%,
+      rgba(255,255,255,0.12) 44%,
+      rgba(255,255,255,0) 68%);
+}
+/* LIVING shimmer — a bright soft blob that drifts + breathes across the surface (compositor-only) */
+.lqglass::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  left: -16%;
+  top: -26%;
+  width: 82%;
+  height: 104%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,0.44) 0%, rgba(255,255,255,0.15) 46%, rgba(255,255,255,0) 72%);
+  animation: lq-shimmer 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.lqglass:not(:disabled):hover {
+  filter: brightness(1.1) saturate(1.14);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.95),
+    inset 0 0 0 1px rgba(255,255,255,0.30),
+    inset 0 28px 40px -22px rgba(255,255,255,0.72),
+    inset 0 -14px 32px -8px color-mix(in srgb, var(--btn-bg) 76%, transparent),
+    0 0 36px -4px color-mix(in srgb, var(--btn-bg) 66%, transparent),
+    0 32px 60px -14px rgba(0,0,0,0.6) !important;
+}
+.lqglass:not(:disabled):active {
+  transform: scale(.985);
+  box-shadow:
+    inset 0 3px 13px rgba(0,0,0,0.44),
+    inset 0 -12px 26px -8px color-mix(in srgb, var(--btn-bg) 66%, transparent),
+    0 0 22px -4px color-mix(in srgb, var(--btn-bg) 58%, transparent),
+    0 8px 18px -10px rgba(0,0,0,0.5) !important;
+}
+/* LIGHT skins (Peach / Nude): clear body over a light page + a LIGHT contrast-veil behind the
+   text so the dark label reads; the big top gloss + vivid accent pool + deep shadow carry it. */
+:root[data-mode="light"] .lqglass {
+  background:
+    radial-gradient(128% 84% at 50% 120%,
+      color-mix(in srgb, var(--btn-bg) 78%, transparent) 0%,
+      color-mix(in srgb, var(--btn-bg) 26%, transparent) 34%,
+      transparent 62%),
+    radial-gradient(102% 90% at 50% 56%,
+      rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.26) 44%, transparent 76%),  /* light text veil */
+    linear-gradient(179deg,
+      rgba(255,255,255,0.46) 0%,
+      rgba(255,255,255,0.16) 30%,
+      rgba(255,255,255,0.04) 58%,
+      rgba(150,154,170,0.08) 100%) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lqglass::after { animation: none; }
+}
+
+/* ── Liquid-glass CARD variant (extends .lqglass for PANELS) ───────────────────
+   .lqglass is tuned for pill BUTTONS (blobby radius + accent body). Panels need a
+   legible, mostly-opaque body PLUS the same glossy language: a crisp top-edge shine,
+   a soft inner top gloss, a subtle accent RIM + halo, and a deep floating shadow.
+   The card keeps its own inline background (C.surface + a faint top-gloss gradient)
+   for text legibility; this class only adds the glass rim + gloss + shadow. The
+   accent (var(--btn-bg)) drives the rim so it re-skins with the palette. Mode-aware. */
+.lqcard {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--btn-bg) 30%, rgba(255,255,255,0.34)) !important;
+  box-shadow:
+    inset 0 1.4px 0 rgba(255,255,255,0.55),                                    /* crisp bright top-edge shine */
+    inset 0 24px 42px -32px rgba(255,255,255,0.5),                             /* soft inner top gloss */
+    inset 0 -18px 36px -22px color-mix(in srgb, var(--btn-bg) 24%, transparent), /* accent glow pooling up from base */
+    0 0 24px -8px color-mix(in srgb, var(--btn-bg) 26%, transparent),          /* outer accent rim halo */
+    0 20px 46px -24px rgba(0,0,0,0.5) !important;                              /* deep floating drop shadow */
+}
+:root[data-mode="light"] .lqcard {
+  border-color: color-mix(in srgb, var(--btn-bg) 24%, rgba(0,0,0,0.10)) !important;
+  box-shadow:
+    inset 0 1.4px 0 rgba(255,255,255,0.95),
+    inset 0 24px 42px -32px rgba(255,255,255,0.8),
+    inset 0 -18px 36px -24px color-mix(in srgb, var(--btn-bg) 16%, transparent),
+    0 0 20px -10px color-mix(in srgb, var(--btn-bg) 20%, transparent),
+    0 16px 40px -24px rgba(0,0,0,0.2) !important;
+}
+
+/* ── /overview LIGHT dashboard — Option 7 "clear 3D COLOURED glass on LIGHT" (Dan) ──────
+   Scoped to the dashboard's OWN light surface (.o7dash), independent of the app skin (the
+   dashboard stays light even on dark skins). Clear/translucent coloured glass with DIAMOND
+   edges (sharp glints + prismatic chromatic rim + bright girdle), a darker inner CORE so
+   WHITE text reads, per-section HUE via --h ("r,g,b" triplet; buttons inherit their card's).
+   Ported from dashboard/public/glass Option 7. */
+.o7dash {
+  --h: 99,102,241;                       /* default hue (inherited by cards/buttons w/o their own) */
+  background:
+    radial-gradient(52% 46% at 10% 0%, rgba(99,102,241,0.10), transparent 60%),
+    radial-gradient(50% 46% at 92% 6%, rgba(236,72,153,0.08), transparent 60%),
+    radial-gradient(56% 52% at 82% 100%, rgba(16,185,129,0.08), transparent 60%),
+    linear-gradient(165deg, #f5f7fb 0%, #e9edf4 55%, #dfe4ee 100%);   /* the dedicated LIGHT surface */
+}
+/* CLEAN glossy coloured glass CARD — deep per-hue body + ONE soft top gloss + a simple glossy
+   rounded rim (crisp bright top edge + soft dark bottom) + a soft floating shadow. No streaks,
+   glints, chromatic fringe, extruded stack or multi-layer bevel — elegant, not busy. */
+.o7card {
+  position: relative; color: #fff;
+  background:
+    /* ONE clean soft top gloss sheen (fades cleanly) */
+    linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 13%, rgba(255,255,255,0) 30%),
+    /* deep per-hue coloured glass body — gently brighter at the top (soft dome), deeper at the rim */
+    radial-gradient(125% 108% at 50% 6%,
+      color-mix(in srgb, rgb(var(--h)) 46%, rgb(8,10,20)) 0%,
+      color-mix(in srgb, rgb(var(--h)) 38%, rgb(5,7,14)) 56%,
+      color-mix(in srgb, rgb(var(--h)) 24%, rgb(3,4,10)) 100%);
+  -webkit-backdrop-filter: blur(9px) saturate(1.6);
+  backdrop-filter: blur(9px) saturate(1.6);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.55),      /* single crisp bright TOP edge */
+    inset 0 -1.5px 0 rgba(0,0,0,0.3),            /* soft dark BOTTOM edge (gentle 3D) */
+    inset 0 0 0 1px rgba(255,255,255,0.12),      /* faint glossy rim */
+    0 0 0 1px rgba(var(--h),0.22),               /* subtle hue rim */
+    0 18px 40px -18px rgba(12,15,34,0.5);        /* soft floating drop shadow */
+}
+/* CLEAN glossy coloured glass PILL button — inherits its card's --h; same simple treatment */
+.o7btn {
+  position: relative; color: #fff; cursor: pointer; font-family: inherit;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.07) 18%, rgba(255,255,255,0) 42%),
+    radial-gradient(120% 100% at 50% 10%,
+      color-mix(in srgb, rgb(var(--h)) 48%, rgb(8,10,20)) 0%,
+      color-mix(in srgb, rgb(var(--h)) 40%, rgb(5,7,14)) 58%,
+      color-mix(in srgb, rgb(var(--h)) 26%, rgb(3,4,10)) 100%);
+  -webkit-backdrop-filter: blur(6px) saturate(1.7);
+  backdrop-filter: blur(6px) saturate(1.7);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.68),      /* crisp bright top edge */
+    inset 0 -1.5px 0 rgba(0,0,0,0.32),           /* soft dark bottom edge */
+    inset 0 0 0 1px rgba(255,255,255,0.16),      /* faint rim */
+    0 0 0 1px rgba(var(--h),0.3),                /* subtle hue rim */
+    0 10px 22px -10px rgba(12,15,34,0.5);        /* soft drop shadow */
+  transition: filter .16s ease, transform .12s ease;
+}
+.o7btn:not(:disabled):hover { filter: brightness(1.06); }
+.o7btn:not(:disabled):active { transform: translateY(1px); }
+
+/* visible keyboard focus for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--btn-bd, #F7931A);
+  outline-offset: 2px;
+}
+
+/* ── Mobile tap targets — Apple HIG minimum 44×44px ───────────────────────────
+   Scoped to touch devices (coarse pointer) so desktop layouts are untouched.
+   Two tools:
+   • The primary/action button tiers (.gbtn / .ptile) and the segmented option
+     chips (.seg-opt) simply grow to a 44px MIN height — they have the room.
+   • SMALL icon controls (header toggles, close "×", chevrons, the language /
+     skin chips, back buttons) must stay visually tight, so `.tap44` keeps the
+     icon its size and lays an INVISIBLE, centered ≥44×44 hit box over it via a
+     ::before. The visual stays compact; the touchable area meets 44px. Centered,
+     so it's RTL-safe; transparent, so it never alters the look. Works whether the
+     host button is statically or absolutely positioned (close "×" buttons). */
+@media (pointer: coarse) {
+  .gbtn, .ptile, .seg-opt { min-height: 44px; }
+  .tap44 { position: relative; }
+  .tap44::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+    min-width: 44px;
+    min-height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+::selection { background: rgba(247, 147, 26, 0.3); }
+
+/* tidy, slim scrollbars to match the dark theme */
+* { scrollbar-width: thin; scrollbar-color: #2a2230 transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-thumb { background: #2a2230; border-radius: 6px; }
+*::-webkit-scrollbar-thumb:hover { background: #3a3040; }
+
+/* opt-in: fully hide the scrollbar on compact horizontal strips (e.g. the shared
+   editable top-shortcuts row) so the pills read as a clean, edge-to-edge track */
+.algo770-noscroll { scrollbar-width: none; -ms-overflow-style: none; }
+.algo770-noscroll::-webkit-scrollbar { width: 0; height: 0; display: none; }

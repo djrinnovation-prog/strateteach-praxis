@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>QA Kit — widget + setup</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0d0f14; color: #e9edf6;
+    font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; line-height: 1.55;
+    -webkit-text-size-adjust: 100%; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 18px 16px 64px; }
+  h1.top { font-size: 22px; margin: 6px 0 2px; }
+  .sub { color: #9aa4bd; font-size: 13px; margin-bottom: 18px; }
+  .card { background: #14171f; border: 1px solid #262b38; border-radius: 14px; padding: 14px 16px; margin: 16px 0; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 4px; }
+  button.act { appearance: none; border: none; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-weight: 700;
+    background: #5b6cff; color: #fff; cursor: pointer; }
+  button.ghost { background: transparent; color: #b9c2d6; border: 1px solid #333a49; }
+  button.act:active { transform: scale(.98); }
+  .guide h1 { font-size: 20px; margin: 18px 0 8px; }
+  .guide h2 { font-size: 17px; margin: 20px 0 6px; color: #cdd6ea; }
+  .guide h3 { font-size: 14px; margin: 14px 0 4px; color: #aeb6c8; }
+  .guide p { margin: 7px 0; }
+  .guide ul { margin: 6px 0 6px 2px; padding-left: 20px; }
+  .guide li { margin: 4px 0; }
+  .guide code { background: #1e2330; border: 1px solid #2c3444; border-radius: 5px; padding: 1px 5px; font-size: 12.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .guide pre.cb { background: #0b0d12; border: 1px solid #262b38; border-radius: 10px; padding: 10px 12px; overflow-x: auto; }
+  .guide pre.cb code { background: none; border: none; padding: 0; color: #cfe0ff; }
+  pre.code { background: #0b0d12; border: 1px solid #262b38; border-radius: 12px; padding: 12px 14px;
+    max-height: 62vh; overflow: auto; margin: 0; }
+  pre.code code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5;
+    white-space: pre; color: #d7e2f5; }
+  .hint { color: #7d879b; font-size: 12px; }
+  .ok { color: #57d38c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="top">QA Kit</h1>
+  <div class="sub">The floating QA widget + its setup guide. Copy the code, download the files, or read the guide — all on your phone.</div>
+
+  <div class="card">
+    <div class="bar">
+      <button class="act" id="dl-tsx">⬇ Download QaWidget.tsx</button>
+      <button class="act ghost" id="dl-md">⬇ Download guide.md</button>
+    </div>
+    <div class="hint">Downloads use in-browser Blobs — they work on mobile Safari/Chrome.</div>
+  </div>
+
+  <div class="card">
+    <div class="bar" style="justify-content: space-between;">
+      <b style="font-size:15px;">QaWidget.tsx</b>
+      <button class="act" id="copy-code">Copy code</button>
+    </div>
+    <pre class="code"><code id="code"></code></pre>
+  </div>
+
+  <div class="card guide" id="guide"></div>
+</div>
+
+<!-- Sources embedded verbatim. `type="text/plain"` = never executed; the HTML parser treats the
+     contents as raw text (safe: neither file contains the closing script token). JS reads them below. -->
+<script type="text/plain" id="src-tsx">
+import React, { useEffect, useRef, useState } from "react";
+
+// ── QaWidget — self-contained, dependency-free QA / Review widget (React only) ──────────────
+// A floating "QA" button (gated by localStorage.qa === "1") that lets a reviewer file per-screen
+// "fixes" on their phone: each note stamps the screen name + route + a short #ID hash and can carry
+// up to 10 client-downscaled JPEG screenshots. Notes persist in localStorage["qa_notes"]. "Copy
+// prompt" compiles every note into a paste-ready Markdown task list (a scan-first header, grouped by
+// screen) that you hand to Cowork/Claude. The Markdown IS the bridge — no backend, no magic pipe.
+//
+// Drop-in: render <QaWidget/> once near your app root. It renders nothing unless the gate is set:
+//   localStorage.setItem("qa","1")   // enable    ·    localStorage.removeItem("qa")  // disable
+
+type Shot = { name: string; dataUrl: string };
+type Note = { id: string; code: string; screen: string; route: string; text: string; shots: Shot[]; ts: number };
+
+const LS_KEY = "qa_notes";
+
+// Scan-first instruction prepended to the compiled task list so the fixer verifies the exact
+// element before editing. The Markdown task list is the whole hand-off.
+const PROMPT_HEADER = `You are fixing UI/UX issues in this app. FIRST scan the relevant screen/route and the
+component that renders it before changing anything — confirm you found the exact element each note
+refers to. Then apply the SMALLEST change that resolves the note. Work screen by screen, and after
+each screen say what you changed. Ask before any risky or irreversible change.
+
+Tasks:`;
+
+let _counter = 0;
+const newId = () => Date.now().toString(36) + "-" + ++_counter;
+
+// 4-char base36 hash → a short, stable #CODE for traceability (not security; just a reference tag).
+function shortCode(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h.toString(36).slice(0, 4).padStart(4, "0").toUpperCase();
+}
+
+// Downscale an image File to a JPEG data URL: max 900px on the long edge, then step quality down
+// until it's under ~180KB. Entirely client-side so nothing large is ever kept or transmitted.
+function downscaleImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const max = 900;
+      let w = img.width, h = img.height;
+      if (w >= h && w > max) { h = Math.round((h * max) / w); w = max; }
+      else if (h > w && h > max) { w = Math.round((w * max) / h); h = max; }
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d");
+      if (!ctx) return reject(new Error("no canvas ctx"));
+      ctx.drawImage(img, 0, 0, w, h);
+      let q = 0.82, out = c.toDataURL("image/jpeg", q);
+      while (out.length > 180 * 1024 && q > 0.3) { q -= 0.12; out = c.toDataURL("image/jpeg", q); }
+      resolve(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("image load failed")); };
+    img.src = url;
+  });
+}
+
+// Compile notes → a Markdown task list, grouped by screen, each line `- [#CODE · date] text [N img]`.
+function buildPrompt(notes: Note[]): string {
+  const byScreen = new Map<string, Note[]>();
+  for (const n of notes) {
+    const key = n.screen || n.route || "(unspecified)";
+    (byScreen.get(key) || byScreen.set(key, []).get(key)!).push(n);
+  }
+  let out = PROMPT_HEADER + "\n";
+  for (const [screen, list] of byScreen) {
+    out += `\n### ${screen}\n`;
+    for (const n of list) {
+      const date = new Date(n.ts).toISOString().slice(0, 10);
+      const imgs = n.shots.length ? ` [${n.shots.length} img]` : "";
+      out += `- [#${n.code} · ${date}] ${n.text}${imgs}\n`;
+    }
+  }
+  return out;
+}
+
+function loadNotes(): Note[] {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; }
+}
+
+export default function QaWidget() {
+  // Hooks run BEFORE the gate (rules of hooks) — we return null after them, never before.
+  const [enabled] = useState(() => { try { return localStorage.getItem("qa") === "1"; } catch { return false; } });
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState<Note[]>(loadNotes);
+  const [screen, setScreen] = useState("");
+  const [text, setText] = useState("");
+  const [shots, setShots] = useState<Shot[]>([]);
+  const [copied, setCopied] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(notes)); } catch {} }, [notes]);
+  useEffect(() => { setScreen((s) => s || document.title || location.pathname); }, []);
+
+  if (!enabled) return null;
+
+  const route = location.pathname + location.search;
+
+  async function onFiles(files: FileList | null) {
+    if (!files) return;
+    const room = Math.max(0, 10 - shots.length);
+    const add: Shot[] = [];
+    for (const f of Array.from(files).slice(0, room)) {
+      try { add.push({ name: f.name, dataUrl: await downscaleImage(f) }); } catch {}
+    }
+    setShots((s) => [...s, ...add].slice(0, 10));
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  function addNote() {
+    const t = text.trim();
+    if (!t) return;
+    const sc = (screen.trim() || document.title || location.pathname);
+    const code = shortCode(sc + "|" + t + "|" + route);
+    setNotes((ns) => [{ id: newId(), code, screen: sc, route, text: t, shots, ts: Date.now() }, ...ns]);
+    setText(""); setShots([]);
+  }
+
+  function del(id: string) { setNotes((ns) => ns.filter((n) => n.id !== id)); }
+
+  async function copyPrompt() {
+    const md = buildPrompt(notes);
+    try { await navigator.clipboard.writeText(md); }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = md; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+    }
+    setCopied(true); setTimeout(() => setCopied(false), 1500);
+  }
+
+  const S: Record<string, React.CSSProperties> = {
+    wrap: { position: "fixed", right: 14, bottom: 14, zIndex: 999999, fontFamily: "system-ui, sans-serif", direction: "ltr" },
+    pill: { display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 999, border: "none",
+      background: "#5b6cff", color: "#fff", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 8px 24px rgba(0,0,0,.35)" },
+    panel: { width: 320, maxWidth: "92vw", maxHeight: "78vh", overflowY: "auto", background: "#14161d", color: "#eef",
+      border: "1px solid #2b2f3a", borderRadius: 16, padding: 12, boxShadow: "0 20px 60px rgba(0,0,0,.5)" },
+    input: { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 9, border: "1px solid #333a49",
+      background: "#0e1015", color: "#eef", fontSize: 13, marginBottom: 8 },
+    btn: { padding: "8px 12px", borderRadius: 9, border: "none", background: "#5b6cff", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 },
+    ghost: { padding: "8px 12px", borderRadius: 9, border: "1px solid #333a49", background: "transparent", color: "#aeb6c8", cursor: "pointer", fontSize: 13 },
+    note: { border: "1px solid #262b36", borderRadius: 10, padding: "8px 10px", marginTop: 8, background: "#0e1015" },
+  };
+
+  if (!open) {
+    return (
+      <div style={S.wrap}>
+        <button style={S.pill} onClick={() => setOpen(true)}>QA{notes.length ? ` · ${notes.length}` : ""}</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={S.wrap}>
+      <div style={S.panel}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <b style={{ fontSize: 15 }}>QA · Add fix</b>
+          <button style={{ ...S.ghost, padding: "2px 8px" }} onClick={() => setOpen(false)}>×</button>
+        </div>
+
+        <input style={S.input} placeholder="Screen name" value={screen} onChange={(e) => setScreen(e.target.value)} />
+        <div style={{ fontSize: 11, color: "#7d879b", marginTop: -4, marginBottom: 8 }}>route: {route}</div>
+        <textarea style={{ ...S.input, minHeight: 64, resize: "vertical" }} placeholder="Describe the fix…" value={text} onChange={(e) => setText(e.target.value)} />
+
+        <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={(e) => onFiles(e.target.files)} />
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+          <button style={S.ghost} onClick={() => fileRef.current?.click()} disabled={shots.length >= 10}>📷 Add shot ({shots.length}/10)</button>
+          {shots.map((s, i) => (
+            <span key={i} style={{ position: "relative" }}>
+              <img src={s.dataUrl} alt="" style={{ width: 34, height: 34, objectFit: "cover", borderRadius: 6, border: "1px solid #333a49" }} />
+              <button onClick={() => setShots((x) => x.filter((_, j) => j !== i))}
+                style={{ position: "absolute", top: -6, right: -6, width: 16, height: 16, borderRadius: 999, border: "none", background: "#e0405a", color: "#fff", fontSize: 10, cursor: "pointer", lineHeight: "16px", padding: 0 }}>×</button>
+            </span>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={S.btn} onClick={addNote}>Add fix</button>
+          <button style={S.ghost} onClick={copyPrompt}>{copied ? "Copied ✓" : "Copy prompt"}</button>
+        </div>
+
+        {notes.length > 0 && (
+          <div style={{ marginTop: 12, fontSize: 11, color: "#7d879b" }}>{notes.length} note(s)</div>
+        )}
+        {notes.map((n) => (
+          <div key={n.id} style={S.note}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <b style={{ fontSize: 11, color: "#8ea0ff" }}>#{n.code} · {n.screen}</b>
+              <button style={{ ...S.ghost, padding: "1px 7px" }} onClick={() => del(n.id)}>del</button>
+            </div>
+            <div style={{ fontSize: 13, marginTop: 3 }}>{n.text}</div>
+            {n.shots.length > 0 && <div style={{ fontSize: 11, color: "#7d879b", marginTop: 3 }}>{n.shots.length} img</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</script>
+
+<script type="text/plain" id="src-md">
+# QA Widget — setup & the mobile review loop
+
+A tiny, dependency-free way to do UI/UX review from your phone and hand the results straight to
+Claude/Cowork. No new backend required to start.
+
+## 1. What it is
+
+A floating **QA** button appears in the app (only for reviewers). You tap it, pick the screen you're
+on, describe a fix, optionally attach a few screenshots, and hit **Add fix**. Each note is stamped
+with the **screen name + route + a short #ID** so it's traceable. When you've collected a batch, tap
+**Copy prompt** — the widget compiles every note into a **paste-ready Markdown task list** with a
+"scan the screen first" instruction header, grouped by screen.
+
+**The Markdown prompt IS the bridge.** There is no magic pipe: you paste that Markdown into your
+Cowork/Claude chat, and Claude does the fixes. Everything else (storage, screenshots) is just there
+to make writing that Markdown effortless from a phone.
+
+## 2. Simplest version — zero backend
+
+This is all you need to start:
+
+- **QaWidget.tsx** (in this folder) — the whole widget, React-only, ~180 lines.
+- **localStorage** — notes live in `localStorage["qa_notes"]`; nothing leaves the device.
+- **Copy prompt** — builds the Markdown and copies it to the clipboard.
+
+Wire it up:
+
+1. Drop `QaWidget.tsx` into your app and render `<QaWidget/>` once near the root.
+2. Enable it for yourself in the browser console: `localStorage.setItem("qa","1")` (and
+   `localStorage.removeItem("qa")` to hide it). The button renders **only** when that gate is set.
+3. Use it: **QA → Add fix (per screen) → Copy prompt → paste to Claude.**
+
+That's the entire zero-backend loop. Screenshots are downscaled in the browser (max 900px, JPEG
+< ~180KB each) so they stay small; the compiled prompt references how many images each note has.
+
+## 3. Fuller version — server-backed inbox (optional, later)
+
+When you want multiple reviewers, a shared inbox, saved report snapshots, and server-stored
+screenshots, graduate to the pattern StrateTeach already runs. Roughly:
+
+- **~7 backend endpoints**: `submit`, `list`, `delete`, `file-token` (short-lived token to fetch an
+  uploaded screenshot), `report`, `report-send`, `snapshots` (save/restore a prompt batch).
+- **3 Postgres tables**: `review_submissions`, `review_files`, `review_snapshots`.
+- **Port the components**: StrateTeach's `ReviewMode.tsx` (the collector) + `ReviewInbox.tsx` (the
+  multi-user inbox/report) + `review.py` (the endpoints) + those tables.
+
+Same UX as the zero-backend widget, just shared + persistent server-side instead of `localStorage`.
+
+## 4. The mobile-Cowork loop
+
+The point of hosting this is that your phone's Cowork can't render chat attachments, but it can open
+a URL and paste text. So:
+
+1. Connect the new app's **repo to Cowork** so Claude can edit + deploy it.
+2. Turn on **deploy-on-push** (commit to the deploy branch → it builds + ships).
+3. Then the loop is:
+   **phone → QA widget → Copy prompt → paste into Cowork chat → Claude fixes + deploys → reload.**
+
+No Telegram, no attachments, no export step — the Markdown task list carries everything.
+
+## 5. Gotchas
+
+- **Gate hard.** The widget must render nothing for non-reviewers: check the gate and `return null`,
+  but run **all hooks BEFORE the gate** (React rules of hooks — never return before a hook).
+- **Portal to `<body>`** if you embed it inside a transformed/overflow-hidden container, so the
+  floating button isn't clipped. (A standalone app doesn't need the portal.)
+- **Downscale screenshots client-side** (canvas → JPEG, cap dimensions + file size) before storing —
+  full-res phone photos will blow past `localStorage` limits fast.
+- **#IDs are just hashes** for traceability (a 4-char base36 tag), not security. They only exist so a
+  note in the Markdown can be pointed back to its screenshot/context.
+- **No Telegram / no push needed.** The compiled Markdown is the entire hand-off; keep it that simple.
+</script>
+
+<script>
+(function () {
+  var tsx = (document.getElementById("src-tsx").textContent || "").replace(/^\n/, "");
+  var md = (document.getElementById("src-md").textContent || "").replace(/^\n/, "");
+
+  // Show the widget source.
+  document.getElementById("code").textContent = tsx;
+
+  // Minimal, safe Markdown → HTML (headings, lists, fenced code, `code`, **bold**).
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function inline(s) {
+    return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  }
+  function renderMd(src) {
+    var out = "", inCode = false, inList = false;
+    var lines = src.split("\n");
+    for (var i = 0; i < lines.length; i++) {
+      var raw = lines[i];
+      if (raw.trim().indexOf("```") === 0) {
+        if (inCode) { out += "</code></pre>"; inCode = false; }
+        else { if (inList) { out += "</ul>"; inList = false; } out += '<pre class="cb"><code>'; inCode = true; }
+        continue;
+      }
+      if (inCode) { out += esc(raw) + "\n"; continue; }
+      var line = raw.replace(/\s+$/, "");
+      if (/^### /.test(line)) { if (inList) { out += "</ul>"; inList = false; } out += "<h3>" + inline(line.slice(4)) + "</h3>"; continue; }
+      if (/^## /.test(line))  { if (inList) { out += "</ul>"; inList = false; } out += "<h2>" + inline(line.slice(3)) + "</h2>"; continue; }
+      if (/^# /.test(line))   { if (inList) { out += "</ul>"; inList = false; } out += "<h1>" + inline(line.slice(2)) + "</h1>"; continue; }
+      if (/^\s*[-*] /.test(line)) { if (!inList) { out += "<ul>"; inList = true; } out += "<li>" + inline(line.replace(/^\s*[-*] /, "")) + "</li>"; continue; }
+      if (line.trim() === "") { if (inList) { out += "</ul>"; inList = false; } continue; }
+      if (inList) { out += "</ul>"; inList = false; }
+      out += "<p>" + inline(line) + "</p>";
+    }
+    if (inList) out += "</ul>";
+    if (inCode) out += "</code></pre>";
+    return out;
+  }
+  document.getElementById("guide").innerHTML = renderMd(md);
+
+  // Copy the widget source to the clipboard (with a legacy fallback).
+  function copyText(text, btn, label) {
+    function ok() { var t = btn.textContent; btn.textContent = label; setTimeout(function () { btn.textContent = t; }, 1400); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok, legacy);
+    } else { legacy(); }
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta); ok();
+    }
+  }
+  document.getElementById("copy-code").addEventListener("click", function () { copyText(tsx, this, "Copied ✓"); });
+
+  // Blob downloads — reliable on mobile.
+  function download(filename, text, mime) {
+    var blob = new Blob([text], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+  document.getElementById("dl-tsx").addEventListener("click", function () {
+    download("QaWidget.tsx", tsx, "text/plain;charset=utf-8");
+  });
+  document.getElementById("dl-md").addEventListener("click", function () {
+    download("QA_setup.md", md, "text/markdown;charset=utf-8");
+  });
+})();
+</script>
+</body>
+</html>

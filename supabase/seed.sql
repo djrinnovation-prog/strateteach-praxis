@@ -1,0 +1,4 @@
+-- Seed file referenced by supabase/config.toml ([db.seed] sql_paths = ["./seed.sql"]).
+-- Intentionally empty: seeding runs after migrations during `supabase db reset` /
+-- `supabase start`, and this project seeds nothing. The file must exist so the CLI
+-- (and the CI `database` job) does not fail resolving a missing configured seed path.

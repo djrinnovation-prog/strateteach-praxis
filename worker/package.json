@@ -1,0 +1,46 @@
+{
+  "name": "praxis-worker",
+  "version": "0.1.0",
+  "description": "Praxis trade execution worker",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "egress-probe": "node scripts/egress-probe.mjs",
+    "alert:run-once": "ts-node --project tools/tsconfig.json tools/alert-poller/run-once.ts",
+    "alert:dry-run": "PRAXIS_ALERT_SEND_MODE=dry-run npm run alert:run-once",
+    "alert:send": "PRAXIS_ALERT_SEND_MODE=send npm run alert:run-once",
+    "sprint4:evidence": "ts-node --project tools/tsconfig.json tools/reporter/sprint4-evidence.ts"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/*.test.ts"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.106.2",
+    "ccxt": "4.5.56",
+    "nanoid": "3.3.12",
+    "pg": "8.22.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.19.41",
+    "@types/pg": "^8.20.0",
+    "jest": "^30.4.2",
+    "nock": "^14.0.16",
+    "ts-jest": "^29.4.11",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}

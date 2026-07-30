@@ -1,0 +1,115 @@
+# One command brings up Postgres + the API + an auto-HTTPS reverse proxy.
+#   cp .env.example .env   (then edit it)
+#   docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-algo770}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-algo770}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-algo770}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-algo770}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-algo770}
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-admin}
+      # Optional comma-separated usernames let THROUGH the maintenance gate without any
+      # admin power (e.g. a labelled demo end-user previewing the app while maintenance
+      # stays ON for everyone else). Blank = nobody extra bypasses (default, no-op).
+      MAINTENANCE_BYPASS_USERNAMES: ${MAINTENANCE_BYPASS_USERNAMES:-}
+      PORT: "5000"
+      # Optional email (password-reset + notifications). Blank = copy-a-link mode.
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_TLS: ${SMTP_TLS:-true}
+      # Optional error monitoring. Blank = disabled.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      APP_ENV: ${APP_ENV:-production}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
+      # Public origin (used for Stripe return URLs + email links).
+      DOMAIN: ${DOMAIN:-}
+      APP_URL: ${APP_URL:-}
+      # Optional Twilio SMS. Blank = SMS disabled (safe no-op).
+      TWILIO_SID: ${TWILIO_SID:-}
+      TWILIO_TOKEN: ${TWILIO_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
+      # Optional WhatsApp sender, e.g. "whatsapp:+14155238886" (Twilio sandbox). Blank = WhatsApp disabled.
+      TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM:-}
+      # Optional WhatsApp Content template SID (HX...) for out-of-window replies. Blank = template replies skipped.
+      TWILIO_WA_TEMPLATE_SID: ${TWILIO_WA_TEMPLATE_SID:-}
+      # Optional exact inbound-webhook URL for Twilio signature validation behind the proxy.
+      # Blank = reconstructed from X-Forwarded-Proto/Host (Caddy sets these).
+      TWILIO_INBOUND_URL: ${TWILIO_INBOUND_URL:-}
+      # Optional Twilio Verify (SMS login 2FA). Blank = auto-created on first use + cached in DB.
+      TWILIO_VERIFY_SID: ${TWILIO_VERIFY_SID:-}
+      # Optional SendGrid email (preferred over SMTP). Blank = falls back to SMTP_* if set.
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      SENDGRID_FROM: ${SENDGRID_FROM:-}
+      # Owners Daily Report — daily 09:00 Israel-time auto-send flag. "1" = on, blank/0 = off
+      # (manual "send now" always works). Also live-flippable via the owners_report_auto_enabled
+      # DB flag; either source enables it.
+      OWNERS_REPORT_AUTOSEND: ${OWNERS_REPORT_AUTOSEND:-}
+      # AutoPilots real-money master gate. "1" = allow live orders (still requires per-pilot in-app GO-LIVE). Blank/unset = OFF.
+      AUTOPILOT_LIVE_ENABLED: ${AUTOPILOT_LIVE_ENABLED:-}
+      # Optional Stripe billing. Blank = billing disabled.
+      STRIPE_SECRET: ${STRIPE_SECRET:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_BASIC: ${STRIPE_PRICE_BASIC:-}
+      STRIPE_PRICE_MIDDLE: ${STRIPE_PRICE_MIDDLE:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_PROFIT_UNLOCK: ${STRIPE_PRICE_PROFIT_UNLOCK:-}
+    expose:
+      - "5000"
+    # For LOCAL testing without the proxy, uncomment to reach it at http://localhost:5000
+    # ports:
+    #   - "5000:5000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile", "--watch"]
+    depends_on:
+      - backend
+      - frontend
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

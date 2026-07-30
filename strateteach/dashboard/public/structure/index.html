@@ -1,0 +1,1807 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>StrateTeach · מבנה מסכים (Mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  /* ── StrateTeach structure mockup — standalone, NOT the real app. ─────────────
+     Palette tokens mirror dashboard/src/theme.ts (Navy / Peach / Nude / Sea).
+     Everything below is self-contained: inline CSS + vanilla JS, no build deps. */
+  :root{
+    --bg:#0A1B4D; --surface:#12296B; --surface2:#1E3C93; --line:#3A72DE;
+    --text:#EFF4FF; --muted:#BDCEF3; --faint:#8CA2D8;
+    --gold:#2E7BFF; --accent:#5EAF73; --blue:#5AA0FF; --gain:#5EAF73; --loss:#F0616D;
+    --btn-bg:#2E7BFF; --btn-bd:#205ab3; --btn-ink:#ffffff; --title-ink:#2E7BFF;
+    --glass-bd:rgba(255,255,255,0.30);
+    --accent-grad:linear-gradient(140deg,#E4F0FF 0%,#B9D4F8 20%,#8AB4F2 40%,#5A90EA 60%,#2E7BFF 80%,#1B4FC0 100%);
+    --title-grad:linear-gradient(140deg,#E4F0FF 0%,#8AB4F2 45%,#1B4FC0 100%);
+    --glass:linear-gradient(150deg,rgba(80,110,190,0.46) 0%,rgba(18,41,107,0.20) 55%,rgba(30,60,147,0.34) 100%);
+    --glass-tint:linear-gradient(146deg,rgba(46,123,255,0.36) 0%,rgba(90,160,255,0.18) 40%,rgba(30,60,147,0.34) 100%);
+    --glass-hi:inset 0 1.5px 0 rgba(255,255,255,0.42), inset 0 -11px 24px -13px rgba(6,16,40,0.5);
+    --barh:118px;   /* mockup control dock height */
+    --tabh:58px;    /* real app bottom tab bar height */
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;min-height:100%}
+  /* base fill on <html> (like the real app) so any area beyond <body> stays on-skin */
+  html{background:var(--bg);transition:background .45s ease}
+  body{
+    font-family:'Rubik','Heebo',system-ui,-apple-system,'Segoe UI',sans-serif;
+    color:var(--text);min-height:100vh;
+    background:linear-gradient(152deg,var(--surface2) 0%,var(--bg) 50%,var(--bg) 100%);
+    transition:background .45s ease,color .35s ease;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.light{background:linear-gradient(170deg,var(--surface) 0%,var(--bg) 55%)}
+  #app{max-width:520px;margin:0 auto;padding:14px 15px calc(var(--barh) + var(--tabh) + 26px);min-height:100vh}
+
+  /* top bar: back + breadcrumb */
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;min-height:38px}
+  .back{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--line);
+    color:var(--muted);border-radius:11px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;
+    font-family:inherit;flex-shrink:0}
+  .back:active{transform:scale(.96)}
+  .back svg{transition:transform .2s}
+  html[dir=ltr] .back svg{transform:scaleX(-1)}
+  .crumb{font-size:11.5px;color:var(--faint);font-weight:600;display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-width:0}
+  .crumb b{color:var(--muted)}
+  .crumb .sep{opacity:.5}
+
+  /* title lockup — skin-adaptive gradient wordmark */
+  .titlewrap{text-align:center;margin-bottom:16px;animation:rise .4s cubic-bezier(.22,.61,.36,1) both}
+  .lockup{margin:0;font-weight:900;font-size:clamp(23px,7.4vw,33px);line-height:1.08;
+    letter-spacing:.14em;text-transform:uppercase;
+    background:var(--title-grad);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    display:inline-flex;align-items:center;justify-content:center;gap:11px;padding-inline-start:.14em}
+  html[dir=rtl] .lockup{letter-spacing:.04em}
+  .lockup .tchip{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;
+    -webkit-text-fill-color:initial;color:var(--btn-ink);background:var(--accent-grad);box-shadow:var(--glass-hi);flex-shrink:0}
+  .subtitle{margin:8px auto 0;font-size:12.8px;color:var(--muted);max-width:400px;line-height:1.45}
+
+  /* section label */
+  .slabel{display:flex;align-items:center;gap:8px;margin:2px 2px 9px;font-size:11px;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+  .slabel::before{content:"";width:3px;height:12px;border-radius:2px;background:var(--accent-grad);flex-shrink:0}
+
+  /* quick panel — row of short shortcut pills */
+  .panel{background:var(--glass);border:1px solid var(--glass-bd);border-radius:16px;padding:10px;margin-bottom:16px;
+    backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);box-shadow:var(--glass-hi)}
+  .qrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:1px}
+  .qrow::-webkit-scrollbar{display:none}
+  .qpill{flex:0 0 auto;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    min-width:66px;padding:9px 9px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:13px;
+    color:var(--text);font-size:10.6px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.1;white-space:nowrap}
+  body.light .qpill{background:rgba(0,0,0,.03)}
+  .qpill:active{transform:scale(.95)}
+  .qpill svg{color:var(--gold)}
+  .qpill .qi{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--surface2)}
+
+  /* central buttons */
+  .centers{display:grid;gap:12px;margin-bottom:18px}
+  .centers.n1{grid-template-columns:1fr}
+  .centers.n2{grid-template-columns:1fr 1fr}
+  .centers.n3{grid-template-columns:1fr 1fr}
+  /* 2-button SIZE HIERARCHY (Home + inner hubs): primary = the bigger/wider tile,
+     secondary = clearly smaller. Dan: Trading is the big primary, Portal secondary. */
+  .centers.hier2{grid-template-columns:1.42fr 0.86fr;align-items:stretch}
+  .centers.hier2 .center.primary{min-height:158px}
+  .centers.hier2 .center.primary .cico{width:54px;height:54px}
+  .centers.hier2 .center.primary .clab{font-size:19px}
+  .centers.hier2 .center.secondary{min-height:130px}
+  .center{position:relative;border:none;cursor:pointer;font-family:inherit;border-radius:20px;padding:16px 14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
+    min-height:120px;transition:transform .16s ease,box-shadow .2s ease;overflow:hidden}
+  .center:active{transform:translateY(2px) scale(.985)}
+  .center.big{grid-column:1 / -1;min-height:132px}
+  .center.primary{background:var(--accent-grad);color:var(--btn-ink);box-shadow:0 14px 34px -14px var(--gold),var(--glass-hi)}
+  .center.secondary,.center.tertiary{background:var(--glass);border:1.6px solid var(--gold);color:var(--text);
+    backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);box-shadow:var(--glass-hi)}
+  .center .cico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex-shrink:0}
+  .center.primary .cico{background:rgba(255,255,255,.22);color:var(--btn-ink)}
+  .center.secondary .cico,.center.tertiary .cico{background:var(--accent-grad);color:var(--btn-ink);box-shadow:var(--glass-hi)}
+  .center.big .cico{width:52px;height:52px}
+  .center .clab{font-size:16px;font-weight:900;line-height:1.12}
+  .center.big .clab{font-size:18.5px}
+  .center .csub{font-size:11px;font-weight:600;opacity:.82;line-height:1.25;max-width:88%}
+  .center .cbadge{position:absolute;top:9px;inset-inline-end:10px;font-size:8.5px;font-weight:900;letter-spacing:.05em;
+    padding:3px 7px;border-radius:8px;background:rgba(255,255,255,.2);color:inherit;text-transform:uppercase}
+  .center.warn{border-color:var(--loss)}
+  .center.warn .cico{background:linear-gradient(140deg,var(--loss),#b52b38)}
+
+  /* tiles grid (service view) */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .tiles.g3{grid-template-columns:1fr 1fr 1fr}
+  .tile{background:var(--glass);border:1px solid var(--glass-bd);border-radius:16px;padding:13px 11px;cursor:pointer;
+    font-family:inherit;color:var(--text);display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:start;
+    box-shadow:var(--glass-hi);transition:transform .15s;min-height:92px}
+  .tile:active{transform:scale(.97)}
+  .tile .tico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--accent-grad);
+    color:var(--btn-ink);box-shadow:var(--glass-hi)}
+  .tile .tt{font-size:13px;font-weight:800;line-height:1.15}
+  .tile .ts{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.25}
+  .tile.ex{align-items:center;text-align:center;min-height:78px;justify-content:center;gap:6px}
+  .tile.ex .exb{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:900;font-size:15px;
+    background:var(--surface2);color:var(--gold);border:1px solid var(--line)}
+
+  /* rows (service view list) */
+  .rows{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+  .row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:13px 14px;cursor:pointer;font-family:inherit;color:var(--text);text-align:start;width:100%}
+  .row:active{transform:scale(.99)}
+  .row .rico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex-shrink:0;
+    background:var(--surface2);color:var(--gold)}
+  .row .rmid{flex:1;min-width:0;display:flex;flex-direction:column}
+  .row .rt{font-size:13.5px;font-weight:800;line-height:1.2}
+  .row .rm{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.3}
+  .row .rchip{font-size:9.5px;font-weight:900;letter-spacing:.03em;padding:4px 8px;border-radius:8px;flex-shrink:0;white-space:nowrap}
+  .row .rarrow{color:var(--faint);flex-shrink:0}
+  html[dir=rtl] .row .rarrow{transform:scaleX(-1)}
+
+  /* inline toggle (feature connect) */
+  .tog{width:42px;height:24px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);position:relative;
+    flex-shrink:0;transition:background .2s}
+  .tog i{position:absolute;top:2px;inset-inline-start:2px;width:18px;height:18px;border-radius:50%;background:var(--faint);
+    transition:all .2s}
+  .tog.on{background:var(--gold)}
+  .tog.on i{inset-inline-start:calc(100% - 20px);background:#fff}
+
+  /* note */
+  .note{display:flex;gap:9px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:13px;padding:11px 12px;margin-bottom:16px;font-size:11.5px;color:var(--muted);line-height:1.5}
+  body.light .note{background:rgba(0,0,0,.03)}
+  .note.warn{border-color:var(--loss);background:rgba(240,97,109,.09);color:var(--text)}
+  .note svg{color:var(--gold);flex-shrink:0;margin-top:1px}
+  .note.warn svg{color:var(--loss)}
+
+  /* bottom panel — persistent secondary shortcuts */
+  .bpanel{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding-top:6px;margin-top:4px}
+  .bpill{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);
+    border-radius:11px;padding:9px 13px;color:var(--muted);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .bpill:active{transform:scale(.96)}
+  .bpill svg{color:var(--gold)}
+
+  .kv{font-size:11px;color:var(--faint);text-align:center;margin:20px 0 4px;font-weight:600}
+
+  /* pinned control dock */
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(10,18,40,.86);
+    backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+    border-top:1px solid var(--glass-bd);padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+    box-shadow:0 -8px 24px -12px rgba(0,0,0,.5)}
+  body.light .dock{background:rgba(255,255,255,.82)}
+  .dockmax{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:7px}
+  .dockrow{display:flex;align-items:center;gap:7px}
+  .dockrow .lab{font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);
+    width:34px;flex-shrink:0}
+  .seg{display:flex;gap:4px;flex:1;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:3px}
+  .seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:800;
+    padding:6px 4px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  .seg button.on{background:var(--accent-grad);color:var(--btn-ink);box-shadow:var(--glass-hi)}
+  .skins{display:flex;gap:6px;flex:1}
+  .sw{flex:1;height:30px;border-radius:9px;border:2px solid transparent;cursor:pointer;position:relative;
+    display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:900;color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .sw.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.3)}
+  .minibtn{border:1px solid var(--line);background:var(--surface2);color:var(--muted);border-radius:9px;
+    padding:6px 9px;font-family:inherit;font-size:10.5px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .minibtn.act{background:var(--accent-grad);color:var(--btn-ink);border-color:transparent}
+
+  /* editable-shortcuts pencil (sits in the top shortcuts panel) */
+  .qedit{flex:0 0 auto;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:54px;
+    padding:9px 8px;background:transparent;border:1px dashed var(--glass-bd);border-radius:13px;color:var(--muted);
+    font-size:10px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .qedit .qi{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--surface2);color:var(--gold)}
+  .slabelrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .slabelrow .hint{font-size:9.5px;font-weight:700;color:var(--faint)}
+  .scedit-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--gold);
+    color:var(--gold);border-radius:9px;padding:5px 11px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;
+    text-transform:none;letter-spacing:0}
+  .scedit-btn:active{transform:scale(.95)}
+  .qedit-tile{color:var(--muted)!important;border-style:dashed!important}
+
+  /* "עוד במערכת / More" — top gateway entry that opens the extras child screen */
+  .morebtn{display:flex;align-items:center;gap:9px;width:100%;margin-bottom:18px;padding:12px 15px;
+    background:var(--glass);border:1px solid var(--glass-bd);border-radius:14px;color:var(--text);font-family:inherit;
+    font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--glass-hi)}
+  .morebtn:active{transform:scale(.99)}
+  .morebtn svg{color:var(--gold);flex-shrink:0}
+  .morebtn .mchev{margin-inline-start:auto;color:var(--faint)}
+  html[dir=rtl] .morebtn .mchev{transform:scaleX(-1)}
+
+  /* rows ⇄ tiles view toggle (list header) */
+  .listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 11px}
+  .vtog{display:inline-flex;gap:2px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:3px;flex-shrink:0}
+  .vtog button{display:inline-flex;align-items:center;gap:5px;border:none;background:transparent;color:var(--muted);
+    font-family:inherit;font-size:11px;font-weight:800;padding:5px 10px;border-radius:7px;cursor:pointer}
+  .vtog button.on{background:var(--accent-grad);color:var(--btn-ink);box-shadow:var(--glass-hi)}
+
+  /* real app bottom tab bar — pinned ABOVE the mockup control dock */
+  .tabbar{position:fixed;inset-inline:0;bottom:var(--barh);z-index:50;display:flex;align-items:stretch;
+    background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px -16px rgba(0,0,0,.45)}
+  .tabbar button{flex:1;min-width:0;min-height:var(--tabh);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;background:none;border:none;cursor:pointer;font-family:inherit;position:relative;padding:8px 4px 7px;color:var(--muted)}
+  .tabbar button .tacc{position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:3px;border-radius:3px;
+    background:var(--gold);transition:width .2s}
+  .tabbar button.on .tacc{width:26px}
+  .tabbar button.on{color:var(--text)}
+  .tabbar .tlab{font-size:10.5px;font-weight:600;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .tabbar button.on .tlab{font-weight:800}
+
+  /* shortcuts edit sheet */
+  .ovl{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;
+    animation:ovlfade .2s ease both}
+  @keyframes ovlfade{from{opacity:0}to{opacity:1}}
+  .ovlcard{width:100%;max-width:520px;max-height:82vh;overflow-y:auto;background:var(--surface);border:1px solid var(--glass-bd);
+    border-radius:20px 20px 0 0;padding:16px 16px calc(20px + var(--barh));animation:ovlup .28s cubic-bezier(.22,.61,.36,1) both}
+  @keyframes ovlup{from{transform:translateY(30px);opacity:.6}to{transform:translateY(0);opacity:1}}
+  .ovlhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px}
+  .ovlhead h3{margin:0;font-size:16.5px;font-weight:900;color:var(--text)}
+  .ovlhead .done{background:var(--accent-grad);color:var(--btn-ink);border:none;border-radius:10px;padding:8px 16px;
+    font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer;box-shadow:var(--glass-hi)}
+  .ovlsub{font-size:11.5px;color:var(--muted);margin:0 0 13px;line-height:1.4}
+  .ovlgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .ovlopt{display:flex;align-items:center;gap:9px;padding:11px 12px;background:var(--surface2);border:1px solid var(--line);
+    border-radius:12px;color:var(--text);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-align:start}
+  .ovlopt .oico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface);color:var(--gold);flex-shrink:0}
+  .ovlopt.sel{border-color:var(--gold);background:var(--glass-tint)}
+  .ovlopt.sel .oico{background:var(--accent-grad);color:var(--btn-ink)}
+  .ovlopt.dis{opacity:.42;cursor:not-allowed}
+  .ovlopt .ochk{margin-inline-start:auto;color:var(--gold);flex-shrink:0}
+
+  /* "עוד במערכת" chip — lives INSIDE the shortcuts row (one of the shortcut buttons),
+     styled as an accent chip so it reads as the gateway to more of the app. */
+  .qpill.qmore{background:var(--glass-tint);border-color:var(--gold)}
+  .qpill.qmore .qi{background:var(--accent-grad);color:var(--btn-ink)}
+
+  /* Home-ONLY market ticker (real cycling taglines) */
+  .ticker{overflow:hidden;white-space:nowrap;margin:-4px 0 15px;padding:7px 0;border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    -webkit-mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+    mask:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+  .ticker .tk{display:inline-flex;gap:20px;animation:tkscroll 24s linear infinite;padding-inline-start:20px;will-change:transform}
+  .ticker .tk span{color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.02em;text-shadow:0 0 8px var(--gold)}
+  @keyframes tkscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* Home-ONLY portfolio / P&L card (real live↔demo toggle + source rows) */
+  .pnlcard{background:var(--glass);border:1px solid var(--glass-bd);border-radius:16px;padding:13px;margin-bottom:16px;
+    box-shadow:var(--glass-hi);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5)}
+  .pnlcard .ph{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+  .pnlcard .pt{font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:7px;color:var(--text)}
+  .pnlcard .pt svg{color:var(--gold)}
+  .pmodes{display:flex;gap:6px;margin-inline-start:auto}
+  .pmode{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--surface2);color:var(--muted);
+    border-radius:9px;padding:5px 9px;font-family:inherit;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
+  .pmode.on-live{background:var(--loss);color:#fff;border-color:transparent}
+  .pmode.on-demo{background:var(--blue);color:#fff;border-color:transparent}
+  .ptotal{display:flex;align-items:baseline;gap:9px;margin-bottom:12px}
+  .ptotal .pamt{font-size:23px;font-weight:900;font-family:'JetBrains Mono',ui-monospace,monospace;line-height:1}
+  .ptotal .plab{font-size:11px;color:var(--muted);font-weight:700}
+  .psrc{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;background:rgba(255,255,255,.05);
+    border:1px solid var(--line);margin-bottom:7px}
+  body.light .psrc{background:rgba(0,0,0,.03)}
+  .psrc .pico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface2);color:var(--gold);flex-shrink:0}
+  .psrc .psname{flex:1;min-width:0;font-size:12px;font-weight:800}
+  .psrc .psbadge{font-size:8px;font-weight:900;padding:2px 6px;border-radius:6px;letter-spacing:.03em;white-space:nowrap}
+  .psrc .psval{font-size:11.5px;font-weight:800;font-family:'JetBrains Mono',ui-monospace,monospace;white-space:nowrap}
+
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .fade{animation:rise .34s cubic-bezier(.22,.61,.36,1) both}
+  .mockflag{position:fixed;top:0;left:0;right:0;z-index:70;text-align:center;font-size:9.5px;font-weight:800;
+    letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,#b52b38,#e0662a);
+    padding:3px 6px;opacity:.9}
+  #app{padding-top:26px}
+</style>
+</head>
+<body>
+<div class="mockflag" id="mockflag">Mockup · הדגמה בלבד — לא האפליקציה האמיתית</div>
+<div id="app"></div>
+
+<!-- the app's REAL persistent bottom tab bar (Home/Trading/Learn/Chat/Account) -->
+<nav class="tabbar" id="tabbar" aria-label="Main navigation"></nav>
+<!-- shortcuts edit sheet (customize your 5) -->
+<div id="overlay"></div>
+
+<div class="dock" id="dock">
+  <div class="dockmax">
+    <div class="dockrow">
+      <span class="lab" id="lab-role">תפקיד</span>
+      <div class="seg" id="seg-role"></div>
+      <button class="minibtn" id="btn-lang">EN</button>
+    </div>
+    <div class="dockrow">
+      <span class="lab" id="lab-skin">מראה</span>
+      <div class="skins" id="skins"></div>
+      <button class="minibtn" id="btn-mode">☾</button>
+      <button class="minibtn" id="btn-flip" title="flip primary">⇄</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════════
+   PALETTES — mirror of dashboard/src/theme.ts (Navy / Peach / Nude / Sea).
+   ═════════════════════════════════════════════════════════════════════════════ */
+const GAIN_L="#0E9E63",LOSS_L="#DB3B49",GAIN_D="#16C77E",LOSS_D="#F0616D";
+const NAVY_FAN=["#E4F0FF","#B9D4F8","#8AB4F2","#5A90EA","#2E7BFF","#1B4FC0"];
+const PEACH_FAN=["#FBEEE3","#F6DBC7","#F2C4A9","#EDA88F","#E5988A"];
+const NUDE_FAN=["#FFE0A8","#FFCB6E","#FF9528","#F06420","#C94E18","#8A3410"];
+const SEA_FAN=["#F0E6D2","#E0B5AB","#A9D8D0","#7FC0BA","#4F9D8F","#356E63"];
+const PALETTES={
+  navy:{label:"Navy",
+    dark:{bg:"#0A1B4D",surface:"#12296B",surface2:"#1E3C93",line:"#3A72DE",text:"#EFF4FF",muted:"#BDCEF3",faint:"#8CA2D8",gold:"#2E7BFF",gain:"#5EAF73",loss:LOSS_D,blue:"#5AA0FF",accent:"#5EAF73",fan:NAVY_FAN},
+    light:{bg:"#F0F5FF",surface:"#FFFFFF",surface2:"#E2ECFB",line:"#B8D0F5",text:"#08163F",muted:"#3A56A6",faint:"#8AA6DE",gold:"#1E6BE6",gain:GAIN_L,loss:LOSS_L,blue:"#2E7BFF",accent:"#3E8E5A",fan:NAVY_FAN}},
+  peach:{label:"Peach",
+    dark:{bg:"#1B100B",surface:"#2B1A12",surface2:"#3E271B",line:"#66412E",text:"#FCEAE0",muted:"#DBB4A2",faint:"#A17A66",gold:"#EDA88F",gain:GAIN_D,loss:LOSS_D,blue:"#F2C4A9",accent:"#E5988A",fan:PEACH_FAN},
+    light:{bg:"#FDF1E8",surface:"#FFFFFF",surface2:"#F9E3D4",line:"#EDC7B0",text:"#3A1D10",muted:"#8B5942",faint:"#BE9077",gold:"#E5988A",gain:GAIN_L,loss:LOSS_L,blue:"#D98A6E",accent:"#CB6E54",fan:PEACH_FAN}},
+  amber:{label:"Nude",
+    dark:{bg:"#160C04",surface:"#291706",surface2:"#3E2410",line:"#7A421A",text:"#FFF1DD",muted:"#F2C78C",faint:"#B98A54",gold:"#FF9528",gain:GAIN_D,loss:LOSS_D,blue:"#FFCB6E",accent:"#F06420",fan:NUDE_FAN},
+    light:{bg:"#FFF4E4",surface:"#FFFFFF",surface2:"#FFE7C6",line:"#FFC98A",text:"#4A2410",muted:"#B4571A",faint:"#D98A45",gold:"#F06420",gain:GAIN_L,loss:LOSS_L,blue:"#E4820F",accent:"#C94E18",fan:NUDE_FAN}},
+  aurora:{label:"Sea",
+    dark:{bg:"#04231F",surface:"#0B372F",surface2:"#13564A",line:"#2C7E6A",text:"#E7F6EF",muted:"#A2C9BB",faint:"#628C7C",gold:"#7FC0BA",gain:GAIN_D,loss:LOSS_D,blue:"#A9D8D0",accent:"#DCC6A8",fan:SEA_FAN},
+    light:{bg:"#EDF4EF",surface:"#FFFFFF",surface2:"#DEEAE2",line:"#B6DACD",text:"#06231D",muted:"#3F7166",faint:"#85AEA2",gold:"#2F8878",gain:GAIN_L,loss:LOSS_L,blue:"#4F9D8F",accent:"#C98A7E",fan:SEA_FAN}},
+};
+/* colour maths (theme.ts) */
+function hexToRgb(h){const m=h.replace("#","");const n=m.length===3?m.split("").map(c=>c+c).join(""):m;const i=parseInt(n,16);return[(i>>16)&255,(i>>8)&255,i&255];}
+const toHex=v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0");
+function darken(h,a){const[r,g,b]=hexToRgb(h);return`#${toHex(r*(1-a))}${toHex(g*(1-a))}${toHex(b*(1-a))}`;}
+function lighten(h,a){const[r,g,b]=hexToRgb(h);return`#${toHex(r+(255-r)*a)}${toHex(g+(255-g)*a)}${toHex(b+(255-b)*a)}`;}
+function rgba(h,a){const[r,g,b]=hexToRgb(h);return`rgba(${r}, ${g}, ${b}, ${a})`;}
+function relLum([r,g,b]){const f=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);};return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);}
+function onAccent(h){return relLum(hexToRgb(h))>0.3?"#16110a":"#ffffff";}
+
+/* ── STATE ─────────────────────────────────────────────────────────────────── */
+const state={skin:"navy",mode:"dark",role:"user",lang:"he",stack:["home"],
+  homePrimary:"trading",toggles:{profit:false,signal:false,pilots:false},account:"bybit",exchange:null,
+  // editable top shortcuts — each user picks their own 5 (mirrors the app's real Home
+  // tool tiles: Exchange · Daily scan · Backtest · Signal Bot · Learn)
+  shortcuts:["exchange","scan","backtest","signal","university"],
+  viewMode:null,      // null = each list's native layout; "rows" | "tiles" once the user toggles
+  moreParent:null,    // which screen's extras the dynamic "more" child is showing
+  editOpen:false,     // shortcuts edit sheet open?
+  pnlMode:null};      // Home/Engine portfolio card: null→"live" | "demo"
+const MAX_SHORTCUTS=5;
+
+/* apply palette → CSS vars */
+function applyTheme(){
+  const pal=PALETTES[state.skin][state.mode];
+  const r=document.documentElement.style;
+  const set=(k,v)=>r.setProperty(k,v);
+  set("--bg",pal.bg);set("--surface",pal.surface);set("--surface2",pal.surface2);set("--line",pal.line);
+  set("--text",pal.text);set("--muted",pal.muted);set("--faint",pal.faint);
+  set("--gold",pal.gold);set("--accent",pal.accent);set("--blue",pal.blue);set("--gain",pal.gain);set("--loss",pal.loss);
+  set("--btn-bg",pal.gold);set("--btn-bd",darken(pal.gold,state.mode==="dark"?0.3:0.36));set("--btn-ink",onAccent(pal.gold));
+  set("--title-ink",relLum(hexToRgb(pal.bg))>0.5?darken(pal.gold,0.5):pal.gold);
+  const fan=pal.fan;
+  const stops=fan.map((c,i)=>`${c} ${Math.round((i/(fan.length-1))*100)}%`).join(", ");
+  set("--accent-grad",`linear-gradient(140deg, ${stops})`);
+  // Title lockup gradient — on a LIGHT backdrop the pale fan tones wash out, so we
+  // sweep across DARKENED accent tones (mirrors theme.ts titleInk); on dark, full fan.
+  set("--title-grad",state.mode==="light"
+    ? `linear-gradient(135deg, ${darken(pal.gold,0.12)} 0%, ${darken(pal.gold,0.5)} 100%)`
+    : `linear-gradient(140deg, ${stops})`);
+  const d=state.mode==="dark";
+  set("--glass",`linear-gradient(150deg, ${rgba(lighten(pal.surface2,0.28),d?0.46:0.62)} 0%, ${rgba(pal.surface,d?0.20:0.38)} 55%, ${rgba(pal.surface2,d?0.34:0.52)} 100%)`);
+  set("--glass-tint",`linear-gradient(146deg, ${rgba(pal.gold,d?0.36:0.28)} 0%, ${rgba(pal.blue,d?0.18:0.14)} 40%, ${rgba(pal.surface2,d?0.34:0.52)} 100%)`);
+  set("--glass-bd",d?"rgba(255,255,255,0.30)":rgba(pal.gold,0.40));
+  const shade=darken(pal.gold,d?0.62:0.30);
+  set("--glass-hi",d?`inset 0 1.5px 0 rgba(255,255,255,0.42), inset 0 -11px 24px -13px ${rgba(shade,0.5)}`
+    :`inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -11px 24px -16px ${rgba(shade,0.17)}`);
+  document.body.classList.toggle("light",state.mode==="light");
+}
+
+/* ── ICONS (lucide-style inline SVG) ───────────────────────────────────────── */
+const ICONS={
+  home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  trending:'<path d="M3 17 10 10l4 4 7-7"/><path d="M15 7h6v6"/>',
+  cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/>',
+  bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M8 14h.01M16 14h.01"/><path d="M2 13v2M22 13v2"/>',
+  radio:'<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 4.9a10 10 0 0 0 0 14.2M19.1 4.9a10 10 0 0 1 0 14.2"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  exchange:'<path d="M7 4 3 8l4 4"/><path d="M3 8h13a4 4 0 0 1 4 4"/><path d="m17 20 4-4-4-4"/><path d="M21 16H8a4 4 0 0 1-4-4"/>',
+  cap:'<path d="m22 10-10-5L2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6.5A8 8 0 1 1 21 12Z"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  crown:'<path d="M3 8l4 4 5-7 5 7 4-4v10H3z"/>',
+  lifebuoy:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="m5 5 4 4M15 15l4 4M19 5l-4 4M9 15l-4 4"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14" r="1"/>',
+  play:'<path d="M7 4v16l13-8Z"/>',
+  zap:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  rocket:'<path d="M5 15c-2 1-3 4-3 4s3-1 4-3M14.5 3.5C18 5 20 9 19 15l-4 4-6-6 4-4c1.5-1.5 3-3 1.5-5.5Z"/><circle cx="14.5" cy="9.5" r="1.2"/>',
+  book:'<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M18 3v18"/>',
+  video:'<rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M17 5.5a3.5 3.5 0 0 1 0 7M22 21c0-3-1.5-4.8-4-5.3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  check:'<path d="m5 12 5 5L20 7"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  bell:'<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  shield:'<path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5z"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8 2 2M16 7l2 2"/>',
+  history:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  file:'<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  filter:'<path d="M3 5h18l-7 8v6l-4-2v-4z"/>',
+  chevron:'<path d="m15 6-6 6 6 6"/>',
+  arrow:'<path d="M9 6l6 6-6 6"/>',
+  sliders:'<path d="M4 6h11M19 6h1M4 12h1M9 12h11M4 18h7M15 18h5"/><circle cx="17" cy="6" r="2"/><circle cx="7" cy="12" r="2"/><circle cx="13" cy="18" r="2"/>',
+  gauge:'<path d="M12 13 16 9"/><path d="M4 18a8 8 0 1 1 16 0"/><circle cx="12" cy="18" r="1"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  scale:'<path d="M12 3v18M6 21h12M12 6l-6 2M12 6l6 2M6 8l-3 6a3 3 0 0 0 6 0zM18 8l-3 6a3 3 0 0 0 6 0z"/>',
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h.01M15 7h.01M9 11h.01M15 11h.01M9 15h.01M15 15h.01"/>',
+  vote:'<path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  power:'<path d="M12 3v9M6.5 6.5a8 8 0 1 0 11 0"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  headphones:'<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/>',
+  layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>',
+  wrench:'<path d="M14 7a4 4 0 0 0 5 5l-7 7-3-3 7-7a4 4 0 0 0-2-2z"/>',
+  trophy:'<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M9 16h6M12 13v3M9 20h6"/>',
+  badge:'<path d="M12 2 4 6v6c0 5 3.5 7 8 10 4.5-3 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/>',
+  megaphone:'<path d="M3 11v2a1 1 0 0 0 1 1h2l9 5V5L6 10H4a1 1 0 0 0-1 1z"/><path d="M18 8a4 4 0 0 1 0 8"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  coins:'<circle cx="8" cy="8" r="5"/><path d="M18.5 10a5 5 0 1 1-6.5 6.5"/>',
+  sparkles:'<path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3z"/><path d="M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+  flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 15h9"/>',
+  wand:'<path d="m15 4 1 2 2 1-2 1-1 2-1-2-2-1 2-1zM3 21 14 10M13 6l5 5"/>',
+  activity:'<path d="M3 12h4l3 8 4-16 3 8h4"/>',
+  download:'<path d="M12 3v12M7 11l5 5 5-5M4 21h16"/>',
+  monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  gem:'<path d="m6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l-3 6 6 12 6-12-3-6"/>',
+  pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  dot:'<circle cx="12" cy="12" r="2"/>',
+};
+function ic(name,size){size=size||20;return`<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.dot}</svg>`;}
+
+/* ── i18n helper ────────────────────────────────────────────────────────────── */
+const L=o=>Array.isArray(o)?o[state.lang==="he"?0:1]:o;
+function tt(he,en){return state.lang==="he"?he:en;}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SCREEN REGISTRY.  Each entry is a fn(ctx)->config for the universal pattern:
+     title + subtitle (wordmark) · quick panel (top) · central buttons (middle)
+     · tiles/rows (service view) · note · bottom panel.
+   ═════════════════════════════════════════════════════════════════════════════ */
+const T=(he,en)=>[he,en];
+function isOwner(){return state.role==="owner";}
+function isStaff(){return state.role==="owner"||state.role==="employee";}
+
+const SCREENS={
+  /* ── HOME (role-adaptive) ─────────────────────────────────────────────────── */
+  home:()=>{
+    // Home hierarchy CONFIRMED by Dan: Trading = the BIG primary tile, Personal Portal
+    // = the smaller secondary. This is Home's OWN design (wordmark + ticker + the two
+    // squares + the real P&L/portfolio widget) — the template every other screen wears.
+    const trading={key:"trading",ico:"trending",lab:T("מסחר","Trading"),sub:T("מנוע מסחר · טייסים · סיגנל בוט","Engine · pilots · signal bot"),to:"trading"};
+    const portal={key:"portal",ico:"user",lab:T("פורטל אישי","Personal Portal"),sub:T("פרטים · הגדרות · חיבורים","Details · settings · links"),to:"portal"};
+    const ordered=state.homePrimary==="trading"?[trading,portal]:[portal,trading];
+    const centers=ordered.map((c,i)=>({...c,size:i===0?"primary":"secondary"}));
+    // Real Home P&L/portfolio widget — LIVE↔DEMO toggle + the real source rows
+    // (Profit Engine · Signal Bot · Pilots[owner]).
+    const live=[
+      {ico:"trending",name:T("מנוע רווח · לייב","Profit Engine · live"),badge:T("לייב · אמיתי","LIVE · REAL"),val:"3 · +$420",tone:"gain"},
+      {ico:"cpu",name:T("סיגנל בוט","Signal Bot"),badge:T("לייב · אמיתי","LIVE · REAL"),val:"2 · +$180",tone:"gain"}];
+    if(isOwner())live.push({ico:"rocket",name:T("טייסים · לייב","Pilots · live"),badge:T("לייב · אמיתי","LIVE · REAL"),val:T("טען","Load"),tone:"gold"});
+    const demo=[{ico:"flask",name:T("מנוע רווח · נייר","Profit Engine (paper)"),badge:T("סים","sim"),val:"5 · +$96",tone:"blue"}];
+    if(isOwner())demo.push({ico:"rocket",name:T("טייסים · סימולציה","Pilots (sim)"),badge:T("סים","sim"),val:"1 · +$12",tone:"blue"});
+    const pnl={title:T("התיק שלי","Portfolio"),totalLab:T("רווח/הפסד כולל","Total P&L"),
+      modes:[{k:"live",lab:T("לייב · כסף אמיתי","LIVE · real money"),amount:T("+$600 · +3.1%","+$600 · +3.1%")},
+             {k:"demo",lab:T("דמו · סימולציה","DEMO · simulation"),amount:T("+$108 · +1.2%","+$108 · +1.2%")}],
+      live,demo,note:T("המתג בוחר את הקשר כל המסגרת: לייב = כסף אמיתי בלבד · דמו = סימולציה בלבד.","The toggle sets the whole frame: LIVE = real money only · DEMO = simulation only.")};
+    // Real Home "Live positions" widget
+    const rows=[
+      {ico:"trending",t:"BTC/USDT",m:T("0.12 · כניסה 61,200 → 63,010","0.12 · entry 61,200 → 63,010"),chip:"+3.0%",tone:"gain"},
+      {ico:"trending",t:"ETH/USDT",m:T("1.4 · כניסה 3,010 → 3,088","1.4 · entry 3,010 → 3,088"),chip:"+2.6%",tone:"gain"},
+      {ico:"trending",t:"SOL/USDT",m:T("18 · כניסה 142 → 139","18 · entry 142 → 139"),chip:"-2.1%",tone:"loss"}];
+    // "עוד במערכת" (one shortcut chip) → real Home springboard / help-layer / desktop-side actions
+    const bottom=[
+      {ico:"cpu",lab:T("מנוע מסחר","Trading engine"),to:"engine"},
+      {ico:"radio",lab:T("סיגנל בוט","Signal Bot"),to:"signalbot"},
+      {ico:"gauge",lab:T("דאשבורד","Dashboard"),to:"dashboard"},
+      {ico:"search",lab:T("סריקה יומית","Daily scan"),to:"scan"},
+      {ico:"flask",lab:T("בדיקות","Backtest"),to:"backtest"},
+      {ico:"wand",lab:T("מעבדת אסטרטגיות","Strategy Lab"),to:"strategy"},
+      {ico:"chart",lab:T("ביצועים","Performance"),to:"analytics"},
+      {ico:"book",lab:T("הסברים","Explanations"),to:"university"},
+      {ico:"video",lab:T("רילים","Reels"),to:"reels"},
+      {ico:"info",lab:T("מי אנחנו","About us"),to:"about"},
+      {ico:"lifebuoy",lab:T("פורטל עזרה","Help portal"),to:"requests"},
+      {ico:"crown",lab:T("מסלולים","Plans"),to:"plans"}];
+    if(isStaff())bottom.push({ico:"settings",lab:T("לוח ניהול","Admin"),to:"admin"});
+    if(isOwner())bottom.push({ico:"crown",lab:T("פורטל בעלים","Owners portal"),to:"owners"});
+    return{crumb:T("בית","Home"),wordmark:"STRATETEACH",title:"STRATETEACH",
+      sub:T("מערכת למידה, מסחר ואוטומציה של אסטרטגיות מבוססות אלגוריתמים","A learning, trading & automation system for algorithm-based strategies"),
+      ticker:[T("סריקת כל הנכסים","All-market asset scan"),T("פריצות יומיות","Daily breakouts"),T("חברו בורסה","Connect your exchange"),T("מסחר דמו ולייב","Demo & live trading"),T("למידה ורילים","Learn & reels")],
+      centers,pnl,rows,listLabel:T("פוזיציות לייב","Live positions"),bottom};
+  },
+
+  /* ── TRADING (parent · 3 central buttons = its 3 real children) ───────────── */
+  trading:()=>({crumb:T("מסחר","Trading"),icon:"trending",title:T("מסחר","TRADING"),
+    sub:T("מנוע מסחר יומי · טייסים אוטומטיים · סיגנל בוט","Daily Engine · Auto Pilots · Signal Bot"),
+    centers:[
+      {key:"engine",ico:"cpu",lab:T("מנוע מסחר יומי","Daily Engine"),sub:T("דמו ולייב · אישור לכל פקודה","Demo & live · approve each order"),to:"engine",size:"big"},
+      {key:"pilots",ico:"bot",lab:T("טייסים אוטומטיים","Auto Pilots"),sub:T("5 טייסים · סימולציה","5 pilots · simulation"),to:"autopilots",size:"secondary"},
+      {key:"signal",ico:"radio",lab:T("סיגנל בוט","Signal Bot"),sub:T("TradingView · פקודות אמיתיות","TradingView · real orders"),to:"signalbot",size:"tertiary"}],
+    // what's really inside each of the 3 tools (so nothing is hidden)
+    tiles:[
+      {ico:"cpu",t:T("מנוע מסחר יומי","Daily Engine"),m:T("דמו/לייב · הקצאה · אסטרטגיה · יעד יומי · PIN · פוזיציות","Demo/live · allocation · strategy · daily target · PIN · positions"),to:"engine"},
+      {ico:"bot",t:T("טייסים אוטומטיים","Auto Pilots"),m:T("GC-Long · GC-L/S · Donchian-18 · Bollinger · Keltner","GC-Long · GC-L/S · Donchian-18 · Bollinger · Keltner"),to:"autopilots"},
+      {ico:"radio",t:T("סיגנל בוט","Signal Bot"),m:T("Webhook · TradingView · פקודות אמיתיות · יומן עסקאות","Webhook · TradingView · real orders · trades log"),to:"signalbot"}],
+    listLabel:T("מה בכל כלי","Inside each tool"),
+    bottom:[{ico:"rocket",lab:T("פריצות היום","Breakouts"),to:"scan-breakouts"},{ico:"list",lab:T("ריצות פתוחות","Open runs"),to:"runs"},
+      {ico:"activity",lab:T("יומן פעילות","Activity"),to:"activity"},{ico:"wand",lab:T("מעבדת אסטרטגיות","Strategy Lab"),to:"strategy"},
+      {ico:"chart",lab:T("ביצועים","Performance"),to:"analytics"},{ico:"radio",lab:T("טלגרם","Telegram"),to:"telegram"},{ico:"chat",lab:T("עזרה","Help"),to:"chat"}]}),
+
+  /* ── PERSONAL PORTAL ──────────────────────────────────────────────────────── */
+  portal:()=>{
+    const centers=[
+      {key:"details",ico:"settings",lab:T("פרטים והגדרות","Details & Settings"),sub:T("פרופיל · מנוי · הגדרות","Profile · plan · settings"),to:"details",size:"primary"},
+      {key:"exlink",ico:"exchange",lab:T("חיבור בורסה","Connect Exchange"),sub:T("חבר · בדוק · הפעל","Connect · test · enable"),to:"exchange",size:"secondary"}];
+    if(state.role==="employee")centers.push({key:"others",ico:"users",lab:T("פורטלים אישיים","Client Portals"),sub:T("גישה לאחרים","Access others"),to:"portals-others",size:"tertiary"});
+    if(state.role==="owner")centers.push({key:"mine",ico:"user",lab:T("הפורטל שלי","My Portal"),sub:T("החשבון שלך","Your own"),to:"details",size:"tertiary"});
+    return{crumb:T("פורטל אישי","Portal"),icon:"user",title:T("פורטל אישי","PERSONAL"),
+      sub:T("הפרטים, ההגדרות והחיבורים שלך במקום אחד","Your details, settings and connections in one place"),
+      quickLabel:T("קיצורים","Shortcuts"),
+      quick:[{ico:"lifebuoy",lab:T("בקשות עזרה","Help"),to:"requests"},{ico:"bell",lab:T("התראות","Alerts"),to:"details"},
+        {ico:"key",lab:T("אבטחה","Security"),to:"details"},{ico:"globe",lab:T("שפה","Language"),act:"lang"}],
+      centers,
+      bottomLabel:T("חשבון","Account"),
+      bottom:[{ico:"mail",lab:T("הודעות מהצוות","Team messages"),to:"teammessages"},{ico:"shield",lab:T("פרטיות","Privacy"),to:"privacy"},
+        {ico:"info",lab:T("אודות","About"),to:"about"},{ico:"power",lab:T("יציאה","Sign out"),to:"login"}]};
+  },
+
+  /* ── DETAILS & SETTINGS = real Account (/me · "החשבון שלי") ────────────────── */
+  details:()=>{
+    // real Account central areas: Security & privacy · Plan & subscription (+ Management for staff)
+    const centers=[
+      {key:"sec",ico:"shield",lab:T("אבטחה ופרטיות","Security & Privacy"),sub:T("סיסמה · 2FA · נתונים","Password · 2FA · data"),to:"privacy",size:"big"},
+      {key:"plan",ico:"crown",lab:T("מסלול ומנוי","Plan & subscription"),sub:T("תוכנית נוכחית · שדרוג","Current plan · upgrade"),to:"plans",size:"secondary"}];
+    if(isStaff())centers.push({key:"mgmt",ico:"settings",lab:T("ניהול","Management"),sub:T("בקרת מערכת","System controls"),to:"admin",size:"tertiary"});
+    // real Account content: Profile & channels + Security & privacy + Data (GDPR)
+    const rows=[
+      {ico:"user",t:T("תמונה וכינוי בצ'אט","Photo & chat nickname"),m:T("החלף תמונה · שם תצוגה","Change photo · display name")},
+      {ico:"user",t:T("שם משתמש","Username"),m:T("שם הכניסה שלך","Your login name")},
+      {ico:"exchange",t:T("בורסה","Exchange"),m:T("סטטוס חיבור · נהל","Connection status · manage"),to:"exchange",chip:T("מחוברת ✓","Connected ✓"),tone:"gain"},
+      {ico:"crown",t:T("מסלול ומנוי","Plan & subscription"),m:T("תוכנית נוכחית: Pro","Current plan: Pro"),to:"plans",chip:T("שדרג","Upgrade"),tone:"gold"},
+      {ico:"mail",t:T("הודעות מהצוות","Messages from the team"),m:T("תשובות והודעות אישיות","Replies & personal notes"),to:"teammessages",chip:"1",tone:"loss"},
+      {ico:"bell",t:T("ערוצים והתראות","Channels & notifications"),m:T("דפדפן · אימייל · וואטסאפ · טלגרם","Browser · email · WhatsApp · Telegram")},
+      {ico:"lock",t:T("שינוי סיסמה","Change password"),m:T("סיסמה נוכחית → חדשה (6+)","Current → new (6+)")},
+      {ico:"shield",t:T("אימות דו-שלבי (2FA)","Two-factor (2FA)"),m:T("שכבת אבטחה נוספת","Extra security layer"),to:"privacy"},
+      {ico:"key",t:T("קוד הגנה אישי","Personal protection code"),m:T("מגן על פעולות רגישות","Guards sensitive actions")},
+      {ico:"download",t:T("נתונים (GDPR)","Data (GDPR)"),m:T("הורד את הנתונים שלי · מחיקת חשבון · אנליטיקס","Download my data · delete account · analytics"),to:"mydata"},
+      {ico:"lifebuoy",t:T("בקשות עזרה פתוחות","Open help requests"),m:T("2 פתוחות · פתח פנייה","2 open · open one"),to:"requests",chip:"2",tone:"loss"}];
+    if(state.role==="employee"){
+      rows.push({ico:"badge",t:T("כרטיס העובד","Employee card"),m:T("תפקיד · משכורת · בונוס · פרטי תת-חשבון","Role · salary · bonus · sub-account")});
+      rows.push({ico:"crown",t:T("תוכנית בונוס","Bonus program"),m:T("הצטרפות · ארנק · אישור בעלים","Join · wallet · owner approval")});}
+    if(isStaff())rows.push({ico:"settings",t:T("לוח ניהול","Admin panel"),m:T("משתמשים · מסחר · מערכת · תקשורת","Users · trading · system · comms"),to:"admin",chip:T("צוות","Staff"),tone:"blue"});
+    if(isOwner())rows.push({ico:"crown",t:T("בעלים","Owners"),m:T("פורטל בעלים · פניות · כספים","Owners Portal · requests · finance"),to:"owners"});
+    if(isOwner())rows.push({ico:"scale",t:T("משפטי","Legal"),m:T("פורטל משפטי (חי)","Legal Portal (live)"),to:"legal-portal"});
+    return{crumb:T("החשבון שלי","Account"),icon:"settings",title:T("החשבון שלי","ACCOUNT"),
+      sub:T("פרופיל · אבטחה · ניהול","Profile · Security · Management"),
+      centers,rows,listLabel:T("פרופיל · אבטחה · נתונים","Profile · security · data"),
+      bottom:[{ico:"mail",lab:T("הודעות מהצוות","Team messages"),to:"teammessages"},{ico:"shield",lab:T("פרטיות","Privacy"),to:"privacy"},
+        {ico:"download",lab:T("הנתונים שלי","My data"),to:"mydata"},{ico:"crown",lab:T("מסלולים","Plans"),to:"plans"},
+        {ico:"lifebuoy",lab:T("פורטל עזרה","Help portal"),to:"requests"},{ico:"globe",lab:T("שפה","Language"),act:"lang"},
+        {ico:"power",lab:T("יציאה","Sign out"),to:"login"}]};
+  },
+
+  /* ── EXCHANGE = real /exchange (non-custodial, multi-account) ──────────────── */
+  exchange:()=>{
+    const picks=[["B","Binance"],["Y","Bybit"],["O","OKX"],["K","Kraken"],["U","KuCoin"],["G","Bitget"],["Ⓖ","Gate.io"],["C","Coinbase"]];
+    return{crumb:T("בורסה","Exchange"),icon:"exchange",title:T("בורסה","EXCHANGE"),
+      sub:T("2 חשבונות מחוברים — לא-משמורתי","2 connected accounts — non-custodial"),
+      // real ScreenHero: Connect existing (primary) + Open new (secondary)
+      centers:[
+        {key:"connect",ico:"key",lab:T("חבר קיים","Connect existing"),sub:T("מפתחות API · מסחר-בלבד","API keys · trade-only"),to:"exchange-connect",size:"big"},
+        {key:"new",ico:"plus",lab:T("פתח חדש","Open new"),sub:T("חשבון בורסה","Exchange account"),to:"exchange-connect",size:"secondary"}],
+      exchangeGrid:picks.map(p=>({letter:p[0],name:p[1],on:state.exchange===p[1]})),
+      // real connected accounts (label · exchange · env · funds · P&L)
+      rows:[
+        {ico:"wallet",t:T("ראשי · Binance","Main · Binance"),m:T("BINANCE · LIVE · $12,480","BINANCE · LIVE · $12,480"),chip:T("לייב","LIVE"),tone:"loss"},
+        {ico:"wallet",t:T("תרגול · Bybit","Practice · Bybit"),m:T("BYBIT · TESTNET · $8,120","BYBIT · TESTNET · $8,120"),chip:T("טסטנט","TEST"),tone:"gold"},
+        {ico:"plus",t:T("הוסף חשבון","Add account"),m:T("עד 5 · שם · בורסה · מפתחות","Up to 5 · name · exchange · keys"),to:"exchange-connect"}],
+      listLabel:T("חשבונות מחוברים","Connected accounts"),
+      note:T("המפתחות נשמרים בדפדפן זה + גיבוי מוצפן בשרת (עובר בין מכשירים) · מומלץ מפתחות למסחר בלבד, ללא משיכה.","Keys stay in this browser + an encrypted server backup (follows you across devices) · trade-only keys (no withdrawal) recommended."),
+      bottom:[{ico:"wallet",lab:T("כספים","Funds")},{ico:"trending",lab:T("מסחר (בצע פקודה)","Trade (place order)")},
+        {ico:"exchange",lab:T("משיכה","Withdraw")},{ico:"filter",lab:T("נקה אבק","Clean dust")},
+        {ico:"gauge",lab:T("בדיקת חיבור","Test connection"),to:"exchange-connect"},{ico:"key",lab:T("החלף מפתחות","Swap keys"),to:"exchange-connect"},
+        {ico:"layers",lab:T("יתרות ופוזיציות","Balances & positions")}]};
+  },
+
+  /* ── EXCHANGE CONNECT = real connect form + feature-toggles ────────────────── */
+  "exchange-connect":()=>{
+    const picks=[["B","Binance"],["Y","Bybit"],["O","OKX"],["K","Kraken"],["U","KuCoin"],["G","Bitget"],["Ⓖ","Gate.io"],["C","Coinbase"]];
+    const chosen=state.exchange;
+    return{crumb:T("חיבור בורסה","Connect"),icon:"key",title:T("חיבור בורסה","CONNECT"),
+      sub:T("המפתחות נשמרים רק בדפדפן — לא-משמורתי · 3 שלבים","Keys stay only in your browser — non-custodial · 3 steps"),
+      exchangeGrid:picks.map(p=>({letter:p[0],name:p[1],on:chosen===p[1]})),
+      note:chosen?T(`נבחר ${chosen} — מצב חי מבצע פקודות על כספך האמיתי. התחילו ב-Testnet.`,`${chosen} selected — live mode trades your real funds. Start on Testnet.`):
+        T("בחר בורסה מהרשת למעלה כדי לראות את שלבי החיבור.","Pick an exchange from the grid above to see the connect steps."),
+      // real 3-step guide + the real connect form fields
+      rows:chosen?[
+        {ico:"wallet",t:T("1 · פתח תת-חשבון ייעודי","1 · Open a dedicated sub-account"),m:T("בודד את ההון למסחר","Isolate your trading capital")},
+        {ico:"shield",t:T("2 · מפתח למסחר-בלבד (ללא משיכות)","2 · Trade-only API key (no withdrawals)"),m:T("רצוי הגבלת IP","Ideally IP-restricted")},
+        {ico:"user",t:T("שם החשבון","Account name"),m:T("למשל: ראשי / חיסכון","e.g. Main / Savings")},
+        {ico:"exchange",t:T("בורסה","Broker"),m:chosen},
+        {ico:"layers",t:T("סביבה","Environment"),m:T("Testnet (תרגול) / Live (כסף אמיתי)","Testnet (practice) / Live (real money)")},
+        {ico:"key",t:T("API Key","API Key"),m:T("מפתח הבורסה","Exchange key")},
+        {ico:"lock",t:T("API Secret","API Secret"),m:T("מוסתר · גיבוי מוצפן (Fernet)","Masked · encrypted backup (Fernet)")},
+        {ico:"key",t:T("Passphrase","Passphrase"),m:T("ל-Coinbase בלבד","Coinbase only")},
+        {ico:"gauge",t:T("שמור · בדיקת חיבור","Save · Test connection"),m:T("קריאה + הרשאות מסחר","Read + trade-permission check"),chip:T("בדוק","Test"),tone:"gold"}]:null,
+      features:chosen?[
+        {key:"profit",ico:"cpu",lab:T("מנוע רווח","Profit Engine")},
+        {key:"signal",ico:"radio",lab:T("סיגנל בוט","Signal Bot")},
+        {key:"pilots",ico:"bot",lab:T("טייסים","Auto Pilots")}]:null,
+      featuresNote:T("בחירת פיצ'ר → זורם למסך ההגדרות להפעלת LIVE אמיתי ובחירת חשבון ממסך החשבונות.","Choosing a feature → flows into settings to enable real LIVE and pick an account from the Accounts screen."),
+      listLabel:T("פרטי החיבור","Connection details"),
+      bottom:[{ico:"wallet",lab:T("חשבונות","Accounts"),to:"accounts"},{ico:"info",lab:T("מדריך חיבור","Connect guide")},
+        {ico:"shield",lab:T("אבטחה והצפנה","Security & encryption")},{ico:"exchange",lab:T("חזרה לבורסה","Back to Exchange"),to:"exchange"}]};
+  },
+
+  /* ── ACCOUNTS (main accounts screen) ──────────────────────────────────────── */
+  accounts:()=>({crumb:T("חשבונות","Accounts"),icon:"wallet",title:T("חשבונות","ACCOUNTS"),
+    sub:T("בחר חשבון פעיל להפעלת מסחר אמיתי","Pick the active account for real trading"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("הוסף חשבון","Add"),to:"exchange-connect"},{ico:"filter",lab:T("סינון","Filter")},{ico:"history",lab:T("היסטוריה","History")}],
+    accountRows:[
+      {key:"binance-spot",ico:"wallet",t:T("Binance · Spot","Binance · Spot"),m:T("USDT · יתרה $12,480","USDT · $12,480")},
+      {key:"binance-fut",ico:"trending",t:T("Binance · Futures","Binance · Futures"),m:T("USDT-M · מינוף ×3","USDT-M · ×3")},
+      {key:"bybit",ico:"layers",t:T("Bybit · Unified","Bybit · Unified"),m:T("Unified · יתרה $8,120","Unified · $8,120")}],
+    bottomLabel:T("ניהול","Manage"),
+    bottom:[{ico:"exchange",lab:T("בורסה","Exchange"),to:"exchange"},{ico:"key",lab:T("אבטחה","Security"),to:"exchange-connect"}]}),
+
+  /* ── DAILY ENGINE (demo/live) ─────────────────────────────────────────────── */
+  engine:()=>({crumb:T("מנוע מסחר","Engine"),icon:"cpu",title:T("מנוע מסחר","ENGINE"),
+    sub:T("ATS — מערכת מסחר אלגוריתמית · דיוק אלגוריתמי, שליטה מלאה","ATS — Algo Trading System · algorithmic precision, full control"),
+    // real hero: Start LIVE (primary) + Start DEMO (secondary). A session = the engine
+    // running one day on today's signals; you approve every order.
+    centers:[
+      {key:"live",ico:"zap",lab:T("הפעל LIVE","Start LIVE"),sub:T("כסף אמיתי · אישור + PIN לכל פקודה","Real money · approve + PIN each order"),to:"engine-live",size:"big"},
+      {key:"demo",ico:"play",lab:T("הפעל DEMO","Start DEMO"),sub:T("תרגול · כסף וירטואלי","Practice · virtual money"),to:"engine-demo",size:"secondary"}],
+    note:T("מנוע לייב · כסף אמיתי — כל מפגש נפתח רק לאחר אישור הפקודות והזנת PIN.","Live engine · real money — every session opens only after you confirm the orders and enter your PIN."),
+    // real engine controls/sections (New-session form + dashboard + live positions)
+    tiles:[
+      {ico:"flask",t:T("מצב · דמו/לייב","Mode · demo/live"),m:T("תרגול וירטואלי או כסף אמיתי","Virtual practice or real money")},
+      {ico:"wallet",t:T("הון והקצאה","Capital & allocation"),m:T("חלוקה שווה / ידנית · זמין עכשיו","Even / manual split · available now")},
+      {ico:"wand",t:T("אסטרטגיה","Strategy"),m:T("BOT(8C)-770 · BOT4-770 · BOT1-770","BOT(8C)-770 · BOT4-770 · BOT1-770")},
+      {ico:"search",t:T("תחום סריקה","Scan domain"),m:T("קריפטו · מניות · מתכות · סחורות","Crypto · Stocks · Metals · Commodities")},
+      {ico:"layers",t:T("פתיחה מדורגת","Tiered opening"),m:T("פורץ · קרוב לפריצה · מגמת עלייה · מתבסס","Breaking out · Near · Uptrend · Building")},
+      {ico:"target",t:T("יעד רווח יומי + סטופ-לוס","Daily target + stop-loss"),m:T("$ או % לכל פוזיציה","$ or % per position")},
+      {ico:"lock",t:T("קוד אישור לייב (PIN)","Live PIN"),m:T("מאבטח פקודות בכסף אמיתי","Secures real-money orders")},
+      {ico:"trending",t:T("פוזיציות לייב","Live positions"),m:T("שווי · P&L · סגור ברווח / סגור הכל","Value · P&L · close in profit / all")},
+      {ico:"history",t:T("יומן פעילות (יומן)","Activity (calendar)"),m:T("היום · חודש · שנה · סה\"כ","Today · month · year · all-time")},
+      {ico:"zap",t:T("קדם ללייב","Promote to live"),m:T("מפוזיציות דמו לפקודות אמיתיות","From demo to real orders")},
+      {ico:"bot",t:T("ריצה אוטומטית (דמו)","Auto-run (demo)"),m:T("פותח ריצות אוטומטית · איפוס יומי","Opens runs automatically · daily reset")},
+      {ico:"filter",t:T("נקה ריצות שהסתיימו","Clean closed runs"),m:T("סדר בלוח הריצות","Tidy the runs board")}],
+    listLabel:T("מקטעי המנוע","Engine sections"),
+    bottom:[{ico:"rocket",lab:T("פריצות היום","Breakouts"),to:"scan-breakouts"},{ico:"plus",lab:T("ריצה חדשה","New run"),to:"engine-demo"},
+      {ico:"list",lab:T("ריצות פתוחות","Open runs"),to:"runs"},{ico:"trending",lab:T("פוזיציות","Positions"),to:"accounts"},
+      {ico:"wand",lab:T("אסטרטגיה","Strategy"),to:"strategy"},{ico:"activity",lab:T("יומן פעילות","Activity"),to:"activity"},
+      {ico:"settings",lab:T("הגדרות מנוע","Engine settings")}]}),
+
+  "engine-demo":()=>({crumb:T("דמו","Demo"),icon:"play",title:T("מנוע · דמו","DEMO"),
+    sub:T("הרצת סימולציה ללא כסף אמיתי","Run a simulation with no real money"),
+    quickLabel:T("בקרה","Controls"),
+    quick:[{ico:"play",lab:T("התחל","Start"),tone:"gain"},{ico:"stop",lab:T("עצור","Stop")},{ico:"history",lab:T("אפס","Reset")}],
+    rows:[
+      {ico:"layers",t:T("פוזיציות פתוחות","Open positions"),m:T("3 פעילות · BTC · ETH · SOL","3 active · BTC · ETH · SOL"),chip:"3",tone:"gold"},
+      {ico:"trending",t:T("רווח/הפסד לא ממומש","Unrealized P&L"),m:T("היום","Today"),chip:"+2.4%",tone:"gain"},
+      {ico:"list",t:T("עסקאות היום","Today's trades"),m:T("8 עסקאות · 6 מנצחות","8 trades · 6 wins")},
+      {ico:"file",t:T("לוג הרצה","Run log"),m:T("צפה בכל הפעולות","View all actions")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"file",lab:T("ייצוא","Export")},{ico:"cpu",lab:T("חזרה למנוע","Back"),to:"engine"}]}),
+
+  "engine-live":()=>({crumb:T("לייב","Live"),icon:"zap",title:T("מנוע · לייב","LIVE"),
+    sub:T("מסחר אמיתי בכסף אמיתי — דורש אישור וחשבון מחובר","Real trading with real money — needs confirmation & a connected account"),
+    note:T("מצב לייב מבצע פעולות בכסף אמיתי. נדרש אישור בטיחות וחשבון בורסה מחובר.","Live mode places real-money orders. Requires a safety confirmation and a connected exchange account."),
+    noteWarn:true,
+    quickLabel:T("בקרה","Controls"),
+    quick:[{ico:"wallet",lab:T("חשבון: Bybit","Acct: Bybit"),to:"accounts"},{ico:"shield",lab:T("אישור","Confirm"),tone:"gold"},
+      {ico:"power",lab:T("Kill-switch","Kill-switch"),tone:"loss"}],
+    rows:[
+      {ico:"layers",t:T("פוזיציות","Positions"),m:T("2 פעילות · חשבון Bybit","2 active · Bybit"),chip:"2",tone:"gold"},
+      {ico:"trending",t:T("P&L ממומש","Realized P&L"),m:T("היום","Today"),chip:"+1.1%",tone:"gain"},
+      {ico:"list",t:T("הזמנות פתוחות","Open orders"),m:T("1 limit · BTC/USDT","1 limit · BTC/USDT")},
+      {ico:"file",t:T("לוג ביצוע","Execution log"),m:T("כל ההזמנות שנשלחו","All submitted orders")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"file",lab:T("דוח","Report")},{ico:"cpu",lab:T("חזרה","Back"),to:"engine"}]}),
+
+  /* ── DAILY SCAN (two squares) ─────────────────────────────────────────────── */
+  scan:()=>({crumb:T("סריקה","Scan"),icon:"search",title:T("סריקה יומית","DAILY SCAN"),
+    sub:T("סרוק את השוק לאיתור הזדמנויות ופריצות","Scan the market for opportunities and breakouts"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("סינון","Filter")},{ico:"target",lab:T("מעקב","Watchlist")},{ico:"history",lab:T("היסטוריה","History")}],
+    centers:[
+      {key:"new",ico:"search",lab:T("סריקה חדשה","New Scan"),sub:T("סריקה טרייה","Fresh scan"),to:"scan-new",size:"eq"},
+      {key:"break",ico:"rocket",lab:T("פריצות יומיות","Daily Breakouts"),sub:T("פרצו היום","Broke out today"),to:"scan-breakouts",size:"eq"}],
+    equalCenters:true,
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"layers",lab:T("השוואת אסטרטגיות","Compare"),to:"scan-compare"},{ico:"file",lab:T("ייצוא","Export")},{ico:"settings",lab:T("הגדרות סריקה","Scan settings")}]}),
+
+  "scan-new":()=>({crumb:T("סריקה חדשה","New"),icon:"search",title:T("סריקה חדשה","NEW SCAN"),
+    sub:T("הרץ סריקה טרייה על כל השוק","Run a fresh scan across the whole market"),
+    quickLabel:T("בקרה","Controls"),
+    quick:[{ico:"play",lab:T("הרץ","Run"),tone:"gain"},{ico:"filter",lab:T("סינון","Filter")},{ico:"sliders",lab:T("מיין","Sort")}],
+    rows:[
+      {ico:"trending",t:"BTC/USDT",m:T("נפח גבוה · מומנטום","High vol · momentum"),chip:T("פורץ","Breaking"),tone:"gold"},
+      {ico:"trending",t:"ETH/USDT",m:T("במגמת עלייה","In uptrend"),chip:T("עולה","Uptrend"),tone:"gain"},
+      {ico:"trending",t:"SOL/USDT",m:T("קרוב לפריצה","Near breakout"),chip:T("קרוב","Near"),tone:"gold"},
+      {ico:"trending",t:"AVAX/USDT",m:T("מתבסס","Building"),chip:T("מתבסס","Building"),tone:"blue"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"file",lab:T("ייצוא","Export")},{ico:"search",lab:T("חזרה","Back"),to:"scan"}]}),
+
+  "scan-breakouts":()=>({crumb:T("פריצות","Breakouts"),icon:"rocket",title:T("פריצות יומיות","BREAKOUTS"),
+    sub:T("המטבעות שפרצו רמות מפתח היום","The coins that broke key levels today"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("סינון","Filter")},{ico:"target",lab:T("מעקב","Watch")},{ico:"gauge",lab:T("עוצמה","Strength")}],
+    rows:[
+      {ico:"rocket",t:"INJ/USDT",m:T("פרץ +8.2% · נפח ×3","Broke +8.2% · vol ×3"),chip:"+8.2%",tone:"gain"},
+      {ico:"rocket",t:"RNDR/USDT",m:T("פרץ +6.1%","Broke +6.1%"),chip:"+6.1%",tone:"gain"},
+      {ico:"rocket",t:"TIA/USDT",m:T("פריצת התנגדות","Resistance break"),chip:T("חדש","New"),tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"file",lab:T("ייצוא","Export")},{ico:"search",lab:T("חזרה","Back"),to:"scan"}]}),
+
+  /* ── AUTOPILOTS (real: 5 self-validated pilots, simulation-only, owners) ───── */
+  autopilots:()=>({crumb:T("טייסים","Auto Pilots"),icon:"bot",title:T("טייסים אוטומטיים","AUTO PILOTS"),
+    sub:T("5 טייסים אוטומטיים · תוצאות שאומתו עצמאית · סימולציה · בעלים בלבד","5 auto pilots · self-validated results · simulation · owners only"),
+    // real mode reality: Simulation is live; real-money Bybit is master-gated OFF pending review
+    centers:[
+      {key:"sim",ico:"flask",lab:T("סימולציה","Simulation"),sub:T("בלי כסף אמיתי · רץ 00:10 UTC יומי","No real money · runs 00:10 UTC daily"),to:"autopilots",size:"big"},
+      {key:"live",ico:"zap",lab:T("לייב (Bybit) — נעול","Live (Bybit) — locked"),sub:T("ממתין לאישור · AUTOPILOT_LIVE","Pending review · master gate"),to:"autopilots",size:"secondary",warn:true}],
+    pilotTiles:[
+      {n:"1",name:T("טייס 1 · GC-Long","Pilot 1 · GC-Long"),m:T("ערוץ גאוסיאני · לונג · 8 פוז' · +8,795%","Gaussian channel · Long · 8 pos · +8,795%")},
+      {n:"2",name:T("טייס 2 · GC-L/S","Pilot 2 · GC-L/S"),m:T("גאוסיאני + שורטים · 8 · +7,706%","Gaussian + shorts · 8 · +7,706%")},
+      {n:"3",name:T("טייס 3 · Donchian-18","Pilot 3 · Donchian-18"),m:T("פריצת ערוץ · לונג · 8 · +3,582%","Channel breakout · Long · 8 · +3,582%")},
+      {n:"4",name:T("טייס 4 · Bollinger (20,2)","Pilot 4 · Bollinger (20,2)"),m:T("רצועות · לונג · 5 · +5,539%","Bands · Long · 5 · +5,539%")},
+      {n:"5",name:T("טייס 5 · Keltner","Pilot 5 · Keltner"),m:T("EMA20, 2×ATR10 · לונג · 6 · +3,606%","EMA20, 2×ATR10 · Long · 6 · +3,606%")}],
+    listLabel:T("הטייסים · תוצאות מאומתות","Pilots · validated results"),
+    note:T("סימולציה בלבד · בעלים בלבד · לכל טייס דוח מאומת + יומן עסקאות (CSV). החלקה לא הודמתה. ביצועי עבר אינם ערובה לעתיד.","Simulation only · owners only · each pilot has a validated report + trades log (CSV). Slippage not simulated. Past performance is not a guarantee."),
+    bottom:[{ico:"play",lab:T("הרץ עכשיו","Run now")},{ico:"power",lab:T("פרוק","Unload")},
+      {ico:"file",lab:T("דוח מאומת","Validated report")},{ico:"download",lab:T("יומן עסקאות (CSV)","Trades log (CSV)")},
+      {ico:"info",lab:T("איך זה מחושב","How it's computed")},{ico:"trending",lab:T("חזרה למסחר","Back"),to:"trading"}]}),
+
+  /* ── SIGNAL BOT (real: TradingView webhook bots, real orders) ──────────────── */
+  signalbot:()=>({crumb:T("סיגנל בוט","Signal Bot"),icon:"radio",title:T("סיגנל בוט","SIGNAL BOT"),
+    sub:T("בוטים אוטומטיים שמבצעים מסחר בחשבונך לפי סיגנלים מ-TradingView · פקודות אמיתיות","Automated bots that trade your account from TradingView signals · real orders"),
+    centers:[
+      {key:"new",ico:"plus",lab:T("בוט חדש","New bot"),sub:T("צור webhook · אשף 5 שלבים","Create a webhook · 5-step wizard"),to:"signalbot",size:"big"},
+      {key:"mine",ico:"radio",lab:T("הבוטים שלי","My bots"),sub:T("צפה ונהל","View & manage"),to:"signalbot",size:"secondary"}],
+    rows:[
+      {ico:"radio",t:T("בוט מומנטום","Momentum Bot"),m:T("Binance · spot · Bot-1 · 42 עסקאות","Binance · spot · Bot-1 · 42 trades"),chip:T("פעיל","Active"),tone:"gain"},
+      {ico:"radio",t:T("בוט פריצות","Breakout Bot"),m:T("Bybit · spot · מפתחות מוגדר ✓","Bybit · spot · keys set ✓"),chip:T("מושהה","Paused"),tone:"loss"},
+      {ico:"plus",t:T("צור בוט חדש","Create new bot"),m:T("שם · בורסה · מפתח למסחר-בלבד · גודל פקודה","Label · exchange · trade-only key · order size")}],
+    listLabel:T("הבוטים שלי · P&L · פעילים · בשימוש","My bots · P&L · active · used"),
+    note:T("הבוטים מבצעים פקודות אמיתיות בבורסה המחוברת · השתמשו במפתח למסחר-בלבד (משיכות מושבתות), רצוי תת-חשבון נפרד.","These bots place REAL orders on your connected exchange · use a trade-only API key (withdrawals off), ideally a separate sub-account."),
+    bottom:[{ico:"radio",lab:T("העתק webhook","Copy webhook URL")},{ico:"file",lab:T("העתק JSON התראה","Copy alert JSON")},
+      {ico:"play",lab:T("השהה / המשך","Pause / resume")},{ico:"list",lab:T("יומן עסקאות","Trades log"),to:"botmanager"},
+      {ico:"power",lab:T("עצור","Kill")},{ico:"info",lab:T("מדריך 5 שלבים","5-step guide")},{ico:"crown",lab:T("מסלולים","Plans"),to:"plans"}]}),
+
+  /* ── UNIVERSITY ───────────────────────────────────────────────────────────── */
+  university:()=>({crumb:T("אקדמיה","University"),icon:"cap",title:T("אוניברסיטה","UNIVERSITY"),
+    sub:T("קורסים, שיעורים ותרגול מסחר","Courses, lessons and trading practice"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"play",lab:T("המשך","Continue"),tone:"gold"},{ico:"target",lab:T("מועדפים","Saved")},{ico:"search",lab:T("חיפוש","Search")}],
+    centers:[
+      {key:"courses",ico:"book",lab:T("קורסים","Courses"),sub:T("מסלולי למידה","Learning tracks"),to:"uni-courses",size:"primary"},
+      {key:"reels",ico:"video",lab:T("ריל'ז","Reels"),sub:T("וידאו קצר","Short video"),to:"reels",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"book",lab:T("מדריך למתחילים","Beginner guide"),to:"guide"},{ico:"file",lab:T("הסברים","Explanations"),to:"uni-courses"},
+      {ico:"book",lab:T("מילון מונחים","Glossary"),to:"uni-courses"},...(isStaff()?[{ico:"sliders",lab:T("עריכת תוכן","Content editor"),to:"uni-courses"}]:[])]}),
+
+  "uni-courses":()=>({crumb:T("קורסים","Courses"),icon:"book",title:T("קורסים","COURSES"),
+    sub:T("מסלולי למידה מסודרים לפי רמה","Learning tracks organized by level"),
+    quickLabel:T("סינון","Filter"),
+    quick:[{ico:"filter",lab:T("רמה","Level")},{ico:"target",lab:T("שלי","Mine")},{ico:"search",lab:T("חיפוש","Search")}],
+    tiles:[
+      {ico:"book",t:T("יסודות המסחר","Trading basics"),m:T("12 שיעורים","12 lessons")},
+      {ico:"trending",t:T("ניתוח טכני","Technical analysis"),m:T("18 שיעורים","18 lessons")},
+      {ico:"cpu",t:T("אוטומציה","Automation"),m:T("9 שיעורים","9 lessons")},
+      {ico:"shield",t:T("ניהול סיכונים","Risk management"),m:T("7 שיעורים","7 lessons")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"file",lab:T("תעודות","Certificates")},{ico:"cap",lab:T("חזרה","Back"),to:"university"}]}),
+
+  "uni-reels":()=>({crumb:T("ריל'ז","Reels"),icon:"video",title:T("ריל'ז","REELS"),
+    sub:T("קטעי וידאו קצרים ללמידה מהירה","Short video clips for quick learning"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"play",lab:T("האחרונים","Latest")},{ico:"target",lab:T("מועדפים","Saved")},{ico:"search",lab:T("חיפוש","Search")}],
+    rows:[
+      {ico:"video",t:T("3 טעויות של מתחילים","3 beginner mistakes"),m:T("2:14 · 12K צפיות","2:14 · 12K views")},
+      {ico:"video",t:T("איך לקרוא נר יפני","Reading a candlestick"),m:T("1:48","1:48")},
+      {ico:"video",t:T("סטופ-לוס נכון","Setting a stop-loss"),m:T("3:02","3:02")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cap",lab:T("חזרה","Back"),to:"university"}]}),
+
+  /* ── CHAT ─────────────────────────────────────────────────────────────────── */
+  chat:()=>({crumb:T("צ'אט","Chat"),icon:"chat",title:T("צ'אט","CHAT"),
+    sub:T("שוחח עם הצוות, קבל תמיכה ועדכונים","Talk to the team, get support and updates"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("חדש","New"),tone:"gold"},{ico:"search",lab:T("חיפוש","Search")},{ico:"bell",lab:T("התראות","Alerts")}],
+    centers:[
+      {key:"support",ico:"headphones",lab:T("צ'אט תמיכה","Support Chat"),sub:T("צוות StrateTeach","StrateTeach team"),to:"chat-support",size:"primary"},
+      {key:"community",ico:"users",lab:T("קהילה","Community"),sub:T("סוחרים אחרים","Fellow traders"),to:"chat-community",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"history",lab:T("ארכיון","Archive")},{ico:"settings",lab:T("הגדרות","Settings")}]}),
+
+  "chat-support":()=>({crumb:T("תמיכה","Support"),icon:"headphones",title:T("צ'אט תמיכה","SUPPORT"),
+    sub:T("שאל את הצוות — נחזור אליך במהירות","Ask the team — we'll get back fast"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("פנייה","New"),tone:"gold"},{ico:"lifebuoy",lab:T("בקשות","Requests"),to:"requests"},{ico:"file",lab:T("היסטוריה","History")}],
+    rows:[
+      {ico:"chat",t:T("שיחה עם התמיכה","Conversation with support"),m:T("עודכן לפני 5 דק'","Updated 5m ago"),chip:T("פתוח","Open"),tone:"gain"},
+      {ico:"lifebuoy",t:T("בקשות עזרה שלי","My help requests"),m:T("2 פתוחות","2 open"),to:"requests",chip:"2",tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chat",lab:T("חזרה","Back"),to:"chat"}]}),
+
+  "chat-community":()=>({crumb:T("קהילה","Community"),icon:"users",title:T("קהילה","COMMUNITY"),
+    sub:T("שוחח עם סוחרים אחרים בקהילה","Chat with other traders in the community"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"search",lab:T("חיפוש","Search")},{ico:"target",lab:T("ערוצים","Channels")},{ico:"bell",lab:T("התראות","Alerts")}],
+    rows:[
+      {ico:"users",t:T("כללי","General"),m:T("128 מחוברים","128 online"),chip:T("פעיל","Live"),tone:"gain"},
+      {ico:"trending",t:T("איתותים","Signals"),m:T("שיתוף רעיונות","Idea sharing")},
+      {ico:"cap",t:T("למתחילים","Beginners"),m:T("שאלות ותשובות","Q&A")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chat",lab:T("חזרה","Back"),to:"chat"}]}),
+
+  /* ── BACKTEST ─────────────────────────────────────────────────────────────── */
+  backtest:()=>({crumb:T("באקטסט","Backtest"),icon:"chart",title:T("באקטסט","BACKTEST"),
+    sub:T("בדוק אסטרטגיות על נתונים היסטוריים","Test strategies against historical data"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"sliders",lab:T("אסטרטגיה","Strategy")},{ico:"history",lab:T("טווח","Range")},{ico:"target",lab:T("סימבולים","Symbols")}],
+    centers:[
+      {key:"new",ico:"play",lab:T("הרצה חדשה","New Run"),sub:T("הגדר והרץ","Configure & run"),to:"bt-new",size:"primary"},
+      {key:"saved",ico:"file",lab:T("הרצות שמורות","Saved Runs"),sub:T("תוצאות קודמות","Past results"),to:"bt-saved",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"file",lab:T("ייבוא Pine","Import Pine")},{ico:"settings",lab:T("הגדרות","Settings")}]}),
+
+  "bt-new":()=>({crumb:T("הרצה חדשה","New run"),icon:"play",title:T("הרצה חדשה","NEW RUN"),
+    sub:T("הגדר אסטרטגיה, טווח וסימבולים והרץ","Set strategy, range and symbols, then run"),
+    quickLabel:T("הגדרה","Setup"),
+    quick:[{ico:"sliders",lab:T("אסטרטגיה","Strategy")},{ico:"history",lab:T("טווח","Range")},{ico:"target",lab:T("סימבולים","Symbols")},{ico:"play",lab:T("הרץ","Run"),tone:"gain"}],
+    rows:[
+      {ico:"sliders",t:T("בחירת אסטרטגיה","Choose strategy"),m:T("Golden Cross · Donchian · Bollinger","Golden Cross · Donchian · Bollinger")},
+      {ico:"history",t:T("טווח תאריכים","Date range"),m:T("12 חודשים אחרונים","Last 12 months")},
+      {ico:"target",t:T("סימבולים","Symbols"),m:T("BTC · ETH · SOL","BTC · ETH · SOL")},
+      {ico:"play",t:T("הרץ באקטסט","Run backtest"),m:T("הרצה חד-פעמית (לא נשמרת אלא אם תבחר)","Ephemeral unless you Save"),chip:T("הרץ","Run"),tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chart",lab:T("חזרה","Back"),to:"backtest"}]}),
+
+  "bt-saved":()=>({crumb:T("שמורות","Saved"),icon:"file",title:T("הרצות שמורות","SAVED RUNS"),
+    sub:T("תוצאות באקטסט ששמרת","Backtest results you saved"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("סינון","Filter")},{ico:"sliders",lab:T("מיין","Sort")},{ico:"search",lab:T("חיפוש","Search")}],
+    rows:[
+      {ico:"file",t:T("Golden Cross · BTC","Golden Cross · BTC"),m:T("תשואה +34% · 62% הצלחה","Return +34% · 62% win"),chip:"+34%",tone:"gain"},
+      {ico:"file",t:T("Donchian-18 · ETH","Donchian-18 · ETH"),m:T("תשואה +18%","Return +18%"),chip:"+18%",tone:"gain"},
+      {ico:"file",t:T("Bollinger · SOL","Bollinger · SOL"),m:T("תשואה -4%","Return -4%"),chip:"-4%",tone:"loss"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chart",lab:T("חזרה","Back"),to:"backtest"}]}),
+
+  /* ── OWNERS PORTAL ────────────────────────────────────────────────────────── */
+  owners:()=>({crumb:T("בעלים","Owners"),icon:"crown",title:T("פורטל בעלים","OWNERS"),
+    sub:T("חדר הבקרה של השותפים — ניהול המערכת והמסחר","The partners' cockpit — system & trading management"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"sun",lab:T("עדכון יומי","Daily update"),to:"owners-daily"},{ico:"vote",lab:T("הצבעה","Vote"),to:"owners-vote"},
+      {ico:"list",lab:T("לוח משימות","Board"),to:"owners-board"},{ico:"users",lab:T("צוות","Team"),to:"owners-team"},
+      {ico:"trending",lab:T("התקדמות","Progress"),to:"owners-progress"}],
+    centers:[
+      {key:"manage",ico:"briefcase",lab:T("ניהול יומי","Daily Management"),sub:T("משימות · צוות · תפעול","Tasks · team · ops"),to:"owners-manage",size:"primary"},
+      {key:"trade",ico:"trending",lab:T("מסחר יומי","Daily Trading"),sub:T("מבט מרוכז","Consolidated view"),to:"owners-trade",size:"secondary"}],
+    bottomLabel:T("דומיינים וכלים","Domains & tools"),
+    bottom:[{ico:"shield",lab:T("ביקורת","Audit"),to:"owners-audit"},{ico:"scale",lab:T("משפטי","Legal"),to:"legal-portal"},
+      {ico:"wrench",lab:T("IT","IT"),to:"it-portal"},{ico:"briefcase",lab:T("פיתוח עסקי","Biz Dev"),to:"biz-portal"},
+      {ico:"wallet",lab:T("כספים","Finance"),to:"owners-finance"},{ico:"bot",lab:T("טייסים","Autopilots"),to:"autopilots"}]}),
+
+  "owners-manage":()=>({crumb:T("ניהול","Manage"),icon:"briefcase",title:T("ניהול יומי","MANAGE"),
+    sub:T("משימות, הצבעות, צוות ותפעול יומיומי","Tasks, votes, team and day-to-day operations"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"list",lab:T("משימות","Tasks"),to:"owners-board"},{ico:"vote",lab:T("הצבעות","Votes"),to:"owners-vote"},{ico:"lifebuoy",lab:T("בקשות","Requests"),to:"requests"}],
+    tiles:[
+      {ico:"sun",t:T("עדכון יומי","Daily update"),m:T("מה קורה היום","Today's update"),to:"owners-daily"},
+      {ico:"list",t:T("לוח משימות","Task board"),m:T("14 פתוחות","14 open"),to:"owners-board"},
+      {ico:"vote",t:T("הצבעות מערכת","System votes"),m:T("3 פעילות","3 active"),to:"owners-vote"},
+      {ico:"trophy",t:T("תוצאות הצבעה","Vote results"),m:T("מקדם החלטות ללוח","Promotes to board"),to:"owners-results"},
+      {ico:"users",t:T("צוות","Team"),m:T("חברי הצוות","Team members"),to:"owners-team"},
+      {ico:"badge",t:T("ניהול עובדים","Employees"),m:T("תפקידים והרשאות","Roles & access"),to:"owners-employees"},
+      {ico:"trending",t:T("התקדמות","Progress"),m:T("אבני דרך","Milestones"),to:"owners-progress"},
+      {ico:"shield",t:T("ביקורת","Audit"),m:T("Self Audit · Tasks","Self Audit · Tasks"),to:"owners-audit"},
+      {ico:"wallet",t:T("כספים","Finance"),m:T("בעלים בלבד","Owners only"),to:"owners-finance"},
+      {ico:"book",t:T("איך זה עובד","Guide"),m:T("מדריך הפורטל","Portal guide"),to:"guide"}],
+    bottomLabel:T("פורטלים","Portals"),
+    bottom:[{ico:"scale",lab:T("משפטי","Legal"),to:"legal-portal"},{ico:"wrench",lab:T("IT","IT"),to:"it-portal"},
+      {ico:"briefcase",lab:T("עסקי","Biz"),to:"biz-portal"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-trade":()=>({crumb:T("מסחר","Trade"),icon:"trending",title:T("מסחר יומי","DAILY TRADE"),
+    sub:T("מבט מסחר מרוכז לכל הדומיינים","Consolidated trading view across all domains"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"gauge",lab:T("ביצועים","Perf")},{ico:"layers",lab:T("פוזיציות","Positions")},{ico:"file",lab:T("דוח","Report")}],
+    rows:[
+      {ico:"wallet",t:T("תיק כולל","Total portfolio"),m:T("כל החשבונות","All accounts"),chip:"$284K",tone:"gold"},
+      {ico:"cpu",t:T("מנועים פעילים","Active engines"),m:T("4 רצים","4 running"),chip:"4",tone:"gain"},
+      {ico:"bot",t:T("טייסים","Autopilots"),m:T("5 בסימולציה","5 in sim")},
+      {ico:"search",t:T("סריקות היום","Today's scans"),m:T("12 פריצות","12 breakouts")},
+      {ico:"trending",t:T("P&L כולל","Total P&L"),m:T("היום","Today"),chip:"+1.8%",tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  /* ── REQUESTS (help portal) ───────────────────────────────────────────────── */
+  requests:()=>({crumb:T("עזרה","Help"),icon:"lifebuoy",title:T("בקשות עזרה","HELP"),
+    sub:T("בקשות פתוחות ופתיחת פנייה חדשה","Open requests and open a new one"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("פנייה חדשה","New"),tone:"gold"},{ico:"file",lab:T("סגורות","Closed")},{ico:"search",lab:T("חיפוש","Search")}],
+    rows:[
+      {ico:"lifebuoy",t:T("חיבור בורסה נכשל","Exchange connect failed"),m:T("נפתח לפני יום","Opened 1d ago"),chip:T("פתוח","Open"),tone:"loss"},
+      {ico:"lifebuoy",t:T("שאלה על מנוי","Plan question"),m:T("ממתין לצוות","Awaiting team"),chip:T("פתוח","Open"),tone:"gold"},
+      {ico:"plus",t:T("פתח פנייה חדשה","Open a new request"),m:T("גישה מהירה לפורטל העזרה","Quick help-portal access"),to:"helpportal"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"lifebuoy",lab:T("פורטל עזרה","Help portal"),to:"helpportal"},{ico:"chat",lab:T("צ'אט תמיכה","Support chat"),to:"chat-support"},
+      {ico:"mail",lab:T("הודעות מהצוות","Team messages"),to:"teammessages"}]}),
+
+  /* ── PORTALS (staff: access others' portals) ──────────────────────────────── */
+  "portals-others":()=>({crumb:T("פורטלים","Portals"),icon:"users",title:T("פורטלים אישיים","PORTALS"),
+    sub:T("גישה לפורטלים של משתמשים אחרים","Access other users' portals"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"search",lab:T("חיפוש","Search")},{ico:"filter",lab:T("סינון","Filter")},{ico:"plus",lab:T("הזמן","Invite")}],
+    rows:[
+      {ico:"user",t:T("דני כהן","Danny Cohen"),m:T("Pro · Bybit מחובר","Pro · Bybit linked"),chip:T("פעיל","Active"),tone:"gain"},
+      {ico:"user",t:T("מיכל לוי","Michal Levy"),m:T("Basic · לא מחובר","Basic · not linked"),chip:T("צפה","View"),tone:"gold"},
+      {ico:"user",t:T("יוסי אברהם","Yossi Abraham"),m:T("Pro · 2 בקשות","Pro · 2 requests"),chip:"2",tone:"loss"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"user",lab:T("הפורטל שלי","My portal"),to:"details"}]}),
+
+  /* ══ TRADING & ANALYSIS cluster ═══════════════════════════════════════════════ */
+  dashboard:()=>({crumb:T("לוח","Dashboard"),icon:"gauge",title:T("לוח","DASHBOARD"),
+    sub:T("מבט-על על התיק, הבוטים והביצועים","Overview of your portfolio, bots and performance"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"layers",lab:T("פוזיציות","Positions")},{ico:"chart",lab:T("ביצועים","Performance"),to:"analytics"},{ico:"history",lab:T("פעילות","Activity"),to:"activity"}],
+    centers:[
+      {key:"portfolio",ico:"wallet",lab:T("התיק שלי","My Portfolio"),sub:T("יתרות ופוזיציות","Balances & positions"),to:"accounts",size:"primary"},
+      {key:"perf",ico:"chart",lab:T("ביצועים","Performance"),sub:T("רווח ויעד הצלחה","P&L & win target"),to:"analytics",size:"secondary"}],
+    rows:[
+      {ico:"wallet",t:T("שווי תיק","Portfolio value"),m:T("לייב · מהפקדה","Live · since deposit"),chip:"$20.6K",tone:"gold"},
+      {ico:"trending",t:T("רווח היום","Today's P&L"),m:T("00:01 → עכשיו","00:01 → now"),chip:"+2.1%",tone:"gain"},
+      {ico:"bot",t:T("בוטים פעילים","Active bots"),m:T("2 רצים · 1 מושהה","2 running · 1 paused"),chip:"3",tone:"blue"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cpu",lab:T("מנוע מסחר","Engine"),to:"engine"},{ico:"exchange",lab:T("בורסה","Exchange"),to:"exchange"}]}),
+
+  strategy:()=>({crumb:T("אסטרטגיות","Strategy"),icon:"wand",title:T("מעבדת אסטרטגיות","STRATEGY LAB"),
+    sub:T("בנה, שמור ונהל אסטרטגיות מסחר","Build, save and manage trading strategies"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("חדשה","New"),tone:"gold"},{ico:"flask",lab:T("באקטסט","Backtest"),to:"backtest"},{ico:"file",lab:T("ייבוא Pine","Import Pine")}],
+    centers:[
+      {key:"build",ico:"wand",lab:T("בונה אסטרטגיה","Strategy Builder"),sub:T("הגדר תנאים","Define rules"),to:"bt-new",size:"primary"},
+      {key:"saved",ico:"file",lab:T("אסטרטגיות שמורות","Saved"),sub:T("הספרייה שלך","Your library"),to:"bt-saved",size:"secondary"}],
+    rows:[
+      {ico:"wand",t:T("Golden Cross","Golden Cross"),m:T("שמורה · פעילה במנוע","Saved · live on engine"),chip:T("פעיל","On"),tone:"gain"},
+      {ico:"wand",t:T("Donchian-18","Donchian-18"),m:T("שמורה","Saved")},
+      {ico:"plus",t:T("צור אסטרטגיה חדשה","Create new strategy"),m:T("מאפס או מ-Pine","From scratch or Pine")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cpu",lab:T("מנוע מסחר","Engine"),to:"engine"},{ico:"chart",lab:T("באקטסט","Backtest"),to:"backtest"}]}),
+
+  analytics:()=>({crumb:T("ביצועים","Performance"),icon:"chart",title:T("ביצועים","PERFORMANCE"),
+    sub:T("ביצועי המסחר שלך מול יעד ההצלחה","Your trading performance vs the win target"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"history",lab:T("יומן פעילות","Activity"),to:"activity"},{ico:"filter",lab:T("טווח","Range")},{ico:"file",lab:T("ייצוא","Export")}],
+    centers:[
+      {key:"win",ico:"target",lab:T("יעד הצלחה","Win Target"),sub:T("אחוז עסקאות מנצחות","Win rate"),to:"activity",size:"primary"},
+      {key:"pnl",ico:"trending",lab:T("רווח והפסד","P&L Curve"),sub:T("עקומת הון","Equity curve"),to:"dashboard",size:"secondary"}],
+    rows:[
+      {ico:"target",t:T("אחוז הצלחה","Win rate"),m:T("30 עסקאות אחרונות","Last 30 trades"),chip:"64%",tone:"gain"},
+      {ico:"trending",t:T("תשואה מצטברת","Cumulative return"),m:T("החודש","This month"),chip:"+11%",tone:"gain"},
+      {ico:"loss",t:T("Drawdown","Drawdown"),m:T("מקסימלי","Max"),chip:"-6%",tone:"loss"}],
+    bottomLabel:T("מקור","Source"),
+    bottom:[{ico:"cpu",lab:T("מנוע המסחר","Trading engine"),to:"engine"},{ico:"history",lab:T("יומן","Activity log"),to:"activity"}]}),
+
+  activity:()=>({crumb:T("פעילות","Activity"),icon:"activity",title:T("יומן פעילות","ACTIVITY"),
+    sub:T("כל הפעולות והאירועים בחשבון שלך","Every action and event on your account"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("סינון","Filter")},{ico:"history",lab:T("טווח","Range")},{ico:"file",lab:T("ייצוא","Export")}],
+    rows:[
+      {ico:"zap",t:T("פוזיציה נפתחה","Position opened"),m:T("BTC/USDT · לפני 12 דק'","BTC/USDT · 12m ago"),chip:T("לייב","Live"),tone:"gain"},
+      {ico:"cpu",t:T("מנוע הופעל","Engine started"),m:T("מצב דמו · לפני שעה","Demo · 1h ago")},
+      {ico:"exchange",t:T("בורסה חוברה","Exchange connected"),m:T("Bybit · אתמול","Bybit · yesterday")},
+      {ico:"user",t:T("כניסה למערכת","Signed in"),m:T("מכשיר חדש","New device")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chart",lab:T("ביצועים","Performance"),to:"analytics"},{ico:"gauge",lab:T("לוח","Dashboard"),to:"dashboard"}]}),
+
+  telegram:()=>({crumb:T("טלגרם","Telegram"),icon:"radio",title:T("טלגרם","TELEGRAM"),
+    sub:T("התראות מסחר בזמן אמת ישירות לטלגרם","Real-time trade alerts straight to Telegram"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"check",lab:T("מחובר","Connected"),tone:"gain"},{ico:"bell",lab:T("התראות","Alerts")},{ico:"info",lab:T("איך מחברים","How-to")}],
+    centers:[
+      {key:"connect",ico:"radio",lab:T("חבר טלגרם","Connect Telegram"),sub:T("3 צעדים","3 steps"),to:"telegram",size:"primary"},
+      {key:"alerts",ico:"bell",lab:T("סוגי התראות","Alert types"),sub:T("בחר מה לקבל","Pick what to receive"),to:"telegram",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chat",lab:T("צ'אט","Chat"),to:"chat"},{ico:"settings",lab:T("הגדרות","Settings")}]}),
+
+  runs:()=>({crumb:T("ריצות","Runs"),icon:"list",title:T("דוח ריצות","RUNS REPORT"),
+    sub:T("היסטוריית ריצות המנוע והתוצאות","Engine run history and results"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("סינון","Filter")},{ico:"file",lab:T("ייצוא","Export")},{ico:"history",lab:T("טווח","Range")}],
+    rows:[
+      {ico:"cpu",t:T("ריצה #128 · לייב","Run #128 · Live"),m:T("8 עסקאות · +2.4%","8 trades · +2.4%"),chip:"+2.4%",tone:"gain"},
+      {ico:"play",t:T("ריצה #127 · דמו","Run #127 · Demo"),m:T("12 עסקאות","12 trades"),chip:"+0.8%",tone:"gain"},
+      {ico:"cpu",t:T("ריצה #126 · לייב","Run #126 · Live"),m:T("5 עסקאות","5 trades"),chip:"-1.1%",tone:"loss"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cpu",lab:T("מנוע מסחר","Engine"),to:"engine"}]}),
+
+  botmanager:()=>({crumb:T("ניהול בוטים","Bots"),icon:"cpu",title:T("ניהול בוטים","BOT MANAGER"),
+    sub:T("ניהול, הפעלה ועצירה של כל הבוטים","Manage, start and stop all your bots"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("בוט חדש","New bot"),tone:"gold"},{ico:"radio",lab:T("Webhook","Webhook")},{ico:"gauge",lab:T("סטטוס","Status")}],
+    rows:[
+      {ico:"bot",t:T("בוט מומנטום","Momentum Bot"),m:T("פעיל · חשבון Bybit","Active · Bybit"),chip:T("פעיל","On"),tone:"gain"},
+      {ico:"bot",t:T("בוט פריצות","Breakout Bot"),m:T("מושהה","Paused"),chip:T("מושהה","Paused"),tone:"loss"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"radio",lab:T("סיגנל בוט","Signal Bot"),to:"signalbot"}]}),
+
+  /* ══ ACCOUNT / SUPPORT / CONTENT cluster ═════════════════════════════════════ */
+  plans:()=>({crumb:T("מסלולים","Plans"),icon:"crown",title:T("מסלולים ושדרוג","PLANS"),
+    sub:T("שדרג בכל עת · תשלום מאובטח, הכרטיס לא נוגע בשרתים שלנו","Upgrade any time · secure checkout, your card never touches our servers"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"check",lab:T("המסלול שלי","My plan"),tone:"gain"},{ico:"file",lab:T("חשבוניות","Invoices")},{ico:"info",lab:T("השוואה","Compare")}],
+    centers:[
+      {key:"pro",ico:"crown",lab:T("Pro","Pro"),sub:T("כל הפיצ'רים","All features"),to:"plans",size:"primary"},
+      {key:"basic",ico:"user",lab:T("Basic","Basic"),sub:T("להתחלה","To start"),to:"plans",size:"secondary"}],
+    rows:[
+      {ico:"crown",t:T("מסלול נוכחי: Pro","Current: Pro"),m:T("מתחדש 12/08","Renews 12/08"),chip:T("פעיל","Active"),tone:"gain"},
+      {ico:"trending",t:T("שדרוג ל-Elite","Upgrade to Elite"),m:T("טייסים + עדיפות תמיכה","Autopilots + priority support"),chip:T("שדרג","Upgrade"),tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"user",lab:T("החשבון שלי","Account"),to:"details"},{ico:"lifebuoy",lab:T("עזרה","Help"),to:"requests"}]}),
+
+  mydata:()=>({crumb:T("הנתונים שלי","My data"),icon:"download",title:T("הנתונים שלי","MY DATA"),
+    sub:T("הורדת כל המידע שנשמר עליך — מפתחות בורסה לא נשמרים אצלנו","Download everything we hold — exchange keys are never stored on our servers"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"download",lab:T("הורד","Download"),tone:"gold"},{ico:"shield",lab:T("פרטיות","Privacy"),to:"privacy"},{ico:"info",lab:T("מה נשמר","What's held")}],
+    rows:[
+      {ico:"user",t:T("פרופיל והגדרות","Profile & settings"),m:T("כל השדות","All fields")},
+      {ico:"history",t:T("יומן פעילות","Activity log"),m:T("כל האירועים","All events")},
+      {ico:"chart",t:T("אירועי שימוש","Usage events"),m:T("בכינוי · אנונימי","Pseudonymous")},
+      {ico:"download",t:T("הורד את כל הנתונים","Download all my data"),m:T("קובץ אחד","One file"),chip:T("ייצוא","Export"),tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"shield",lab:T("מדיניות פרטיות","Privacy policy"),to:"privacy"},{ico:"user",lab:T("החשבון","Account"),to:"details"}]}),
+
+  privacy:()=>({crumb:T("פרטיות","Privacy"),icon:"shield",title:T("פרטיות","PRIVACY"),
+    sub:T("המדיניות שלנו · ללא החזקת נכסים","Our policy · non-custodial"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"key",lab:T("2FA","2FA")},{ico:"lock",lab:T("סיסמה","Password")},{ico:"download",lab:T("הנתונים שלי","My data"),to:"mydata"}],
+    centers:[
+      {key:"policy",ico:"shield",lab:T("מדיניות פרטיות","Privacy Policy"),sub:T("איך אנו שומרים מידע","How we handle data"),to:"privacy",size:"primary"},
+      {key:"security",ico:"lock",lab:T("אבטחת חשבון","Account Security"),sub:T("סיסמה · 2FA","Password · 2FA"),to:"privacy",size:"secondary"}],
+    note:T("StrateTeach אינה מחזיקה בנכסים שלך ואינה שומרת מפתחות בורסה גלויים — הם מוצפנים (Fernet).","StrateTeach is non-custodial and never stores plaintext exchange keys — they're Fernet-encrypted."),
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"info",lab:T("אודות","About"),to:"about"},{ico:"user",lab:T("החשבון","Account"),to:"details"}]}),
+
+  guide:()=>({crumb:T("מדריך","Guide"),icon:"book",title:T("מדריך למתחילים","GUIDE"),
+    sub:T("צעד-אחר-צעד — מהחיבור הראשון ועד המסחר","Step by step — from first connect to trading"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"play",lab:T("התחל","Start"),tone:"gold"},{ico:"cap",lab:T("אקדמיה","University"),to:"university"},{ico:"chat",lab:T("שאלה","Ask"),to:"chat"}],
+    rows:[
+      {ico:"exchange",t:T("1 · חבר בורסה","1 · Connect exchange"),m:T("Bybit / Binance","Bybit / Binance"),to:"exchange"},
+      {ico:"play",t:T("2 · הרץ דמו","2 · Run demo"),m:T("בלי סיכון","No risk"),to:"engine-demo"},
+      {ico:"target",t:T("3 · בחר אסטרטגיה","3 · Pick a strategy"),m:T("מעבדת אסטרטגיות","Strategy lab"),to:"strategy"},
+      {ico:"zap",t:T("4 · עבור ללייב","4 · Go live"),m:T("כסף אמיתי","Real money"),to:"engine-live"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cap",lab:T("אקדמיה","University"),to:"university"},{ico:"lifebuoy",lab:T("עזרה","Help"),to:"requests"}]}),
+
+  about:()=>({crumb:T("אודות","About"),icon:"info",title:T("אודות","ABOUT US"),
+    sub:T("מי אנחנו, החזון והצוות שמאחורי StrateTeach","Who we are, the vision and the team behind StrateTeach"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"users",lab:T("הצוות","Team")},{ico:"target",lab:T("חזון","Vision")},{ico:"chat",lab:T("צור קשר","Contact"),to:"chat"}],
+    centers:[
+      {key:"story",ico:"sparkles",lab:T("הסיפור שלנו","Our Story"),sub:T("איך התחלנו","How we began"),to:"about",size:"primary"},
+      {key:"team",ico:"users",lab:T("הצוות","The Team"),sub:T("מי מאחורי המערכת","Who's behind it"),to:"about",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"shield",lab:T("פרטיות","Privacy"),to:"privacy"},{ico:"crown",lab:T("מסלולים","Plans"),to:"plans"}]}),
+
+  reels:()=>({crumb:T("רילים","Reels"),icon:"video",title:T("רילים","REELS"),
+    sub:T("קטעי וידאו קצרים ללמידה מהירה","Short video clips for quick learning"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"play",lab:T("האחרונים","Latest")},{ico:"target",lab:T("מועדפים","Saved")},{ico:"search",lab:T("חיפוש","Search")},...(isStaff()?[{ico:"plus",lab:T("העלה","Upload"),tone:"gold"}]:[])],
+    rows:[
+      {ico:"video",t:T("3 טעויות של מתחילים","3 beginner mistakes"),m:T("2:14 · 12K צפיות","2:14 · 12K views"),chip:"BETA",tone:"blue"},
+      {ico:"video",t:T("איך לקרוא נר יפני","Reading a candlestick"),m:T("1:48","1:48")},
+      {ico:"video",t:T("סטופ-לוס נכון","Setting a stop-loss"),m:T("3:02","3:02")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cap",lab:T("אקדמיה","University"),to:"university"}]}),
+
+  "scan-compare":()=>({crumb:T("השוואה","Compare"),icon:"layers",title:T("השוואת אסטרטגיות","COMPARE"),
+    sub:T("השווה איך אסטרטגיות שונות מדרגות את השוק","Compare how different strategies rank the market"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"sliders",lab:T("אסטרטגיות","Strategies"),to:"strategy"},{ico:"filter",lab:T("סינון","Filter")},{ico:"file",lab:T("ייצוא","Export")}],
+    rows:[
+      {ico:"trending",t:"BTC/USDT",m:T("Golden Cross: קנייה · Donchian: המתן","GC: buy · Donchian: hold"),chip:T("פורץ","Break"),tone:"gold"},
+      {ico:"trending",t:"ETH/USDT",m:T("שתי האסטרטגיות: קנייה","Both: buy"),chip:T("חזק","Strong"),tone:"gain"},
+      {ico:"trending",t:"SOL/USDT",m:T("Bollinger: מכירה","Bollinger: sell"),chip:T("חלש","Weak"),tone:"loss"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"search",lab:T("חזרה לסריקה","Back to scan"),to:"scan"}]}),
+
+  /* ══ OWNERS sub-screens ══════════════════════════════════════════════════════ */
+  "owners-daily":()=>({crumb:T("עדכון יומי","Daily"),icon:"sun",title:T("עדכון יומי","DAILY UPDATE"),
+    sub:T("מה קורה היום — הכי חשוב במבט אחד","What's happening today — the essentials at a glance"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"list",lab:T("משימות","Tasks"),to:"owners-board"},{ico:"vote",lab:T("הצבעות","Votes"),to:"owners-vote"},{ico:"trending",lab:T("מסחר","Trading"),to:"owners-trade"}],
+    rows:[
+      {ico:"trophy",t:T("החלטות ממתינות","Pending decisions"),m:T("3 להצבעה","3 to vote"),to:"owners-vote",chip:"3",tone:"gold"},
+      {ico:"list",t:T("משימות דחופות","Urgent tasks"),m:T("2 היום","2 today"),to:"owners-board",chip:"2",tone:"loss"},
+      {ico:"trending",t:T("תיק כולל","Total portfolio"),m:T("כל הדומיינים","All domains"),to:"owners-trade",chip:"+1.8%",tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"briefcase",lab:T("ניהול","Manage"),to:"owners-manage"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-team":()=>({crumb:T("צוות","Team"),icon:"users",title:T("צוות","TEAM"),
+    sub:T("חברי הצוות, התפקידים וההרשאות","Team members, roles and permissions"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("הוסף","Add"),tone:"gold"},{ico:"badge",lab:T("עובדים","Employees"),to:"owners-employees"},{ico:"vote",lab:T("הצבעה","Vote"),to:"owners-vote"}],
+    rows:[
+      {ico:"crown",t:T("דן · בעלים","Dan · Owner"),m:T("גישה מלאה + פיננסים","Full + finance"),chip:T("בעלים","Owner"),tone:"gold"},
+      {ico:"crown",t:T("רפי · בעלים","Rafi · Owner"),m:T("גישה מלאה","Full access"),chip:T("בעלים","Owner"),tone:"gold"},
+      {ico:"crown",t:T("יואב · בעלים","Yoav · Owner"),m:T("גישה מלאה","Full access"),chip:T("בעלים","Owner"),tone:"gold"},
+      {ico:"settings",t:T("אורן · מנהל","Oren · Admin"),m:T("פורטל IT","IT portal"),chip:T("מנהל","Admin"),tone:"blue"},
+      {ico:"scale",t:T("רז · משפטי","Raz · Legal"),m:T("פורטל משפטי","Legal portal"),chip:T("שותף","Partner"),tone:"blue"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"badge",lab:T("ניהול עובדים","Employees"),to:"owners-employees"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-board":()=>({crumb:T("לוח משימות","Board"),icon:"list",title:T("לוח משימות","BOARD"),
+    sub:T("משימות הצוות לפי סטטוס","Team tasks by status"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("משימה","Task"),tone:"gold"},{ico:"filter",lab:T("סטטוס","Status")},{ico:"users",lab:T("אחראי","Owner")}],
+    rows:[
+      {ico:"list",t:T("סיום מסך הבורסה","Finish Exchange screen"),m:T("אורן · בעבודה","Oren · in process"),chip:T("בעבודה","WIP"),tone:"gold"},
+      {ico:"list",t:T("בדיקת תנאי שימוש","Review ToS"),m:T("רז · לביצוע","Raz · to do"),chip:T("לביצוע","To do"),tone:"blue"},
+      {ico:"check",t:T("השקת טייסים","Autopilots launch"),m:T("דן · מאושר","Dan · approved"),chip:T("מאושר","Done"),tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"vote",lab:T("הצבעות","Votes"),to:"owners-vote"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-vote":()=>({crumb:T("הצבעה","Vote"),icon:"vote",title:T("הצבעה","VOTE"),
+    sub:T("הצבעה מערכתית — קול אחד לכל פריט","System-wide voting — one voice per item"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"trophy",lab:T("תוצאות","Results"),to:"owners-results"},{ico:"list",lab:T("משימות","Tasks"),to:"owners-board"},{ico:"filter",lab:T("סינון","Filter")}],
+    rows:[
+      {ico:"monitor",t:T("עיצוב מסך הבית","Home screen design"),m:T("שנה / אשר / דחה","Change / approve / reject"),chip:T("פתוח","Open"),tone:"gold"},
+      {ico:"vote",t:T("החלטה: מנוע לייב","Decision: live engine"),m:T("2/3 בעד","2/3 in favor"),chip:"2/3",tone:"gain"},
+      {ico:"list",t:T("עדיפות משימות","Task priority"),m:T("ממתין להצבעתך","Awaiting your voice")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"trophy",lab:T("תוצאות","Results"),to:"owners-results"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-results":()=>({crumb:T("תוצאות","Results"),icon:"trophy",title:T("תוצאות הצבעה","RESULTS"),
+    sub:T("סיכום הצבעות — פריטי שינוי/דחייה עולים ללוח","Vote rollup — change/reject items promote to the board"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"vote",lab:T("הצבעה","Vote"),to:"owners-vote"},{ico:"list",lab:T("ללוח","To board"),to:"owners-board"},{ico:"file",lab:T("ייצוא","Export")}],
+    rows:[
+      {ico:"check",t:T("מנוע לייב · אושר","Live engine · approved"),m:T("2/3 בעד","2/3 in favor"),chip:T("אושר","Approved"),tone:"gain"},
+      {ico:"list",t:T("עיצוב בית · לשינוי","Home design · change"),m:T("קודם ללוח המשימות","Promoted to board"),chip:T("שינוי","Change"),tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-progress":()=>({crumb:T("התקדמות","Progress"),icon:"trending",title:T("התקדמות","PROGRESS"),
+    sub:T("אבני הדרך של המערכת — מה בנינו ומה לפנינו","System milestones — what we built and what's ahead"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"sparkles",lab:T("מה בנינו","Built")},{ico:"target",lab:T("יעדים","Goals")},{ico:"trophy",lab:T("השקה","Launch")}],
+    rows:[
+      {ico:"check",t:T("מנוע מסחר + טייסים","Engine + autopilots"),m:T("הושלם","Done"),chip:T("הושלם","Done"),tone:"gain"},
+      {ico:"cpu",t:T("מסחר לייב אמיתי","Real live trading"),m:T("בבדיקה","In review"),chip:T("בבדיקה","Review"),tone:"gold"},
+      {ico:"target",t:T("השקה ציבורית","Public launch"),m:T("הבא בתור","Next up"),chip:T("בקרוב","Soon"),tone:"blue"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-audit":()=>({crumb:T("ביקורת","Audit"),icon:"shield",title:T("ביקורת","AUDIT"),
+    sub:T("ביקורת יומית לכל הדומיינים — עצמית ומשימות","Daily audit across all domains — self & tasks"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("דומיין","Domain")},{ico:"filter",lab:T("סטטוס","Status")},{ico:"file",lab:T("דוח","Report")}],
+    centers:[
+      {key:"self",ico:"shield",lab:T("ביקורת עצמית","Self Audit Manager"),sub:T("בקרות פנימיות","Internal controls"),to:"audit-self",size:"primary"},
+      {key:"tasks",ico:"list",lab:T("ניהול משימות ביקורת","Tasks Manager"),sub:T("מעקב תיקונים","Track fixes"),to:"audit-tasks",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"briefcase",lab:T("ניהול","Manage"),to:"owners-manage"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "audit-self":()=>({crumb:T("ביקורת עצמית","Self Audit"),icon:"shield",title:T("ביקורת עצמית","SELF AUDIT"),
+    sub:T("בקרות פנימיות לפי תחום וסטטוס","Internal controls by domain and status"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("תחום","Domain")},{ico:"filter",lab:T("סטטוס","Status")},{ico:"plus",lab:T("בקרה","Control"),tone:"gold"}],
+    rows:[
+      {ico:"scale",t:T("משפטי · תנאי שימוש","Legal · ToS"),m:T("לביצוע","To do"),chip:T("לביצוע","To do"),tone:"blue"},
+      {ico:"cpu",t:T("מוצר · מנוע לייב","Product · live engine"),m:T("בעבודה","In process"),chip:T("בעבודה","WIP"),tone:"gold"},
+      {ico:"shield",t:T("אבטחה · מפתחות","Security · keys"),m:T("מאושר","Approved"),chip:T("מאושר","Approved"),tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"list",lab:T("ניהול משימות","Tasks"),to:"audit-tasks"},{ico:"shield",lab:T("חזרה","Back"),to:"owners-audit"}]}),
+
+  "audit-tasks":()=>({crumb:T("משימות ביקורת","Audit tasks"),icon:"list",title:T("משימות ביקורת","AUDIT TASKS"),
+    sub:T("מעקב אחר תיקונים שנפתחו מהביקורת","Track fixes opened from the audit"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("סטטוס","Status")},{ico:"users",lab:T("אחראי","Owner")},{ico:"plus",lab:T("משימה","Task"),tone:"gold"}],
+    rows:[
+      {ico:"list",t:T("עדכון מדיניות פרטיות","Update privacy policy"),m:T("רז · לביצוע","Raz · to do"),chip:T("לביצוע","To do"),tone:"blue"},
+      {ico:"list",t:T("הצפנת מפתחות — בדיקה","Key encryption check"),m:T("אורן · בעבודה","Oren · WIP"),chip:T("בעבודה","WIP"),tone:"gold"},
+      {ico:"check",t:T("גיבוי מסד נתונים","DB backup"),m:T("מאושר","Approved"),chip:T("מאושר","Done"),tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"shield",lab:T("ביקורת עצמית","Self audit"),to:"audit-self"},{ico:"shield",lab:T("חזרה","Back"),to:"owners-audit"}]}),
+
+  "owners-employees":()=>({crumb:T("עובדים","Employees"),icon:"badge",title:T("ניהול עובדים","EMPLOYEES"),
+    sub:T("הוספה, תפקידים, הרשאות ובונוסים","Add, roles, permissions and bonuses"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("עובד חדש","Add"),tone:"gold"},{ico:"badge",lab:T("תפקידים","Roles")},{ico:"coins",lab:T("בונוסים","Bonuses")}],
+    rows:[
+      {ico:"user",t:T("אורן","Oren"),m:T("מנהל · IT","Admin · IT"),chip:T("פעיל","Active"),tone:"gain"},
+      {ico:"user",t:T("רז","Raz"),m:T("משפטי · פורטל","Legal · portal"),chip:T("פעיל","Active"),tone:"gain"},
+      {ico:"user",t:T("רפול","Raful"),m:T("פיתוח עסקי","Business dev"),chip:T("פעיל","Active"),tone:"gain"},
+      {ico:"plus",t:T("הוסף עובד","Add employee"),m:T("שם · תפקיד · הרשאות","Name · role · access")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"users",lab:T("צוות","Team"),to:"owners-team"},{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  "owners-finance":()=>({crumb:T("כספים","Finance"),icon:"wallet",title:T("כספים","FINANCE"),
+    sub:T("מבט פיננסי — בעלים בלבד","Financial view — owners only"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"coins",lab:T("הכנסות","Revenue")},{ico:"file",lab:T("דוחות","Reports")},{ico:"filter",lab:T("טווח","Range")}],
+    rows:[
+      {ico:"coins",t:T("הכנסות חודשיות","Monthly revenue"),m:T("מנויים","Subscriptions"),chip:"$42K",tone:"gain"},
+      {ico:"wallet",t:T("הוצאות","Expenses"),m:T("תשתית · שיווק","Infra · marketing"),chip:"$18K",tone:"loss"},
+      {ico:"trending",t:T("רווח נקי","Net profit"),m:T("החודש","This month"),chip:"$24K",tone:"gain"}],
+    note:T("גישה פיננסית מוגבלת לשלושת הבעלים בלבד (דן/רפי/יואב).","Financial access is limited to the three owners only (Dan/Rafi/Yoav)."),
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("חזרה","Back"),to:"owners"}]}),
+
+  /* ══ COLLABORATOR PORTALS ════════════════════════════════════════════════════ */
+  "legal-portal":()=>({crumb:T("משפטי","Legal"),icon:"scale",title:T("פורטל משפטי","LEGAL PORTAL"),
+    sub:T("החדר הפרטי של רז — צ'אט, סעיפים, עריכה, משימות ודוח","Raz's private room — chat, sections, editing, tasks & report"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"chat",lab:T("צ'אט","Chat")},{ico:"list",lab:T("סעיפים","Sections")},{ico:"file",lab:T("דוח","Report")}],
+    centers:[
+      {key:"edit",ico:"wand",lab:T("עריכת מסמכים","Edit Docs"),sub:T("טקסטים משפטיים","Legal texts"),to:"legal-portal",size:"primary"},
+      {key:"tasks",ico:"list",lab:T("משימות","Tasks"),sub:T("מעקב סעיפים","Track clauses"),to:"legal-portal",size:"secondary"}],
+    rows:[
+      {ico:"scale",t:T("תנאי שימוש","Terms of Service"),m:T("עודכן לאחרונה","Recently updated"),chip:T("עריכה","Edit"),tone:"gold"},
+      {ico:"shield",t:T("מדיניות פרטיות","Privacy Policy"),m:T("פעיל","Live")},
+      {ico:"file",t:T("דוח לבעלים","Report to owners"),m:T("לשלושת הבעלים","To the 3 owners")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("בעלים","Owners"),to:"owners"}]}),
+
+  "it-portal":()=>({crumb:"IT",icon:"wrench",title:T("פורטל IT","IT PORTAL"),
+    sub:T("החדר הפרטי של אורן — תשתית, תקלות ומשימות","Oren's private room — infra, issues & tasks"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"chat",lab:T("צ'אט","Chat")},{ico:"list",lab:T("משימות","Tasks")},{ico:"file",lab:T("דוח","Report")}],
+    centers:[
+      {key:"infra",ico:"cpu",lab:T("תשתית","Infrastructure"),sub:T("שרתים · דיפלוי","Servers · deploy"),to:"it-portal",size:"primary"},
+      {key:"tasks",ico:"list",lab:T("משימות IT","IT Tasks"),sub:T("תקלות ותיקונים","Issues & fixes"),to:"it-portal",size:"secondary"}],
+    rows:[
+      {ico:"monitor",t:T("סטטוס מערכת","System status"),m:T("הכל תקין","All healthy"),chip:T("תקין","OK"),tone:"gain"},
+      {ico:"wrench",t:T("תקלות פתוחות","Open issues"),m:T("2 בטיפול","2 in progress"),chip:"2",tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("בעלים","Owners"),to:"owners"}]}),
+
+  "biz-portal":()=>({crumb:T("עסקי","Biz"),icon:"briefcase",title:T("פיתוח עסקי","BIZ DEV"),
+    sub:T("החדר הפרטי של רפול — שותפויות, לידים ומשימות","Raful's private room — partnerships, leads & tasks"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"chat",lab:T("צ'אט","Chat")},{ico:"users",lab:T("לידים","Leads")},{ico:"file",lab:T("דוח","Report")}],
+    centers:[
+      {key:"deals",ico:"briefcase",lab:T("שותפויות","Partnerships"),sub:T("צנרת עסקאות","Deal pipeline"),to:"biz-portal",size:"primary"},
+      {key:"tasks",ico:"list",lab:T("משימות","Tasks"),sub:T("מעקב לידים","Track leads"),to:"biz-portal",size:"secondary"}],
+    rows:[
+      {ico:"users",t:T("לידים פעילים","Active leads"),m:T("5 בצנרת","5 in pipeline"),chip:"5",tone:"gold"},
+      {ico:"trending",t:T("שותפויות","Partnerships"),m:T("2 בתהליך","2 in progress")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"crown",lab:T("בעלים","Owners"),to:"owners"}]}),
+
+  /* ══ ADMIN CONSOLE (staff) ═══════════════════════════════════════════════════ */
+  admin:()=>({crumb:T("ניהול","Admin"),icon:"settings",title:T("לוח ניהול","ADMIN"),
+    sub:T("בקרת ניהול — משתמשים, מסחר, מערכת ותקשורת","Admin controls — users, trading, system & comms"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"users",lab:T("משתמשים","Users"),to:"admin-users"},{ico:"trending",lab:T("מסחר","Trading"),to:"admin-trading"},
+      {ico:"cpu",lab:T("מערכת","System"),to:"admin-system"},{ico:"chat",lab:T("תקשורת","Comms"),to:"admin-comms"}],
+    centers:[
+      {key:"users",ico:"users",lab:T("משתמשים וגישה","Users & Access"),sub:T("ניהול והרשאות","Manage & permissions"),to:"admin-users",size:"big"},
+      {key:"system",ico:"cpu",lab:T("מערכת ובוטים","System & Bots"),sub:T("בוטים · בטיחות · KPI","Bots · safety · KPI"),to:"admin-system",size:"secondary"},
+      {key:"comms",ico:"chat",lab:T("תקשורת וקידום","Comms & Promo"),sub:T("מענה · קידום","Reply · promote"),to:"admin-comms",size:"tertiary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"trending",lab:T("מסחר ורווח","Trading & P&L"),to:"admin-trading"},{ico:"crown",lab:T("בעלים","Owners"),to:"owners"}]}),
+
+  "admin-users":()=>({crumb:T("משתמשים","Users"),icon:"users",title:T("משתמשים וגישה","USERS"),
+    sub:T("ניהול משתמשים, גישה, תמיכה ותוצאות","Manage users, access, support and results"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"search",lab:T("חיפוש","Search")},{ico:"filter",lab:T("סינון","Filter")},{ico:"plus",lab:T("משתמש","User"),tone:"gold"}],
+    tiles:[
+      {ico:"badge",t:T("גישה ותמיכה","Access & support"),m:T("הרשאות סקשן","Section access")},
+      {ico:"settings",t:T("ניהול משתמשים ומערכת","User & system mgmt"),m:T("מנהל ראשי","Main admin")},
+      {ico:"search",t:T("פירוט משתמש","User lookup"),m:T("חיפוש לפי משתמש","Lookup"),to:"userlookup"},
+      {ico:"trophy",t:T("לוח תוצאות","Leaderboard"),m:T("דמו","Demo"),to:"leaderboard"},
+      {ico:"lifebuoy",t:T("עזרה לאסטרטגיות","Strategy help"),m:T("בקשות עזרה","Help requests"),to:"requests"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"settings",lab:T("חזרה לניהול","Back to Admin"),to:"admin"}]}),
+
+  "admin-trading":()=>({crumb:T("מסחר","Trading"),icon:"trending",title:T("מסחר ורווח","TRADING & P&L"),
+    sub:T("מסחר עצמי, מנוע ודוחות ריצה","Self-trading, engine and run reports"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"exchange",lab:T("בורסה","Exchange"),to:"exchange"},{ico:"cpu",lab:T("מנוע","Engine"),to:"engine"},{ico:"list",lab:T("ריצות","Runs"),to:"runs"}],
+    tiles:[
+      {ico:"exchange",t:T("מסחר עצמי (לייב)","Self-trading (live)"),m:T("חשבון הבורסה","Exchange account"),to:"exchange"},
+      {ico:"cpu",t:T("מנוע מסחר","Trading engine"),m:T("דמו ולייב","Demo & live"),to:"engine"},
+      {ico:"list",t:T("דוח ריצות","Runs report"),m:T("היסטוריה","History"),to:"runs"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"settings",lab:T("חזרה לניהול","Back to Admin"),to:"admin"}]}),
+
+  "admin-system":()=>({crumb:T("מערכת","System"),icon:"cpu",title:T("מערכת ובוטים","SYSTEM & BOTS"),
+    sub:T("בוטים, מדידה, בטיחות, ביקורת וניטור","Bots, measurement, safety, audit and monitoring"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"cpu",lab:T("בוטים","Bots"),to:"botmanager"},{ico:"shield",lab:T("בטיחות","Safety"),to:"safety"},{ico:"chart",lab:T("KPI","KPI"),to:"measurement"}],
+    tiles:[
+      {ico:"cpu",t:T("ניהול בוטים","Bot manager"),m:T("הפעלה ועצירה","Start & stop"),to:"botmanager"},
+      {ico:"chart",t:T("מדידה (KPI)","Measurement (KPI)"),m:T("מדדי מפתח","Key metrics"),to:"measurement"},
+      {ico:"shield",t:T("בטיחות (M4)","Safety (M4)"),m:T("מונים מצטברים","Aggregate counters"),to:"safety"},
+      {ico:"list",t:T("ביקורת יומית","Daily audit"),m:T("Self Audit · Tasks","Self Audit · Tasks"),to:"owners-audit"},
+      {ico:"monitor",t:T("ניטור מסכים","Screen monitoring"),m:T("מסכי משתמשים","User screens"),to:"screens-monitor"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"settings",lab:T("חזרה לניהול","Back to Admin"),to:"admin"}]}),
+
+  "admin-comms":()=>({crumb:T("תקשורת","Comms"),icon:"chat",title:T("תקשורת וקידום","COMMS & PROMO"),
+    sub:T("מענה, דיונים, הודעות מותגות וקידום","Reply, discussions, branded messages and promotion"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"mail",lab:T("מענה","Reply"),to:"replyusers"},{ico:"chat",lab:T("דיונים","Chat"),to:"chat"},{ico:"megaphone",lab:T("קידום","Promote"),to:"promote"}],
+    tiles:[
+      {ico:"mail",t:T("מענה למשתמשים","Reply to users"),m:T("תיבת פניות","Inbox"),to:"replyusers"},
+      {ico:"chat",t:T("דיונים (צ'אט)","Discussions"),m:T("צ'אט צוות","Team chat"),to:"chat"},
+      {ico:"mail",t:T("הודעה מותגת","Branded message"),m:T("להודעות מהצוות","To team inbox"),to:"teammessages"},
+      {ico:"megaphone",t:T("קידום פיצ'ר","Promote feature"),m:T("באנר בית","Home banner"),to:"promote"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"settings",lab:T("חזרה לניהול","Back to Admin"),to:"admin"}]}),
+
+  measurement:()=>({crumb:"KPI",icon:"chart",title:T("מדידה","MEASUREMENT"),
+    sub:T("מדדי מפתח לשימוש ולמערכת (KPI)","Key usage & system metrics (KPI)"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("טווח","Range")},{ico:"file",lab:T("ייצוא","Export")},{ico:"shield",lab:T("בטיחות","Safety"),to:"safety"}],
+    rows:[
+      {ico:"users",t:T("משתמשים פעילים","Active users"),m:T("7 ימים אחרונים","Last 7 days"),chip:"1.2K",tone:"gain"},
+      {ico:"cpu",t:T("הרצות מנוע","Engine runs"),m:T("היום","Today"),chip:"340",tone:"blue"},
+      {ico:"exchange",t:T("חיבורי בורסה","Exchange connects"),m:T("החודש","This month"),chip:"88",tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cpu",lab:T("מערכת","System"),to:"admin-system"}]}),
+
+  safety:()=>({crumb:T("בטיחות","Safety"),icon:"shield",title:T("בטיחות","SAFETY"),
+    sub:T("מונים מצטברים של אירועי בטיחות מסחר","Aggregate counters of trade-safety events"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("טווח","Range")},{ico:"file",lab:T("ייצוא","Export")},{ico:"chart",lab:T("KPI","KPI"),to:"measurement"}],
+    rows:[
+      {ico:"shield",t:T("אישורי לייב","Live confirmations"),m:T("שער בטיחות","Safety gate"),chip:"124",tone:"gain"},
+      {ico:"power",t:T("Kill-switch","Kill-switch"),m:T("הופעל","Triggered"),chip:"2",tone:"loss"},
+      {ico:"lock",t:T("חסימות סיכון","Risk blocks"),m:T("נמנעו","Prevented"),chip:"9",tone:"gold"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cpu",lab:T("מערכת","System"),to:"admin-system"}]}),
+
+  "screens-monitor":()=>({crumb:T("מסכים","Screens"),icon:"monitor",title:T("ניטור מסכים","MONITORING"),
+    sub:T("מסכי המשתמשים — לתמיכה ולבקרה","User screens — for support and oversight"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"search",lab:T("חיפוש","Search")},{ico:"filter",lab:T("סינון","Filter")},{ico:"history",lab:T("צילומים","Captures")}],
+    rows:[
+      {ico:"user",t:T("דני כהן","Danny Cohen"),m:T("מסך: מנוע מסחר","Screen: Engine")},
+      {ico:"user",t:T("מיכל לוי","Michal Levy"),m:T("מסך: בורסה","Screen: Exchange")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cpu",lab:T("מערכת","System"),to:"admin-system"}]}),
+
+  leaderboard:()=>({crumb:T("תוצאות","Leaderboard"),icon:"trophy",title:T("לוח תוצאות","LEADERBOARD"),
+    sub:T("המובילים בדמו — לפי תשואה","Top demo traders — by return"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"filter",lab:T("טווח","Range")},{ico:"history",lab:T("רענן","Refresh")}],
+    rows:[
+      {ico:"trophy",t:T("1 · אלון","1 · Alon"),m:T("דמו","Demo"),chip:"+64%",tone:"gain"},
+      {ico:"trophy",t:T("2 · נועה","2 · Noa"),m:T("דמו","Demo"),chip:"+51%",tone:"gain"},
+      {ico:"trophy",t:T("3 · יובל","3 · Yuval"),m:T("דמו","Demo"),chip:"+43%",tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"users",lab:T("משתמשים","Users"),to:"admin-users"}]}),
+
+  userlookup:()=>({crumb:T("פירוט משתמש","User"),icon:"search",title:T("פירוט משתמש","USER LOOKUP"),
+    sub:T("חיפוש וצפייה בפרטי משתמש","Search and view a user's details"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"search",lab:T("חיפוש","Search")},{ico:"filter",lab:T("סינון","Filter")}],
+    rows:[
+      {ico:"user",t:T("פרופיל","Profile"),m:T("שם · אימייל · מסלול","Name · email · plan")},
+      {ico:"history",t:T("יומן פעילות","Activity log"),m:T("אירועים אחרונים","Recent events")},
+      {ico:"exchange",t:T("סטטוס חיבור","Connection status"),m:T("בורסה מחוברת?","Exchange linked?")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"users",lab:T("משתמשים","Users"),to:"admin-users"}]}),
+
+  replyusers:()=>({crumb:T("מענה","Reply"),icon:"mail",title:T("מענה למשתמשים","REPLY"),
+    sub:T("שליחת מענה אישי וממותג לכל משתמש","Send a personal, branded reply to any user"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("חדש","New"),tone:"gold"},{ico:"search",lab:T("חיפוש","Search")},{ico:"file",lab:T("תבניות","Templates")}],
+    rows:[
+      {ico:"mail",t:T("פנייה מדני כהן","From Danny Cohen"),m:T("שאלה על מנוי","Plan question"),chip:T("פתוח","Open"),tone:"gold"},
+      {ico:"mail",t:T("פנייה ממיכל לוי","From Michal Levy"),m:T("בעיית חיבור","Connect issue"),chip:T("נענה","Replied"),tone:"gain"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chat",lab:T("תקשורת","Comms"),to:"admin-comms"}]}),
+
+  promote:()=>({crumb:T("קידום","Promote"),icon:"megaphone",title:T("קידום פיצ'ר","PROMOTE"),
+    sub:T("באנר קידום בבית — כותרת, טקסט וקישור","Home promo banner — title, text and link"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"plus",lab:T("באנר","Banner"),tone:"gold"},{ico:"monitor",lab:T("תצוגה","Preview")},{ico:"history",lab:T("היסטוריה","History")}],
+    rows:[
+      {ico:"megaphone",t:T("באנר פעיל","Active banner"),m:T("\"טייסים אוטומטיים\"","\"Autopilots\""),chip:T("פעיל","Live"),tone:"gain"},
+      {ico:"plus",t:T("צור באנר חדש","Create new banner"),m:T("כותרת · טקסט · CTA","Title · text · CTA")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chat",lab:T("תקשורת","Comms"),to:"admin-comms"}]}),
+
+  /* ══ HELP / MESSAGES / ONBOARDING ════════════════════════════════════════════ */
+  teammessages:()=>({crumb:T("הודעות","Messages"),icon:"mail",title:T("הודעות מהצוות","TEAM MESSAGES"),
+    sub:T("תשובות והודעות אישיות מצוות StrateTeach","Replies & personal notes from the StrateTeach team"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"bell",lab:T("חדשות","Unread")},{ico:"search",lab:T("חיפוש","Search")},{ico:"history",lab:T("ארכיון","Archive")}],
+    rows:[
+      {ico:"mail",t:T("ברוך הבא ל-Pro","Welcome to Pro"),m:T("מהצוות · לפני יום","From the team · 1d ago"),chip:T("חדש","New"),tone:"gold"},
+      {ico:"mail",t:T("תשובה לפנייתך","Reply to your request"),m:T("חיבור בורסה","Exchange connect")}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"lifebuoy",lab:T("פורטל עזרה","Help portal"),to:"requests"},{ico:"chat",lab:T("צ'אט","Chat"),to:"chat"}]}),
+
+  helpportal:()=>({crumb:T("עזרה","Help"),icon:"lifebuoy",title:T("פורטל עזרה","HELP PORTAL"),
+    sub:T("חיפוש תשובות, שאלות נפוצות ופתיחת פנייה","Search answers, FAQ and open a request"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"search",lab:T("חיפוש","Search")},{ico:"plus",lab:T("פנייה","New"),tone:"gold"},{ico:"book",lab:T("מדריך","Guide"),to:"guide"}],
+    centers:[
+      {key:"search",ico:"search",lab:T("חיפוש תשובות","Search Answers"),sub:T("שאלות נפוצות","FAQ"),to:"requests",size:"primary"},
+      {key:"new",ico:"lifebuoy",lab:T("פתח פנייה","Open Request"),sub:T("צוות התמיכה","Support team"),to:"requests",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"chat",lab:T("צ'אט תמיכה","Support chat"),to:"chat-support"},{ico:"mail",lab:T("הודעות","Messages"),to:"teammessages"}]}),
+
+  onboarding:()=>({crumb:T("קבלת פנים","Welcome"),icon:"sparkles",title:T("ברוכים הבאים","WELCOME"),
+    sub:T("שלושה צעדים קצרים כדי להתחיל","Three short steps to get started"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"play",lab:T("סיור","Tour")},{ico:"globe",lab:T("שפה","Language"),act:"lang"},{ico:"book",lab:T("מדריך","Guide"),to:"guide"}],
+    centers:[
+      {key:"start",ico:"play",lab:T("בוא נתחיל","Let's Start"),sub:T("הקמת החשבון","Set up account"),to:"details",size:"primary"},
+      {key:"connect",ico:"exchange",lab:T("חבר בורסה","Connect Exchange"),sub:T("אופציונלי","Optional"),to:"exchange",size:"secondary"}],
+    note:T("לפני מסחר אמיתי תופיע הסכמה לתנאי שימוש והתראת סיכון.","Before live trading you'll see the ToS consent and a risk warning."),
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"cap",lab:T("אקדמיה","University"),to:"university"},{ico:"power",lab:T("כניסה","Sign in"),to:"login"}]}),
+
+  login:()=>({crumb:T("כניסה","Sign in"),icon:"lock",title:T("כניסה והרשמה","SIGN IN"),
+    sub:T("התחבר לחשבון קיים או פתח חשבון חדש","Log in to an existing account or open a new one"),
+    quickLabel:T("קיצורים","Shortcuts"),
+    quick:[{ico:"globe",lab:T("שפה","Language"),act:"lang"},{ico:"lifebuoy",lab:T("עזרה","Help"),to:"requests"}],
+    centers:[
+      {key:"in",ico:"lock",lab:T("כניסה","Log In"),sub:T("לחשבון קיים","Existing account"),to:"home",size:"primary"},
+      {key:"up",ico:"user",lab:T("הרשמה","Sign Up"),sub:T("חשבון חדש","New account"),to:"onboarding",size:"secondary"}],
+    bottomLabel:T("עוד","More"),
+    bottom:[{ico:"shield",lab:T("פרטיות","Privacy"),to:"privacy"},{ico:"info",lab:T("אודות","About"),to:"about"}]}),
+};
+
+/* ══ EDITABLE TOP SHORTCUTS — the catalog each user picks their 5 from ═════════ */
+const SHORTCUT_CATALOG=[
+  {id:"dashboard",ico:"gauge",lab:T("לוח","Dashboard"),to:"dashboard"},
+  {id:"scan",ico:"search",lab:T("סריקה","Scan"),to:"scan"},
+  {id:"exchange",ico:"exchange",lab:T("בורסה","Exchange"),to:"exchange"},
+  {id:"backtest",ico:"chart",lab:T("באקטסט","Backtest"),to:"backtest"},
+  {id:"chat",ico:"chat",lab:T("צ'אט","Chat"),to:"chat"},
+  {id:"university",ico:"cap",lab:T("אקדמיה","University"),to:"university"},
+  {id:"engine",ico:"cpu",lab:T("מנוע מסחר","Engine"),to:"engine"},
+  {id:"pilots",ico:"bot",lab:T("טייסים","Autopilots"),to:"autopilots"},
+  {id:"signal",ico:"radio",lab:T("סיגנל בוט","Signal Bot"),to:"signalbot"},
+  {id:"strategy",ico:"wand",lab:T("אסטרטגיות","Strategy"),to:"strategy"},
+  {id:"analytics",ico:"chart",lab:T("ביצועים","Performance"),to:"analytics"},
+  {id:"accounts",ico:"wallet",lab:T("חשבונות","Accounts"),to:"accounts"},
+  {id:"plans",ico:"crown",lab:T("מסלולים","Plans"),to:"plans"},
+  {id:"help",ico:"lifebuoy",lab:T("עזרה","Help"),to:"requests"},
+  {id:"telegram",ico:"radio",lab:T("טלגרם","Telegram"),to:"telegram"},
+  {id:"activity",ico:"activity",lab:T("פעילות","Activity"),to:"activity"},
+];
+const catItem=id=>SHORTCUT_CATALOG.find(s=>s.id===id);
+
+/* ══ REAL bottom TAB BAR (Home/Trading/Learn/Chat/Account) + section mapping ═══ */
+const TABS=[
+  {key:"home",ico:"home",lab:T("בית","Home"),to:"home"},
+  {key:"trade",ico:"trending",lab:T("מסחר","Trading"),to:"trading"},
+  {key:"learn",ico:"cap",lab:T("למידה","Learn"),to:"university"},
+  {key:"chat",ico:"chat",lab:T("צ'אט","Chat"),to:"chat"},
+  {key:"account",ico:"user",lab:T("חשבון","Account"),to:"portal"},
+];
+const TAB_MATCH={
+  trade:["trading","engine","engine-demo","engine-live","autopilots","signalbot","botmanager","dashboard","scan","scan-new","scan-breakouts","scan-compare","backtest","bt-new","bt-saved","strategy","analytics","activity","runs","telegram","exchange","exchange-connect","accounts"],
+  learn:["university","uni-courses","uni-reels","reels","guide"],
+  chat:["chat","chat-support","chat-community"],
+  account:["portal","details","privacy","mydata","plans","teammessages","requests","helpportal","about","admin","admin-users","admin-trading","admin-system","admin-comms","measurement","safety","screens-monitor","leaderboard","userlookup","replyusers","promote","owners","owners-manage","owners-trade","owners-daily","owners-team","owners-board","owners-vote","owners-results","owners-progress","owners-audit","audit-self","audit-tasks","owners-employees","owners-finance","legal-portal","it-portal","biz-portal","portals-others","login","onboarding"],
+};
+function tabFor(id){
+  if(id==="more")id=state.moreParent||"home";
+  if(id==="home")return "home";
+  for(const k of Object.keys(TAB_MATCH))if(TAB_MATCH[k].includes(id))return k;
+  return "";
+}
+
+/* Resolve a screen config by id — including the DYNAMIC "more" child, which shows
+   the parent screen's secondary actions (what used to be the bottom panel) as a grid. */
+function getCfg(id){
+  if(id==="more"){
+    const p=SCREENS[state.moreParent]?SCREENS[state.moreParent]():{title:T("מסך","Screen")};
+    return {crumb:T("עוד במערכת","More"),icon:"layers",title:T("עוד במערכת","MORE"),
+      sub:T("עוד מסכים ופעולות של המערכת בהקשר זה","More of the app's screens & actions for this context"),
+      moreItems:(p.bottom||[]),parentTitle:p.title};
+  }
+  return SCREENS[id]();
+}
+
+/* The screen's MAIN list, normalized so it can render as EITHER rows or tiles.
+   Each screen carries at most one of: rows · tiles · pilotTiles · accountRows · moreItems. */
+function mainList(cfg){
+  if(cfg.rows)return {kind:"rows",native:"rows",items:cfg.rows};
+  if(cfg.accountRows)return {kind:"account",native:"rows",items:cfg.accountRows};
+  if(cfg.tiles)return {kind:"tiles",native:"tiles",items:cfg.tiles};
+  if(cfg.pilotTiles)return {kind:"pilot",native:"tiles",items:cfg.pilotTiles.map(p=>({badge:p.n,t:p.name,m:p.m}))};
+  if(cfg.moreItems)return {kind:"more",native:"tiles",items:cfg.moreItems.map(b=>({ico:b.ico,t:b.lab,to:b.to,act:b.act}))};
+  return null;
+}
+
+/* ── NAVIGATION ─────────────────────────────────────────────────────────────── */
+function nav(id){if(id!=="more"&&!SCREENS[id])return;state.stack.push(id);render();window.scrollTo(0,0);}
+function back(){if(state.stack.length>1){state.stack.pop();render();window.scrollTo(0,0);}}
+function go(item){
+  if(item.act==="lang"){toggleLang();return;}
+  if(item.to)nav(item.to);
+}
+
+/* ── RENDER ─────────────────────────────────────────────────────────────────── */
+function el(html){const d=document.createElement("div");d.innerHTML=html;return d.firstElementChild;}
+function toneColor(t){return t==="gain"?"var(--gain)":t==="loss"?"var(--loss)":t==="blue"?"var(--blue)":"var(--gold)";}
+function toneChip(t){const c=toneColor(t);return`background:${state.mode==='dark'?'rgba(255,255,255,.08)':'rgba(0,0,0,.05)'};color:${c};border:1px solid ${c}`;}
+
+function render(){
+  const id=state.stack[state.stack.length-1];
+  const cfg=getCfg(id);
+  const app=document.getElementById("app");
+  const list=mainList(cfg);
+  const view=list?(state.viewMode||list.native):null;   // rows ⇄ tiles (native until toggled)
+  let h="";
+
+  /* top bar: back + breadcrumb */
+  h+=`<div class="topbar">`;
+  if(state.stack.length>1)h+=`<button class="back" onclick="back()">${ic("chevron",16)}<span>${tt("חזרה","Back")}</span></button>`;
+  const crumbs=state.stack.map((sid,i)=>{const c=getCfg(sid);const label=c.crumb?L(c.crumb):sid;
+    return i===state.stack.length-1?`<b>${label}</b>`:`<span class="cn" data-cn="${i}">${label}</span>`;});
+  h+=`<div class="crumb">${crumbs.join('<span class="sep">›</span>')}</div>`;
+  h+=`</div>`;
+
+  /* title lockup + subtitle */
+  h+=`<div class="titlewrap">`;
+  const tIcon=cfg.icon?`<span class="tchip">${ic(cfg.icon,20)}</span>`:"";
+  h+=`<h1 class="lockup">${tIcon}<span>${cfg.wordmark?cfg.wordmark:L(cfg.title)}</span></h1>`;
+  if(cfg.sub)h+=`<p class="subtitle">${L(cfg.sub)}</p>`;
+  h+=`</div>`;
+
+  /* HOME-only market ticker (real cycling taglines) */
+  if(cfg.ticker&&cfg.ticker.length){
+    const items=cfg.ticker.concat(cfg.ticker).map(s=>`<span>${L(s)} ✦</span>`).join("");
+    h+=`<div class="ticker"><div class="tk">${items}</div></div>`;
+  }
+
+  h+=`<div class="fade">`;
+
+  /* TOP: EDITABLE shortcuts panel — each user picks their own 5 (pencil to edit).
+     "עוד במערכת" is ONE chip inside this row (not a separate entry) that opens the
+     screen's extras child. Hidden on the dynamic "more" child itself. */
+  if(id!=="more"){
+    h+=`<div class="slabel slabelrow"><span>${tt("הקיצורים שלי","My shortcuts")} <span class="hint">· ${tt(state.shortcuts.length+"/5","up to 5")}</span></span><button class="scedit-btn" id="sc-edit">${ic("pencil",13)} ${tt("ערוך","Edit")}</button></div>`;
+    h+=`<div class="panel"><div class="qrow">`;
+    // "עוד במערכת" leads the row (always visible) — one chip that opens this screen's
+    // extras child; then the user's up-to-5 shortcuts; then the edit tile.
+    if(cfg.bottom&&cfg.bottom.length)
+      h+=`<button class="qpill qmore" id="more-open"><span class="qi">${ic("layers",18)}</span>${tt("עוד במערכת","More")}</button>`;
+    state.shortcuts.slice(0,MAX_SHORTCUTS).forEach((sid,i)=>{const s=catItem(sid);if(!s)return;
+      h+=`<button class="qpill" data-sc="${i}"><span class="qi">${ic(s.ico,18)}</span>${L(s.lab)}</button>`;});
+    h+=`<button class="qpill qedit-tile" id="sc-edit2"><span class="qi" style="background:transparent;border:1px dashed var(--glass-bd)">${ic("pencil",16)}</span>${tt("ערוך","Edit")}</button>`;
+    h+=`</div></div>`;
+  }
+
+  /* MIDDLE: central buttons */
+  if(cfg.centers&&cfg.centers.length){
+    const n=cfg.centers.length;
+    // equal → symmetric n2; two hierarchical buttons → asymmetric hier2 (bigger primary);
+    // otherwise n1/n3 (n3 renders its first button full-width & big).
+    const cls=cfg.equalCenters?"n2":(n===2?"hier2":("n"+Math.min(n,3)));
+    h+=`<div class="centers ${cls}">`;
+    cfg.centers.forEach((c,i)=>{
+      let scls=c.size==="primary"||c.size==="big"?"primary":"secondary";
+      let extra="";
+      if(n===3&&i===0){extra="big";scls="primary";}
+      if(cfg.equalCenters)scls=i===0?"primary":"secondary";
+      if(c.warn)extra+=" warn";
+      const badge=c.badge?`<span class="cbadge">${L(c.badge)}</span>`:"";
+      h+=`<button class="center ${scls} ${extra}" data-c="${i}">${badge}<span class="cico">${ic(c.ico,24)}</span><span class="clab">${L(c.lab)}</span>${c.sub?`<span class="csub">${L(c.sub)}</span>`:""}</button>`;
+    });
+    h+=`</div>`;
+  }
+
+  /* HOME-only portfolio / P&L card — real live↔demo toggle + source rows. This is a
+     HOME-specific panel (NOT copied to other screens; only the design STRUCTURE is
+     shared, not Home's data). */
+  if(cfg.pnl){
+    const p=cfg.pnl, mode=state.pnlMode||"live", md=p.modes.find(m=>m.k===mode)||p.modes[0];
+    const rows=(mode==="live"?p.live:p.demo)||[];
+    h+=`<div class="pnlcard"><div class="ph"><span class="pt">${ic("wallet",16)} ${L(p.title)}</span><div class="pmodes">`;
+    p.modes.forEach(m=>{h+=`<button class="pmode ${mode===m.k?("on-"+m.k):""}" data-pmode="${m.k}">${ic(m.k==="live"?"radio":"flask",12)} ${L(m.lab)}</button>`;});
+    h+=`</div></div>`;
+    h+=`<div class="ptotal"><span class="pamt" style="color:${mode==="live"?"var(--loss)":"var(--blue)"}">${L(md.amount)}</span><span class="plab">${L(p.totalLab)}</span></div>`;
+    rows.forEach(r=>{const c=toneColor(r.tone);
+      h+=`<div class="psrc"><span class="pico">${ic(r.ico,16)}</span><span class="psname">${L(r.name)}</span><span class="psbadge" style="${toneChip(r.tone)}">${L(r.badge)}</span><span class="psval" style="color:${c}">${L(r.val)}</span></div>`;});
+    if(p.note)h+=`<div class="note" style="margin:8px 0 0">${ic("info",15)}<span>${L(p.note)}</span></div>`;
+    h+=`</div>`;
+  }
+
+  /* exchange picker grid (special — not part of the rows/tiles toggle) */
+  if(cfg.exchangeGrid){
+    h+=`<div class="slabel">${tt("בחר בורסה","Pick an exchange")}</div>`;
+    h+=`<div class="tiles g3">`;
+    cfg.exchangeGrid.forEach((x,i)=>{
+      h+=`<button class="tile ex" data-ex="${i}" style="${x.on?'border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),var(--glass-hi)':''}"><span class="exb" ${x.on?'style="background:var(--accent-grad);color:var(--btn-ink);border:none"':''}>${x.letter}</span><span class="tt" style="font-size:11.5px">${x.name}</span></button>`;
+    });
+    h+=`</div>`;
+  }
+
+  /* MAIN service list — renders as ROWS or TILES with a header view toggle */
+  if(list){
+    const label=cfg.listLabel?L(cfg.listLabel)
+      :list.kind==="account"?tt("חשבונות","Accounts")
+      :list.kind==="pilot"?tt("הטייסים","The pilots")
+      :list.kind==="more"?tt("פעולות","Actions")
+      :tt("שירותים","Services");
+    h+=`<div class="listhead"><span class="slabel" style="margin:0">${label}</span>`;
+    h+=`<div class="vtog"><button data-view="rows" class="${view==="rows"?"on":""}">${ic("list",14)} ${tt("רשימה","Rows")}</button>`;
+    h+=`<button data-view="tiles" class="${view==="tiles"?"on":""}">${ic("grid",14)} ${tt("ריבועים","Tiles")}</button></div></div>`;
+    h+=renderList(list,view);
+  }
+
+  /* feature-connect toggles (special) */
+  if(cfg.features){
+    h+=`<div class="slabel">${tt("חבר לפיצ'רים","Connect to features")}</div>`;
+    h+=`<div class="rows">`;
+    cfg.features.forEach(f=>{
+      const on=state.toggles[f.key];
+      h+=`<div class="row" style="cursor:default"><span class="rico">${ic(f.ico,18)}</span><span class="rmid"><span class="rt">${L(f.lab)}</span><span class="rm">${on?tt("מחובר · יעבור להגדרות LIVE","Linked · goes to LIVE settings"):tt("כבוי","Off")}</span></span><button class="tog ${on?'on':''}" data-tog="${f.key}"><i></i></button></div>`;
+    });
+    h+=`</div>`;
+    if(cfg.featuresNote)h+=`<div class="note">${ic("info",16)}<span>${L(cfg.featuresNote)}</span></div>`;
+  }
+
+  /* note */
+  if(cfg.note)h+=`<div class="note ${cfg.noteWarn?'warn':''}">${ic(cfg.noteWarn?"shield":"info",16)}<span>${L(cfg.note)}</span></div>`;
+
+  /* (bottom panel removed — extras now live behind the "More settings" top entry,
+     and the app's real bottom TabBar is the single persistent bottom nav.) */
+
+  h+=`<div class="kv">StrateTeach · ${tt("מבנה מסכים — הדגמה","screen structure — mockup")} · v3</div>`;
+  h+=`</div>`;
+
+  app.innerHTML=h;
+
+  /* wire handlers */
+  app.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{const s=catItem(state.shortcuts[+b.dataset.sc]);if(s)go(s);});
+  const scEdit=document.getElementById("sc-edit");if(scEdit)scEdit.onclick=openEdit;
+  const scEdit2=document.getElementById("sc-edit2");if(scEdit2)scEdit2.onclick=openEdit;
+  const moreOpen=document.getElementById("more-open");if(moreOpen)moreOpen.onclick=()=>openMore(id);
+  app.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>go(cfg.centers[+b.dataset.c]));
+  app.querySelectorAll("[data-cn]").forEach(s=>s.onclick=()=>goToStack(+s.dataset.cn));
+  app.querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>{state.exchange=cfg.exchangeGrid[+b.dataset.ex].name;render();});
+  app.querySelectorAll("[data-tog]").forEach(b=>b.onclick=()=>{const k=b.dataset.tog;state.toggles[k]=!state.toggles[k];render();});
+  app.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{state.viewMode=b.dataset.view;render();});
+  app.querySelectorAll("[data-pmode]").forEach(b=>b.onclick=()=>{state.pnlMode=b.dataset.pmode;render();});
+  app.querySelectorAll("[data-li]").forEach(b=>b.onclick=()=>{const it=list.items[+b.dataset.li];
+    if(list.kind==="account"){state.account=it.key;render();return;}
+    if(it.to)nav(it.to);else if(it.act==="lang")toggleLang();});
+
+  renderTabBar();
+}
+
+/* render the MAIN list as rows OR tiles (both fully working) */
+function renderList(list,view){
+  const accActive=it=>list.kind==="account"&&state.account===it.key;
+  if(view==="tiles"){
+    let h=`<div class="tiles">`;
+    list.items.forEach((it,i)=>{
+      const on=accActive(it);
+      const ico=it.badge!=null?`<span class="tico">${it.badge}</span>`:`<span class="tico"${on?' style="background:var(--accent-grad);color:var(--btn-ink)"':''}>${ic(it.ico||"dot",18)}</span>`;
+      const chipTone=list.kind==="account"?(on?"gain":"gold"):it.tone;
+      const chipText=list.kind==="account"?(on?tt("פעיל","Active"):tt("בחר","Select")):(it.chip?L(it.chip):"");
+      const chip=chipText?`<span class="rchip" style="${toneChip(chipTone)};position:absolute;top:9px;inset-inline-end:9px">${chipText}</span>`:"";
+      h+=`<button class="tile" data-li="${i}" style="position:relative;${on?"border-color:var(--gold)":""}">${chip}${ico}<span class="tt">${L(it.t)}</span>${it.m?`<span class="ts">${L(it.m)}</span>`:""}</button>`;
+    });
+    return h+`</div>`;
+  }
+  let h=`<div class="rows">`;
+  list.items.forEach((it,i)=>{
+    const on=accActive(it);
+    const ico=it.badge!=null?`<span class="rico">${it.badge}</span>`:`<span class="rico"${on?' style="background:var(--accent-grad);color:var(--btn-ink)"':''}>${ic(it.ico||"dot",18)}</span>`;
+    let chip="";
+    if(list.kind==="account")chip=`<span class="rchip" style="${toneChip(on?"gain":"gold")}">${on?tt("פעיל","Active"):tt("בחר","Select")}</span>`;
+    else if(it.chip)chip=`<span class="rchip" style="${toneChip(it.tone)}">${L(it.chip)}</span>`;
+    const arrow=list.kind!=="account"?`<span class="rarrow">${ic("arrow",16)}</span>`:"";
+    h+=`<button class="row" data-li="${i}" style="${on?"border-color:var(--gold)":""}">${ico}<span class="rmid"><span class="rt">${L(it.t)}</span>${it.m?`<span class="rm">${L(it.m)}</span>`:""}</span>${chip}${arrow}</button>`;
+  });
+  return h+`</div>`;
+}
+
+/* real bottom TAB BAR — always present, highlights the active section */
+function renderTabBar(){
+  const el=document.getElementById("tabbar");
+  const act=tabFor(state.stack[state.stack.length-1]);
+  el.innerHTML=TABS.map(t=>`<button data-tab="${t.key}" class="${t.key===act?"on":""}"><span class="tacc"></span>${ic(t.ico,21)}<span class="tlab">${L(t.lab)}</span></button>`).join("");
+  el.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>navTab(b.dataset.tab));
+}
+function navTab(key){const t=TABS.find(x=>x.key===key);
+  state.stack=key==="home"?["home"]:["home",t.to];render();window.scrollTo(0,0);}
+
+/* the "More settings" child = the parent screen's extras as a grid */
+function openMore(parentId){state.moreParent=parentId;nav("more");}
+
+/* ── SHORTCUTS EDIT SHEET (pick your 5) ─────────────────────────────────────── */
+function openEdit(){state.editOpen=true;renderOverlay();}
+function closeEdit(){state.editOpen=false;renderOverlay();}
+function toggleSc(id){const i=state.shortcuts.indexOf(id);
+  if(i>=0)state.shortcuts.splice(i,1);
+  else if(state.shortcuts.length<MAX_SHORTCUTS)state.shortcuts.push(id);
+  renderOverlay();render();}
+function renderOverlay(){
+  const o=document.getElementById("overlay");
+  if(!state.editOpen){o.innerHTML="";return;}
+  let h=`<div class="ovl" id="ovl-bg"><div class="ovlcard">`;
+  h+=`<div class="ovlhead"><h3>${tt("הקיצורים שלי","My shortcuts")}</h3><button class="done" id="ovl-done">${tt("סיום","Done")}</button></div>`;
+  h+=`<p class="ovlsub">${tt(`בחרו עד 5 קיצורים שיופיעו בראש כל מסך (${state.shortcuts.length}/5).`,`Pick up to 5 shortcuts shown atop every screen (${state.shortcuts.length}/5).`)}</p>`;
+  h+=`<div class="ovlgrid">`;
+  SHORTCUT_CATALOG.forEach(s=>{
+    const sel=state.shortcuts.includes(s.id);
+    const dis=!sel&&state.shortcuts.length>=MAX_SHORTCUTS;
+    h+=`<button class="ovlopt ${sel?"sel":""} ${dis?"dis":""}" data-opt="${s.id}"><span class="oico">${ic(s.ico,16)}</span><span>${L(s.lab)}</span>${sel?`<span class="ochk">${ic("check",16)}</span>`:""}</button>`;
+  });
+  h+=`</div></div></div>`;
+  o.innerHTML=h;
+  document.getElementById("ovl-done").onclick=closeEdit;
+  document.getElementById("ovl-bg").onclick=e=>{if(e.target.id==="ovl-bg")closeEdit();};
+  o.querySelectorAll("[data-opt]").forEach(b=>b.onclick=()=>{if(!b.classList.contains("dis"))toggleSc(b.dataset.opt);});
+}
+
+function goToStack(i){state.stack=state.stack.slice(0,i+1);render();window.scrollTo(0,0);}
+window.back=back;window.goToStack=goToStack;
+
+/* ── CONTROL DOCK ───────────────────────────────────────────────────────────── */
+function buildDock(){
+  /* role segment */
+  const roles=[["user",T("משתמש","User")],["employee",T("עובד","Employee")],["owner",T("בעלים","Owner")]];
+  const segRole=document.getElementById("seg-role");
+  segRole.innerHTML=roles.map(r=>`<button data-role="${r[0]}" class="${state.role===r[0]?'on':''}">${L(r[1])}</button>`).join("");
+  segRole.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    state.role=b.dataset.role;
+    /* reset to home if current screen is now gated away */
+    const id=state.stack[state.stack.length-1];
+    if((id==="owners"||id.startsWith("owners-"))&&state.role!=="owner")state.stack=["home"];
+    if(id==="portals-others"&&state.role==="user")state.stack=["home"];
+    render();buildDock();
+  });
+  /* skins */
+  const skins=document.getElementById("skins");
+  skins.innerHTML=Object.keys(PALETTES).map(k=>{
+    const p=PALETTES[k][state.mode];
+    return`<button class="sw ${state.skin===k?'on':''}" data-skin="${k}" style="background:linear-gradient(135deg,${p.fan[0]},${p.gold},${p.fan[p.fan.length-1]})">${PALETTES[k].label}</button>`;
+  }).join("");
+  skins.querySelectorAll("button").forEach(b=>b.onclick=()=>{state.skin=b.dataset.skin;applyTheme();render();buildDock();});
+  /* labels + buttons */
+  document.getElementById("lab-role").textContent=tt("תפקיד","Role");
+  document.getElementById("lab-skin").textContent=tt("מראה","Skin");
+  document.getElementById("btn-lang").textContent=state.lang==="he"?"EN":"עב";
+  document.getElementById("btn-mode").textContent=state.mode==="dark"?"☀":"☾";
+  document.getElementById("mockflag").textContent=tt("Mockup · הדגמה בלבד — לא האפליקציה האמיתית","Mockup · demo only — not the real app");
+}
+function toggleLang(){state.lang=state.lang==="he"?"en":"he";
+  document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==="he"?"rtl":"ltr";
+  render();buildDock();}
+document.getElementById("btn-lang").onclick=toggleLang;
+document.getElementById("btn-mode").onclick=()=>{state.mode=state.mode==="dark"?"light":"dark";applyTheme();render();buildDock();};
+document.getElementById("btn-flip").onclick=()=>{state.homePrimary=state.homePrimary==="trading"?"portal":"trading";
+  /* jump to home so Dan sees the effect immediately */
+  state.stack=["home"];render();};
+
+/* ── BOOT ───────────────────────────────────────────────────────────────────── */
+applyTheme();buildDock();render();
+</script>
+</body>
+</html>

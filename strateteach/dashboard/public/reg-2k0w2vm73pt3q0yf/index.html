@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+<meta name="referrer" content="no-referrer" />
+<title>StrateTeach — תאימות רגולטורית · סיכום והשלכות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1220; --bg2:#141a2e; --card:#161d33; --card2:#1b2340;
+    --ink:#eef2fb; --soft:#b7c0d8; --faint:#8590ad; --line:#2a3352;
+    --accent:#f7b500; --accent2:#7cc04e; --blue:#5cb3ff; --pink:#ec4899;
+    --gain:#39e08d; --loss:#ff6d7a;
+    --maxw:860px;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:
+      radial-gradient(60% 40% at 12% 0%, rgba(92,179,255,0.09), transparent 60%),
+      radial-gradient(50% 40% at 92% 4%, rgba(236,72,153,0.07), transparent 60%),
+      radial-gradient(60% 50% at 80% 100%, rgba(124,192,78,0.06), transparent 60%),
+      linear-gradient(170deg, #0e1220 0%, #10152a 60%, #0c1020 100%);
+    color:var(--ink);
+    font-family:"Heebo", "Segoe UI", "Assistant", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size:16px; line-height:1.7; letter-spacing:-0.003em;
+    padding:28px 16px 80px; min-height:100vh;
+  }
+  .wrap{ max-width:var(--maxw); margin:0 auto; }
+  .head{
+    background:linear-gradient(160deg, var(--card2), var(--card));
+    border:1px solid var(--line); border-radius:20px; padding:26px 24px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,0.7); position:relative; overflow:hidden;
+  }
+  .head::before{ content:""; position:absolute; inset:0 0 auto 0; height:4px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2) 45%, var(--blue)); }
+  .head h1{ font-size:1.62rem; font-weight:900; margin:6px 0 4px; line-height:1.28; letter-spacing:-0.01em; }
+  .head .sub{ font-size:1.02rem; font-weight:700; color:var(--soft); margin:0 0 14px; }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .chip{ font-size:0.82rem; font-weight:700; color:var(--soft);
+    background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:999px; padding:5px 12px; }
+  .chip b{ color:var(--ink); font-weight:800; }
+  .chip .st{ color:var(--accent); }
+  section{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:22px 22px; margin-top:18px; box-shadow:0 18px 44px -34px rgba(0,0,0,0.7);
+  }
+  h2{ font-size:1.24rem; font-weight:900; margin:2px 0 14px; padding-bottom:12px;
+    border-bottom:1px solid var(--line); line-height:1.3; }
+  h2 .n{ display:inline-flex; align-items:center; justify-content:center;
+    min-width:30px; height:30px; padding:0 8px; margin-inline-end:10px; border-radius:9px;
+    background:rgba(247,181,0,0.14); color:var(--accent); font-size:0.95rem; font-weight:900; vertical-align:2px; }
+  h3{ font-size:1.05rem; font-weight:800; color:var(--soft); margin:0 0 10px; }
+  p{ margin:0 0 12px; }
+  strong,b{ color:#fff; font-weight:800; }
+  code{ font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size:0.88em; background:rgba(124,192,78,0.10); color:#cfe9b6;
+    border:1px solid rgba(124,192,78,0.22); border-radius:6px; padding:1px 6px; direction:ltr; unicode-bidi:isolate; }
+  ul,ol{ margin:0 0 10px; padding-inline-start:0; padding-inline-end:22px; }
+  li{ margin:0 0 9px; }
+  li::marker{ color:var(--accent); }
+  .tblwrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:6px 0 6px; border-radius:12px; border:1px solid var(--line); }
+  table{ border-collapse:collapse; width:100%; min-width:560px; font-size:0.94rem; }
+  thead th{ background:linear-gradient(180deg, #212a49, #1a2140); color:#fff; font-weight:800;
+    text-align:start; padding:11px 13px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody td{ padding:11px 13px; border-bottom:1px solid var(--line); color:var(--soft); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:nth-child(even) td{ background:rgba(255,255,255,0.015); }
+  tbody td:first-child{ color:var(--ink); font-weight:700; }
+  td strong, th strong{ color:#fff; }
+  blockquote{ margin:10px 0 0; padding:14px 16px; border-inline-start:3px solid var(--accent);
+    background:rgba(247,181,0,0.06); border-radius:0 12px 12px 0; color:var(--soft); font-style:italic; }
+  .flag{ border-inline-start:3px solid var(--loss); background:rgba(255,109,122,0.06); border-radius:0 12px 12px 0; padding:12px 15px; margin:10px 0 0; color:var(--soft); }
+  .ok{ border-inline-start:3px solid var(--gain); background:rgba(57,224,141,0.06); border-radius:0 12px 12px 0; padding:12px 15px; margin:10px 0 0; color:var(--soft); }
+  .warn{ border-inline-start:3px solid var(--accent); background:rgba(247,181,0,0.07); border-radius:0 12px 12px 0; padding:12px 15px; margin:10px 0 0; color:var(--soft); }
+  .foot{ text-align:center; color:var(--faint); font-size:0.8rem; margin-top:26px; line-height:1.6; }
+  .confidential{ display:inline-block; margin-bottom:6px; font-weight:800; color:var(--accent); letter-spacing:0.04em; font-size:0.78rem; }
+  @media (max-width:560px){
+    body{ font-size:15px; padding:18px 11px 64px; }
+    .head{ padding:20px 17px; border-radius:16px; } .head h1{ font-size:1.34rem; }
+    section{ padding:18px 15px; border-radius:14px; } h2{ font-size:1.12rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div class="confidential">● סודי · לעיני הבעלים בלבד</div>
+    <h1>תאימות רגולטורית — סיכום, השלכות טכניות, ואופציות</h1>
+    <p class="sub">נלווה לישיבה עם עו"ד רז סיטבון (16.7.2026) · הכנה לשיחת Follow-Up</p>
+    <div class="meta">
+      <span class="chip"><b>עודכן:</b> 2026‑07‑19</span>
+      <span class="chip"><b>בעלים:</b> דן · רפי · יואב</span>
+      <span class="chip"><b>סטטוס:</b> <span class="st">לדיון — לפני החלטת‑מודל</span></span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">0</span>הבהרה</h2>
+    <p>המסמך הזה מתרגם את מה שרז אמרה ל<strong>השלכות טכניות ומוצריות</strong> — הוא אינו ייעוץ משפטי. כל הכרעה משפטית (מה מותר, מה "Good Enough") היא של רז, בכתב. הסעיפים המסומנים <strong>«לאישור רז»</strong> ממתינים לה.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span>הממצא המרכזי (מרז)</h2>
+    <ul>
+      <li><strong>מסחר אלגוריתמי = ניהול תיקים</strong> לפי פסיקת מחוזי בישראל → דורש <strong>רישיון</strong>.</li>
+      <li>ההבחנה הקובעת: <strong>מי מחליט?</strong> המערכת ממליצה/מחליטה (טעון‑רישיון) מול המשתמש מחליט בעצמו (שיקול‑דעת).</li>
+      <li>אסטרטגיות‑מובנות שהמערכת מציעה עלולות להיחשב <strong>ייעוץ השקעות</strong>.</li>
+      <li>פעילות ללא רישיון → הליך <strong>מנהלי או פלילי</strong>. רז הבחינה: תיקי‑מרמה (הבטחות‑שווא) חמורים; חוסר‑רישיון בלבד → בעיקר קנס/מנהלי (דוגמת אמיר נדיב — עבודות‑שירות).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>מה זה משנה אצלנו — הפרדה קריטית</h2>
+    <p>שני מישורים שונים לגמרי מבחינת חשיפה:</p>
+    <div class="ok">
+      <strong>הון‑הבעלים (הקרן המשותפת · 3‑מ‑3) — כספכם שלכם.</strong> מסחר בכסף של עצמך אינו ניהול‑תיקים ואינו דורש רישיון. כל שירות‑הביצוע שנבנה עד כה מכוון <strong>אך ורק</strong> לכאן, נשאר DISARMED, testnet, ו‑mainnet חסום עד סגירת הרישוי בכתב. <strong>ממשיך כרגיל.</strong> «לאישור רז: שהקרן המשותפת אכן מחוץ להגדרה».
+    </div>
+    <div class="flag">
+      <strong>הצד הלקוחי — כספי משתמשים.</strong> אסטרטגיות‑מובנות ו‑AutoPilot שלקוחות מפעילים על כסף אמיתי = בדיוק הסיכון שרז תיארה. <strong>זה חסום ונשאר חסום</strong> עד הכרעת‑מודל + רישוי. תואם למה שדן כבר קבע: אסטרטגיות בדמו בלבד, ללא כסף אמיתי.
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>האופציות שעלו — וההשלכה הטכנית של כל אחת</h2>
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th>אופציה</th><th>הרעיון (מהישיבה)</th><th>השלכה טכנית אצלנו</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>שאלון אינטראקטיבי</strong></td>
+            <td>המשתמש עונה על שאלות ובונה את האסטרטגיה בעצמו — שיקול‑דעת שלו; המערכת רק מנגישה אפשרויות (יואב: להסליל לאסטרטגיה של דן בלי לחשוף שהיא מובנית).</td>
+            <td>פיצ'ר‑פרונט חדש: מנוע‑שאלון שמרכיב קונפיג אסטרטגיה מבחירות המשתמש. בינוני. לא נוגע בשירות‑הביצוע. «לאישור רז שהניסוח עובר».</td>
+          </tr>
+          <tr>
+            <td><strong>מודל B2B</strong></td>
+            <td>מכירת התוכנה ליועצי‑השקעות בעלי‑רישיון שישתמשו בה ללקוחותיהם; אורן: להתחיל מגוף קטן ולהוכיח היתכנות.</td>
+            <td>שכבת‑הרשאות ל"יועץ" (מנהל לקוחות משלו) — נשען על מודל‑התפקידים/פרויקטים שכבר בנינו (P2). בינוני‑גדול.</td>
+          </tr>
+          <tr>
+            <td><strong>ביטקוין‑בלבד</strong></td>
+            <td>הגבלה ל‑BTC שאינו מוגדר כנייר‑ערך. רז שאלה אם זה Good Enough.</td>
+            <td><strong>קטן.</strong> לבוטים יש שדה <code>pair</code>; אפשר לאכוף <code>BTC‑only</code> צד‑שרת כמעצור‑תאימות. מוכן להרמה מיידית אם רז מאשרת.</td>
+          </tr>
+          <tr>
+            <td><strong>פעילות בינ"ל</strong></td>
+            <td>הפעלה מחוץ לישראל, שם הרגולציה נוחה יותר.</td>
+            <td>עסקי/משפטי בעיקר (ישות, tos, geo‑gating). טכנית: geo‑fence + tos לפי תחום‑שיפוט. תלוי‑החלטה.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>קריפטו מול ני"ע (מרז): בישראל המגמה להכיר בקריפטו כני"ע <strong>למעט ביטקוין</strong> (קרדנו הוגדר ני"ע); בארה"ב רוב ה‑Top‑100 אינם ני"ע; XRP ניצח את ה‑SEC בארה"ב אך בישראל ייתכן אחרת.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>מה כבר ביצענו (עודכן 19.7)</h2>
+    <p>כל מה שהומלץ בישיבה — נבנה. זה הסטטוס בפועל, לא תוכנית:</p>
+    <ol>
+      <li><strong>הקפאת AutoPilot לקוחי — בוצע ופעיל.</strong> כבוי כברירת‑מחדל; זה היה הפיצ'ר הכי חשוף.</li>
+      <li><strong>מתג BTC‑only — בוצע, נאכף בצד‑שרת בשלוש נקודות</strong> (פתיחת סשן, איתותי בוט, שליחת פקודה). כרגע <strong>כבוי</strong> — הדלקה היא לחיצה אחת ברגע שרז תורה.</li>
+      <li><strong>בונה‑האסטרטגיה הלימודי — נבנה, ואמיתי.</strong> 7 שלבים שבהם המשתמש לומד ומאשר כל מרכיב, והבחירות שלו הופכות ל<strong>פרמטרים ממשיים של המנוע</strong> (רוחב הערוץ, סף ה‑ADX לכניסה, מסגרת‑הזמן, הסטופ והיעד). הוא גם <strong>בודק אותם על היסטוריה אמיתית</strong> ורואה את התוצאות. לא שאלון‑קישוט.</li>
+      <li><strong>האסטרטגיה נשמרת על שם המשתמש</strong> — היא נכנסת לרשימת האסטרטגיות שלו וניתנת להפעלה חוזרת. זה מתעד שההחלטה הייתה שלו.</li>
+      <li><strong>מסך לקוח נקי — אסטרטגיה אחת בלבד.</strong> שאר המנועים הוסתרו לבעלים בלבד, כדי שלא ייווצר מצג של "קטלוג אלגוריתמים שהחברה מספקת" — בדיוק מה שביהמ"ש פסל ב‑USG.</li>
+      <li><strong>הון‑הבעלים</strong> — Phase 1 (הקוד) הושלם; go‑live נשאר <strong>חסום</strong> עד רישוי בכתב.</li>
+    </ol>
+    <div class="warn" style="margin-top:12px">
+      <strong>שינוי אחד שרז חייבת לשקול במפורש:</strong> פתחנו את יקום הסריקה מ‑BTC בלבד ל<strong>קריפטו / מניות / כל השווקים</strong>, כי אסטרטגיית פריצות בלי רוחב‑שוק היא חסרת‑ערך מוצרי. הצמצום ל‑BTC <strong>לא נמחק</strong> — הוא עבר למתג בצד‑השרת. אבל צריך לומר את זה ישר: <strong>מניות הן נייר‑ערך</strong>, וזה בדיוק ליבת המגבלה. בדמו/סימולציה אין חשיפה; לפני כסף אמיתי על מניות — נדרש אישור בכתב.
+    </div>
+    <p style="margin-top:10px">אף אחד מהסעיפים לא מזיז כסף, לא מדליק go‑live, ולא מבצע פקודה. הכל סימולציה עד הכרעה.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>שאלות פתוחות לרז (לפני Follow-Up)</h2>
+    <ol>
+      <li>האם מסחר על <strong>הון‑הבעלים המשותף</strong> (3‑מ‑3, כספכם) מחוץ להגדרת ניהול‑תיקים? (נדמה שכן — כסף עצמי — אך צריך אישור.)</li>
+      <li>האם <strong>BTC‑only</strong> מספיק כדי לפתוח צד‑לקוחי בלי רישיון? (המתג בנוי ומחכה להוראתך.)</li>
+      <li><strong>השאלה החדשה והחשובה ביותר:</strong> פתחנו את הסריקה גם ל<strong>מניות ולשאר השווקים</strong> (בדמו). האם זה מקובל כל עוד הכל סימולציה — או שצריך להדליק BTC‑only כבר עכשיו, עוד לפני כסף אמיתי?</li>
+      <li>הבונה כבר <strong>לא שאלון‑קישוט</strong>: הבחירות של המשתמש הפכו לפרמטרים ממשיים של המנוע, והאסטרטגיה נשמרת על שמו. האם זה מספיק כדי לצאת מ"המערכת מחליטה"?</li>
+      <li>מה בדיוק הגבול ב<strong>B2B</strong> — האם מכירה ליועץ‑מורשה מסירה מאיתנו את חובת‑הרישיון לגמרי?</li>
+      <li>ההחלטות שרז אמורה לשלוח: <strong>קרדנו=ני"ע</strong>, ו<strong>מסחר‑אלגו=ניהול‑תיקים</strong> — לצרף למסמך כשמגיעות.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>פסיקה ישראלית (מחקר רקע — לא ייעוץ משפטי, לרז)</h2>
+    <p>חיפשנו פסקי-דין; הפסק המרכזי שמכריע את שאלתנו: <strong>עניין USG Capital</strong> (ת"צ 47119-12-15 אפרימוב נ' יו אס ג'י קפיטל ישראל, מחוזי ת"א). הוא נותן את המבחן המדויק:</p>
+    <ul>
+      <li><strong>ניהול-תיקים</strong> = "ביצוע עסקאות <strong>לפי שיקול-דעת</strong> לחשבונם של אחרים". השאלה היחידה: <strong>של מי שיקול-הדעת</strong> — הלקוח או החברה.</li>
+      <li>ביהמ"ש קבע במפורש: <strong>"אם החברה מספקת רק פלטפורמה והלקוח בוחר את האלגוריתם בעצמו — שיקול-הדעת הוא של הלקוח"</strong>, ובלבד שאין לחברה יכולת להשפיע על קבלת ההחלטות שלו. ← זה בדיוק מודל הבונה-הלימודי שלנו.</li>
+      <li><strong>ביהמ"ש דחה</strong> את הגנת "נתנו ללקוח לבחור בין כמה אפשרויות", כי (א) היה <strong>מספר מוגבל של אלגוריתמים שסופקו ע"י החברה</strong>, ו-(ב) החברה שמרה זכות להתערב. ← מכאן: "מסלול נסתר" שמסליל לאסטרטגיה מובנית = בדיוק מה שנפסל.</li>
+      <li>"לחשבונם של אחרים" מתקיים <strong>גם בחשבון עצמי</strong> אם מהותית עבור אחר. ← דמו/סימולציה, ללא כספי-לקוח, הוא העמדה החזקה ביותר.</li>
+      <li>עמדת רשות ני"ע: פטור מרישיון רק כשהאלגוריתם <strong>מנותק לחלוטין</strong> מהחברה.</li>
+    </ul>
+    <div class="ok">
+      <strong>המסקנה המעשית:</strong> הבונה-הלימודי השקוף (משתמש שבאמת לומד ובוחר) <strong>מיושר עם המבחן של הפסיקה</strong>. דמו-בלבד עוקף גם את "לחשבונם של אחרים". <strong>BTC-only לבדו אינו פותר</strong> את שאלת שיקול-הדעת — צריך את שניהם יחד.
+    </div>
+    <p style="margin-top:10px">רקע נוסף: תיק <strong>אמיר נדיב</strong> (כתב-אישום 2024, ניהל 24 חשבונות ללא רישיון) — רשות ני"ע <strong>ביטלה את חשד-המרמה</strong>, ונשאר רגולטורי בלבד. תואם להבחנה של רז בין מרמה (חמור) לחוסר-רישיון (מנהלי).</p>
+    <blockquote><em>המקורות: פס"ד USG Capital (ניתוח: shpak-law.com/אלגו-טריידינג); חוק הסדרת העיסוק בייעוץ השקעות התשנ"ה-1995 (רשות ני"ע); כתב-אישום נדיב (Bizportal/כלכליסט 2024). זהו מחקר-רקע, לא ייעוץ משפטי — ההכרעה של רז.</em></blockquote>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>החלטות שממתינות לכם (הצוות)</h2>
+    <ul>
+      <li>איזה מודל מובילים: <strong>שאלון</strong> · <strong>B2B</strong> · <strong>BTC‑only</strong> · <strong>בינ"ל</strong> — או שילוב.</li>
+      <li>אישור להקפיא את ה‑AutoPilot הלקוחי בינתיים.</li>
+      <li>אישור להכין מתג BTC‑only (בלי להדליק) עד תשובת רז.</li>
+    </ul>
+    <blockquote><em>מסמך זה מסכם ומתרגם — אינו ייעוץ משפטי, אינו מבצע דבר, ואינו משנה את מצב המערכת (הכל נשאר DISARMED · testnet · owner‑only). ההכרעות המשפטיות של רז והחלטת‑המודל שלכם קודמות לכל בנייה בצד‑הלקוחי.</em></blockquote>
+  </section>
+
+  <div class="foot">
+    StrateTeach · דף תאימות רגולטורית פנימי · הכנה ל‑Follow-Up<br>
+    מסמך סודי — לא לשיתוף מחוץ למעגל הבעלים
+  </div>
+
+</div>
+</body>
+</html>

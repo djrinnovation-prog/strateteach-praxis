@@ -1,0 +1,131 @@
+/* Praxis operator + user console — minimal design system (UI-1b).
+ * Neutral, theme-aware (light/dark). No external assets. Styles semantic elements globally so the
+ * existing panels (StatusPanel/HarnessPanel/Login) are styled without code changes, plus a small set
+ * of utility classes for the new shell/gate/wizard components. Restyleable later from a brand reference. */
+
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #dfe3e8;
+  --text: #1c2430;
+  --text-dim: #5b6675;
+  --accent: #3f5bd9;
+  --accent-contrast: #ffffff;
+  --ok: #1a7f5a;
+  --warn: #b06a00;
+  --danger: #c0392b;
+  --lock: #7a8699;
+  --radius: 10px;
+  --gap: 16px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1116;
+    --surface: #161b22;
+    --surface-2: #1c2230;
+    --border: #2a313c;
+    --text: #e6eaf0;
+    --text-dim: #97a3b4;
+    --accent: #6b83f0;
+    --ok: #3fb98a;
+    --warn: #d79b3a;
+    --danger: #e2685a;
+    --lock: #6b7688;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ── App shell ─────────────────────────────────────────────── */
+.app-shell { max-width: 1100px; margin: 0 auto; padding: 0 20px 48px; }
+.app-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+}
+.app-header .brand { font-weight: 650; font-size: 1.05rem; letter-spacing: .01em; }
+.app-header .brand .muted { color: var(--text-dim); font-weight: 400; }
+.app-nav { display: flex; gap: 6px; margin: 14px 0 20px; flex-wrap: wrap; }
+.app-nav button {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
+  padding: 8px 14px; border-radius: 999px; cursor: pointer; font: inherit;
+}
+.app-nav button[aria-current="true"] { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+
+/* ── Cards / sections ──────────────────────────────────────── */
+.card, section[aria-label] {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px 20px; margin: 0 0 16px;
+}
+.card > h2, .card > h3, section[aria-label] > h2 { margin-top: 0; font-size: 1rem; letter-spacing: .01em; }
+h2, h3 { color: var(--text); }
+
+/* ── Stat grid ─────────────────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.stat .label { color: var(--text-dim); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+.stat .value { font-family: var(--mono); font-size: 1.15rem; margin-top: 2px; }
+
+/* ── Tables (styles StatusPanel for free) ──────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+thead th { text-align: left; color: var(--text-dim); font-weight: 550; border-bottom: 1px solid var(--border); padding: 8px 10px; }
+tbody td { padding: 8px 10px; border-bottom: 1px solid var(--surface-2); font-family: var(--mono); font-size: .84rem; }
+tbody tr:last-child td { border-bottom: none; }
+
+/* lists (StatusPanel "System") */
+section[aria-label] ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+section[aria-label] ul li { font-family: var(--mono); font-size: .82rem; color: var(--text-dim); }
+
+/* ── Badges ────────────────────────────────────────────────── */
+.badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .74rem; font-weight: 600; border: 1px solid transparent; }
+.badge.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.badge.pending { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.badge.locked { color: var(--lock); border-color: var(--border); background: var(--surface-2); }
+
+/* ── Buttons ───────────────────────────────────────────────── */
+button { font: inherit; }
+.btn { background: var(--accent); color: var(--accent-contrast); border: 1px solid var(--accent); border-radius: 8px; padding: 9px 16px; cursor: pointer; }
+.btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+button:disabled, .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ── Banners ───────────────────────────────────────────────── */
+[role="alert"], .banner { border-radius: 8px; padding: 10px 14px; font-size: .88rem; }
+.banner.warn, [data-testid="degraded-banner"] { background: color-mix(in srgb, var(--warn) 12%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent); color: var(--warn); }
+.banner.lock { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim); }
+
+/* ── Gate progress list ────────────────────────────────────── */
+.gate-list { display: grid; gap: 8px; }
+.gate { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+.gate .gate-name { font-weight: 550; min-width: 190px; }
+.gate .gate-note { color: var(--text-dim); font-size: .84rem; }
+
+/* ── Wizard / stepper ──────────────────────────────────────── */
+.stepper { display: grid; gap: 12px; }
+.step { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); position: relative; }
+.step.locked { background: var(--surface-2); }
+.step .step-head { display: flex; align-items: center; gap: 10px; }
+.step .step-num { width: 24px; height: 24px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; font-size: .78rem; color: var(--text-dim); }
+.step .step-title { font-weight: 600; }
+.step .step-body { color: var(--text-dim); font-size: .88rem; margin-top: 6px; }
+.step .lock-copy { margin-top: 10px; font-size: .82rem; color: var(--lock); background: var(--surface); border: 1px dashed var(--border); border-radius: 8px; padding: 8px 10px; }
+
+/* ── Responsive: stack rows on narrow screens (no horizontal page scroll) ──── */
+@media (max-width: 620px) {
+  .app-header { flex-wrap: wrap; gap: 10px; }
+  .gate { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .gate .gate-name { min-width: 0; }
+  .stat-grid, section[aria-label] ul { grid-template-columns: 1fr 1fr; }
+  table { display: block; overflow-x: auto; }
+}
+
+.hint { color: var(--text-dim); font-size: .84rem; }
+code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 5px; font-size: .82em; }

@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Strateteach · אופציות עיצוב למסך הבית</title>
+<style>
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  html,body{margin:0;background:#070a0e;color:#e9eef5;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans Hebrew",sans-serif;line-height:1.55}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 18px 70px}
+  a{color:#33c9d6}
+
+  /* ---- brand bar ---- */
+  .brandbar{display:flex;align-items:center;gap:14px;justify-content:center;padding:26px 0 8px;border-bottom:1px solid #17222e;margin-bottom:26px;flex-wrap:wrap}
+  .mark{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#e9a83a,#c47d1e);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .mark:after{content:"";width:16px;height:16px;background:#0a0d12;transform:rotate(45deg)}
+  .brandtxt{text-align:center}
+  .brandtxt .a{font-size:12px;letter-spacing:.36em;color:#33c9d6;font-weight:800}
+  .brandtxt .s{font-size:26px;letter-spacing:.18em;font-weight:900;margin-top:1px}
+  .brandtxt .tg{font-size:11px;color:#8a9bad;letter-spacing:.04em;margin-top:2px}
+  /* language toggle — one shared /design/ link, switch HE⇄EN in one tap */
+  .langtog{position:fixed;top:10px;left:10px;z-index:60;display:inline-flex;align-items:center;gap:6px;background:rgba(12,32,41,.95);border:1px solid #33c9d6;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:800;color:#8fe9f2;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  .langtog:hover{background:#0c2b33;color:#eafcff}
+  @media print{.langtog{display:none}}
+
+  header.top{text-align:center;margin-bottom:8px}
+  .kick{letter-spacing:.34em;font-size:11px;color:#33c9d6;font-weight:800;text-transform:uppercase}
+  h1{font-size:26px;margin:8px 0 6px;font-weight:800}
+  .lead{color:#9fb0c3;font-size:14px;max-width:660px;margin:0 auto}
+  .flag{margin:18px auto 0;max-width:660px;background:#0e1e26;border:1px solid #1d3742;border-radius:12px;padding:11px 16px;color:#bfe6ec;font-size:13px;text-align:center}
+  .flag b{color:#eafcff}
+  .note-ref{margin:9px auto 0;max-width:660px;font-size:11.5px;color:#6f8091;text-align:center}
+
+  .principles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:26px 0 34px}
+  @media(max-width:760px){.principles{grid-template-columns:repeat(2,1fr)}}
+  .pr{background:#0d141c;border:1px solid #1a2531;border-radius:12px;padding:12px}
+  .pr .n{font-size:11px;color:#33c9d6;font-weight:800}
+  .pr .t{font-size:12.5px;font-weight:700;margin:3px 0 2px}
+  .pr .d{font-size:11px;color:#8a9bad}
+
+  .opt{background:linear-gradient(180deg,#0d141c,#0a1017);border:1px solid #1a2531;border-radius:20px;padding:22px;margin-bottom:26px}
+  .ohead{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .num{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:900;font-size:16px;flex:0 0 auto}
+  .ohead h3{font-size:19px;font-weight:800;margin:0}
+  .badge{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:7px;margin-inline-start:auto}
+  .stage{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .ours{flex:0 0 auto;text-align:center}
+  .caplabel{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:#33c9d6;margin-bottom:8px}
+  .refs{flex:1;min-width:230px}
+  .refs .caplabel{color:#8a9bad}
+  .refrow{display:flex;gap:14px;flex-wrap:wrap}
+  .refcard{text-align:center}
+  .refcard .name{font-size:11px;font-weight:700;margin-top:6px;color:#cbd8e6}
+  .refcard .name span{color:#7f8ea0;font-weight:500}
+
+  .why{margin-top:18px;border-top:1px solid #17222e;padding-top:14px;display:grid;grid-template-columns:1.35fr 1fr;gap:22px}
+  @media(max-width:680px){.why{grid-template-columns:1fr}}
+  .why h4{margin:0 0 5px;font-size:12px;letter-spacing:.05em;color:#e9c46a;font-weight:800}
+  .why p{margin:0 0 12px;font-size:13px;color:#b7c4d2}
+  .proscons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2px}
+  .proscons ul{margin:4px 0 0;padding-inline-start:15px;font-size:12px}
+  .pros li{color:#a9d9bd;margin-bottom:3px}
+  .cons li{color:#e0b7ba;margin-bottom:3px}
+  .proscons .h{font-size:11px;font-weight:800}
+  .pros .h{color:#28d17c}.cons .h{color:#ff8a94}
+  .moves{margin:0;padding-inline-start:16px;font-size:12.5px;color:#a9b8c8}
+  .moves li{margin-bottom:4px}
+  .bestfor{font-size:12.5px;color:#cbd8e6;margin-top:10px}
+  .bestfor b{color:#e9c46a}
+  .links{margin-top:12px;font-size:12px;color:#8a9bad;line-height:1.9}
+  .links .h{font-size:11px;font-weight:800;color:#e9c46a;letter-spacing:.05em;display:block;margin-bottom:2px}
+  .links a{color:#4fd6e2;text-decoration:none;border-bottom:1px dashed #285660;white-space:nowrap}
+  .links a:hover{color:#8bف0f8}
+
+  /* phone frames */
+  .ph{width:230px;height:474px;border-radius:34px;background:#000;padding:9px;box-shadow:0 16px 38px rgba(0,0,0,.5),0 0 0 2px #232f3d;position:relative}
+  .ref{width:150px;height:310px;border-radius:26px;background:#000;padding:6px;box-shadow:0 10px 24px rgba(0,0,0,.45),0 0 0 1.5px #232f3d;position:relative}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:80px;height:16px;background:#000;border-radius:0 0 12px 12px;z-index:6}
+  .ref .notch{width:52px;height:11px;top:6px}
+  .scr{width:100%;height:100%;border-radius:26px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .ref .scr{border-radius:21px}
+  .sbar{height:20px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:8.5px;font-weight:700;flex:0 0 auto}
+  .ref .sbar{height:15px;font-size:6.5px;padding:0 9px}
+  .body{flex:1;overflow:hidden;padding:7px 10px 0;position:relative}
+  .ref .body{padding:5px 7px 0}
+  .nav{flex:0 0 auto;height:42px;display:flex;justify-content:space-around;align-items:center;font-size:8px;border-top:1px solid rgba(255,255,255,.08)}
+  .ref .nav{height:26px;font-size:0}
+  .nav div{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.55}
+  .nav div.on{opacity:1}
+  .nav i,.ic{display:block}
+  .nav i{width:14px;height:14px;border-radius:4px;background:currentColor;opacity:.9}
+  .ref .nav i{width:10px;height:10px}
+  .brand{display:flex;align-items:center;justify-content:space-between;margin:1px 0 8px}
+  .logo{font-weight:900;letter-spacing:.2em;font-size:11px}
+  .ref .logo{font-size:8px;letter-spacing:.12em}
+  .pill{font-size:8px;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.18)}
+  .bal .lab{font-size:8px;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+  .bal .big{font-size:22px;font-weight:800;margin-top:2px}
+  .bal .chg{font-size:10px;font-weight:700;margin-top:1px}
+  .row{display:flex;gap:7px}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+  .tile{border-radius:11px;padding:7px 3px;text-align:center;font-size:8px;font-weight:600}
+  .tile .ic{width:20px;height:20px;border-radius:7px;margin:0 auto 4px}
+  .posr{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;padding:4px 0}
+  .posr+.posr{border-top:1px solid rgba(255,255,255,.07)}
+  .sect{font-size:9px;font-weight:800;letter-spacing:.05em;margin:10px 2px 5px;opacity:.85}
+  .cta{border-radius:11px;padding:10px;text-align:center;font-weight:800;font-size:11px;margin-top:8px}
+  .spark{width:100%;display:block;margin-top:5px}
+  .mini{font-size:8.5px;opacity:.7}
+
+  h2.sec{text-align:center;margin:46px 0 4px;font-size:21px;font-weight:800}
+  .subc{text-align:center;color:#9fb0c3;font-size:13px;margin-bottom:22px}
+  .gal{display:flex;flex-wrap:wrap;gap:22px;justify-content:center}
+  .galitem{text-align:center}
+  .galitem .t{font-weight:700;font-size:12.5px;margin-top:9px}
+  .galitem .d{font-size:11px;color:#8a9bad;max-width:190px;margin:2px auto 0}
+  .foot{text-align:center;color:#6c7c8c;font-size:12px;margin-top:44px;border-top:1px solid #17222e;padding-top:18px}
+
+  /* panel banner */
+  .panel{margin:16px auto 0;max-width:660px;background:linear-gradient(135deg,#12233a,#0e1a26);border:1px solid #26415a;border-radius:12px;padding:12px 16px;text-align:center;font-size:13px;color:#cfe4f5}
+  .panel b{color:#8fd6ff}
+  .panel .eight{display:inline-flex;gap:4px;margin-inline-start:8px;vertical-align:middle}
+  .panel .eight i{width:15px;height:15px;border-radius:50%;background:#2b6ea3;display:inline-block;border:1px solid #4a97cf}
+
+  /* comparison table */
+  .cmpwrap{margin:6px 0;overflow-x:auto}
+  table.cmp{width:100%;border-collapse:collapse;font-size:12.5px;border:1px solid #1a2531;border-radius:12px;overflow:hidden}
+  table.cmp th,table.cmp td{padding:9px 12px;text-align:right;border-bottom:1px solid #17222e;vertical-align:top}
+  table.cmp thead th{background:#101a22;color:#cbd8e6;font-size:11px;letter-spacing:.04em}
+  table.cmp tbody tr:nth-child(even){background:#0c131b}
+  table.cmp td.p{font-weight:700;color:#e5edf5;width:34%}
+  .st{font-weight:800;font-size:11px;padding:3px 10px;border-radius:999px;white-space:nowrap;display:inline-block}
+  .st.ok{background:#0c2b1c;color:#3fe08a;border:1px solid #1c5236}
+  .st.mid{background:#2e2710;color:#f0c85a;border:1px solid #5a4a1c}
+  .st.no{background:#331316;color:#ff8a94;border:1px solid #5a2029}
+  .cmpnote{color:#93a3b4}
+  .scoreline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 2px}
+  .scoreline .s{background:#0d141c;border:1px solid #1a2531;border-radius:10px;padding:8px 15px;font-size:12px;color:#b7c4d2}
+  .scoreline .s b{font-size:17px;display:block}
+
+  /* voting — guided one-match-at-a-time flow + animated reveal */
+  .vote{background:linear-gradient(180deg,#0e1a22,#0a1017);border:1px solid #1d3742;border-radius:20px;padding:22px}
+  .howto{background:#0c131b;border:1px solid #1a2531;border-radius:12px;padding:12px 16px;font-size:13px;color:#b7c4d2;margin-bottom:18px;text-align:center;line-height:1.7}
+  .howto b{color:#eafcff}
+  .dv-progress{text-align:center;font-size:11px;letter-spacing:.12em;color:#8a9bad;font-weight:800;text-transform:uppercase;margin-bottom:7px}
+  .dv-progbar{height:6px;background:#0c131b;border:1px solid #1a2531;border-radius:999px;overflow:hidden;max-width:320px;margin:0 auto 14px}
+  .dv-progbar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#28d17c,#33c9d6);transition:width .35s ease}
+  .dv-stage{text-align:center;font-size:13px;color:#33c9d6;font-weight:900;letter-spacing:.02em;margin-bottom:2px}
+  .dv-prompt{text-align:center;font-size:15px;color:#cbd8e6;font-weight:700;margin-bottom:16px}
+  .dv-match{display:flex;gap:12px;align-items:stretch;justify-content:center;max-width:560px;margin:0 auto}
+  .dv-card{flex:1 1 0;min-width:0;max-width:190px;background:#0c131b;border:1px solid #22323f;border-radius:16px;padding:14px 12px;cursor:pointer;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:8px;color:#dbe6f0;text-align:center;font-family:inherit}
+  .dv-card:hover,.dv-card:focus-visible{border-color:#33c9d6;background:#10212b;transform:translateY(-2px);outline:none}
+  .dv-card:active{transform:scale(.98)}
+  .dv-thumb{width:100%;aspect-ratio:16/10;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#08131a;position:relative;overflow:hidden}
+  .dv-cnum{position:absolute;top:6px;inset-inline-start:9px;font-size:12px;font-weight:900;color:rgba(4,10,14,.6)}
+  .dv-cname{font-size:14px;font-weight:800;line-height:1.25}
+  .dv-img{width:100%;height:140px;object-fit:cover;object-position:top center;border-radius:10px;border:1px solid rgba(255,255,255,.15);display:block;margin:0 auto 8px;background:#0b0f14}
+  .dv-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:6px;font-size:11px;font-weight:900;color:#08131a;margin-inline-end:6px;vertical-align:middle}
+  .dv-or{align-self:center;font-size:12px;font-weight:900;color:#6f8091;flex:0 0 auto}
+  .dv-fav{text-align:center;font-size:16px;font-weight:700;color:#cbd8e6;margin:4px 0 16px}
+  .dv-fav .big{display:block;margin-top:8px;font-size:24px;font-weight:900;color:#33c9d6}
+  .dv-favthumb{width:120px;height:76px;border-radius:12px;margin:10px auto 0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#08131a}
+  .dv-submit{display:block;width:100%;max-width:420px;margin:0 auto;background:linear-gradient(90deg,#28d17c,#33c9d6);color:#04121a;font-weight:900;font-size:15px;border:0;border-radius:12px;padding:14px;cursor:pointer;box-shadow:0 6px 20px rgba(40,209,124,.25);font-family:inherit}
+  .dv-submit:active{transform:translateY(1px)}
+  .dv-submit[disabled]{opacity:.6;cursor:default}
+  .dv-msg{text-align:center;font-size:12.5px;color:#9fb0c3;margin-top:10px;min-height:16px}
+  .dv-back{text-align:center;margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .rvote{display:inline-block;margin-top:8px;background:#1b2a3a;border:1px solid #2a3d51;border-radius:8px;padding:6px 12px;font-size:11px;color:#9fb0c3;cursor:pointer;border:1px solid #2a3d51}
+  .rvote:hover{border-color:#33c9d6;color:#cbd8e6}
+  /* reveal / results slide */
+  .dv-rhead{text-align:center;margin-bottom:12px}
+  .dv-rtitle{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a9bad;font-weight:800}
+  .dv-wincard{max-width:340px;margin:8px auto 0;border-radius:16px;border:1px solid #33c9d6;box-shadow:0 0 0 1px #33c9d6 inset;padding:14px;background:#0c2029;animation:dvpop .4s ease}
+  @keyframes dvpop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+  .dv-winthumb{width:100%;aspect-ratio:16/9;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#08131a;margin-bottom:8px}
+  .dv-winname{font-size:18px;font-weight:900;color:#eafcff}
+  .dv-bars{max-width:480px;margin:6px auto 0;display:flex;flex-direction:column;gap:9px}
+  .dv-bar{display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .dv-blabel{flex:0 0 92px;color:#b7c4d2;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start}
+  .dv-btrack{flex:1 1 auto;height:20px;background:#0c131b;border:1px solid #1a2531;border-radius:999px;overflow:hidden}
+  .dv-bfill{height:100%;border-radius:999px;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .dv-bval{flex:0 0 auto;color:#dbe6f0;font-weight:800;min-width:44px;text-align:end}
+  .dv-bar.win .dv-blabel{color:#8fe9f2}
+  .dv-total{text-align:center;color:#9fb0c3;font-size:13px;margin-top:14px;font-weight:700}
+  [hidden]{display:none!important}
+
+  @media print{
+    html,body{background:#070a0e !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .wrap{max-width:none;padding:0 6px}
+    /* each option + each major section starts on a fresh page → nothing gets cut */
+    .opt{break-before:page;page-break-before:always;break-inside:avoid;page-break-inside:avoid;margin-bottom:0}
+    h2.sec{break-before:page;page-break-before:always}
+    .principles,.pr,.galitem,.vote,.panel,.match,.stage,.why,table.cmp tr{break-inside:avoid;page-break-inside:avoid}
+    .links a{color:#4fd6e2 !important}
+    .rvote{display:none}
+  }
+</style>
+</head>
+<body>
+<a class="langtog" href="en.html" dir="ltr" aria-label="Switch to English">🌐 English</a>
+<div class="wrap">
+
+  <!-- BRAND BAR -->
+  <div class="brandbar">
+    <div class="mark"></div>
+    <div class="brandtxt">
+      <div class="a">ALGO770</div>
+      <div class="s">STRATETEACH</div>
+      <div class="tg">מסחר אלגוריתמי · חדר עיצוב · Design Options</div>
+    </div>
+  </div>
+
+  <header class="top">
+    <div class="kick">אופציות עיצוב למסך הבית</div>
+    <h1>שישה כיוונים · ניתוח, השראה והמלצה</h1>
+    <div class="lead">כל כיוון מוצג לצד דוגמת התייחסות מאפליקציות מובילות, עם ניתוח מעמיק — למה הוא בנוי כך, יתרונות וחסרונות, ולמי הוא מתאים. בסוף כל כיוון: לינקים לאתרי המתחרים לבדיקה יסודית.</div>
+    <div class="flag">🔒 <b>מצגת קונספט בלבד — לא שינינו כלום באפליקציה.</b> כל גרסה מציגה את אותן פונקציות (יתרה/רווח, פוזיציות, סריקה, מנוע רווח, סיגנל בוט, בקטסט, בורסה, למידה) — רק בסידור וסגנון שונה.</div>
+    <div class="note-ref">* מסכי ה"התייחסות" הם רנדור סגנוני שלנו בהשראת אותן אפליקציות (לא צילומי מסך מקוריים), כדי להמחיש את השפה העיצובית. הלינקים מפנים לאתרים הרשמיים לבדיקה עצמאית.</div>
+    <div class="panel">👥 מצגת זו נשלחת ל<b>פאנל של 8 מעריכים</b><span class="eight"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> — לבחירת כיוון העיצוב. בסוף המצגת יש <b>הצבעה: בחירה בין שניים בכל פעם</b>, עד שמגיעים לעיצוב המנצח.</div>
+  </header>
+
+  <div class="principles">
+    <div class="pr"><div class="n">01</div><div class="t">יתרה קודם</div><div class="d">הדבר הראשון שמשתמש בודק: "כמה יש לי / אני ברווח?". שנאת-הפסד גורמת לו לחפש את זה מיד — לכן למעלה.</div></div>
+    <div class="pr"><div class="n">02</div><div class="t">פעולה ראשית ברורה</div><div class="d">מה עושים עכשיו? כפתור אחד דומיננטי מעל הקיפול מפחית בלבול ומגדיל שימוש (Fitts / Hick).</div></div>
+    <div class="pr"><div class="n">03</div><div class="t">ניווט לאגודל</div><div class="d">טאבים תחתונים = נגישים ליד אחת, סטנדרט מוכר — אפס עקומת למידה.</div></div>
+    <div class="pr"><div class="n">04</div><div class="t">היררכיה ופחות רעש</div><div class="d">קבוצות ברורות, מרווח, וצבע רק היכן שצריך תשומת לב — כדי שהעין "תזרום".</div></div>
+  </div>
+
+  <!-- ============ WHERE WE ARE TODAY ============ -->
+  <h2 class="sec">איפה אנחנו היום · מול העקרונות</h2>
+  <div class="subc">השוואה כנה של האפליקציה הנוכחית מול קווי-היסוד של עיצוב מוצר — במה אנחנו כבר עומדים, ובמה יש לשפר.</div>
+  <div class="scoreline">
+    <div class="s"><b style="color:#3fe08a">8</b>✓ עומדים</div>
+    <div class="s"><b style="color:#f0c85a">4</b>⚠ חלקית</div>
+    <div class="s"><b style="color:#ff8a94">2</b>✗ פערים</div>
+  </div>
+  <div class="cmpwrap">
+    <table class="cmp">
+      <thead><tr><th>עיקרון עיצוב</th><th>מצב היום</th><th>הערה</th></tr></thead>
+      <tbody>
+        <tr><td class="p">יתרה ורווח גלויים במבט מיידי</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">כרטיס P&amp;L + פוזיציות לייב במסך הבית.</td></tr>
+        <tr><td class="p">ניווט תחתון סטנדרטי</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">בית · מסחר · למידה · בורסה · חשבון.</td></tr>
+        <tr><td class="p">ראש-עמוד וכותרות עקביים בין המסכים</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">אוחד לאחרונה לרכיב כותרת משותף אחד.</td></tr>
+        <tr><td class="p">עקביות ויזואלית בין כל המסכים</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">דאשבורד · צ'אט · אדמין עוצבו מחדש לאותה שפה.</td></tr>
+        <tr><td class="p">מסכים קומפקטיים · פחות גלילה</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">אקורדיון בתפריט/אדמין, ריכוז מסכי ה-hub.</td></tr>
+        <tr><td class="p">גדלי נגיעה נוחים (≥44px)</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">תוקן, כולל כפתורי סגירת פוזיציה.</td></tr>
+        <tr><td class="p">RTL + ריבוי שפות</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">עברית ואנגלית מלא.</td></tr>
+        <tr><td class="p">מצב כהה + ערכות נושא</td><td><span class="st ok">✓ עומדים</span></td><td class="cmpnote">4 ערכות (skins) × בהיר/כהה.</td></tr>
+        <tr><td class="p">פעולה ראשית אחת ברורה מעל הקיפול</td><td><span class="st mid">⚠ חלקית</span></td><td class="cmpnote">יש קיצורים רבים, אך לא כפתור ראשי דומיננטי אחד.</td></tr>
+        <tr><td class="p">מצבי ריק / טעינה אחידים</td><td><span class="st mid">⚠ חלקית</span></td><td class="cmpnote">שופרו (פריצות/דמו), עדיין לא אחיד בכל מסך.</td></tr>
+        <tr><td class="p">בידול ויזואלי / מיתוג חזק</td><td><span class="st mid">⚠ חלקית</span></td><td class="cmpnote">פונקציונלי — אפשר נועז וזכיר יותר (הסיבה למצגת הזו).</td></tr>
+        <tr><td class="p">בהירות נתונים (למשל % פריצה)</td><td><span class="st mid">⚠ חלקית</span></td><td class="cmpnote">"מינוס אבל ירוק" עדיין מבלבל — ידוע, לתיקון.</td></tr>
+        <tr><td class="p">חיפוש / סינון גלובלי</td><td><span class="st no">✗ פער</span></td><td class="cmpnote">אין חיפוש חוצה-מסכים כרגע.</td></tr>
+        <tr><td class="p">מצב "Pro" / תצוגה מתקדמת</td><td><span class="st no">✗ פער</span></td><td class="cmpnote">לא קיים — מוצע כגרסה 6 (Pro Dashboard).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="subc" style="margin-top:14px;max-width:720px;margin-inline:auto">השורה התחתונה: <b style="color:#e5edf5">היסודות חזקים</b> (עקביות, ניווט, נגישות, שפות). הפערים הם בעיקר ב<b style="color:#e5edf5">בידול, בהירות ומצב מתקדם</b> — ובדיוק שם 6 הכיוונים הבאים נבדלים.</div>
+
+  <!-- ============ OPTION 1 ============ -->
+  <div class="opt">
+    <div class="ohead"><span class="num" style="background:#0d2b33;color:#33c9d6">1</span><h3>Best-Practice · פינטק מודרני</h3><span class="badge" style="background:#0d2b33;color:#33c9d6">מומלץ לאימוץ רחב</span></div>
+    <div class="stage">
+      <div class="ours"><div class="caplabel">הגרסה שלנו</div>
+        <div class="ph"><div class="notch"></div><div class="scr" style="background:#0e1520;color:#eaf1f8">
+          <div class="sbar">9:41<span>5G</span></div>
+          <div class="body">
+            <div class="brand"><span class="logo" style="color:#33c9d6">STRATETEACH</span><span class="pill">☰</span></div>
+            <div class="bal" style="background:linear-gradient(135deg,#16324a,#122031);border-radius:15px;padding:13px"><div class="lab">יתרה כוללת</div><div class="big">$270.26</div><div class="chg" style="color:#28d17c">▲ +0.44% היום</div></div>
+            <div class="row" style="margin-top:8px"><div class="cta" style="flex:1;background:#33c9d6;color:#04222a;margin:0">סריקה יומית</div><div class="cta" style="flex:1;background:#1b2a3a;border:1px solid #2a3d51;margin:0">מנוע רווח</div></div>
+            <div class="sect">פוזיציות · 3</div>
+            <div style="background:#131f2c;border:1px solid #22354a;border-radius:11px;padding:8px 10px"><div class="posr" style="padding-top:0"><span>BNB</span><span style="color:#28d17c">+$0.37</span></div><div class="posr"><span>WLD</span><span style="color:#ff5d6c">−$3.10</span></div></div>
+            <div class="tiles"><div class="tile" style="background:#131f2c"><span class="ic" style="background:#8a7cff"></span>Signal</div><div class="tile" style="background:#131f2c"><span class="ic" style="background:#28d17c"></span>בורסה</div><div class="tile" style="background:#131f2c"><span class="ic" style="background:#e9c46a"></span>למידה</div><div class="tile" style="background:#131f2c"><span class="ic" style="background:#ff8a5d"></span>בקטסט</div></div>
+          </div>
+          <div class="nav" style="color:#33c9d6;background:#0b121b"><div class="on"><i></i>בית</div><div><i></i>מסחר</div><div><i></i>למידה</div><div><i></i>בורסה</div><div><i></i>חשבון</div></div>
+        </div></div>
+      </div>
+      <div class="refs"><div class="caplabel">בהשראת מתחרים</div>
+        <div class="refrow">
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#111214;color:#fff"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="background:#1c1d22;border-radius:11px;padding:9px"><div style="font-size:7px;opacity:.6">Balance</div><div style="font-size:16px;font-weight:800">$8,240</div></div><div class="row" style="margin-top:7px;text-align:center;font-size:6.5px"><div style="flex:1"><div style="width:22px;height:22px;border-radius:50%;background:#2b64ff;margin:0 auto 3px"></div>Add</div><div style="flex:1"><div style="width:22px;height:22px;border-radius:50%;background:#2b64ff;margin:0 auto 3px"></div>Send</div><div style="flex:1"><div style="width:22px;height:22px;border-radius:50%;background:#2b64ff;margin:0 auto 3px"></div>Invest</div></div><div style="margin-top:8px;font-size:6.5px;opacity:.7">Recent</div><div style="height:8px;background:#1c1d22;border-radius:4px;margin-top:4px"></div><div style="height:8px;background:#1c1d22;border-radius:4px;margin-top:4px"></div></div><div class="nav" style="color:#2b64ff;background:#0c0c0e"><div class="on"><i></i></div><div><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Revolut <span>· פינטק</span></div></div>
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#00c244;color:#04220f"><div class="sbar">9:41<span>5G</span></div><div class="body" style="text-align:center"><div style="font-size:7px;font-weight:700;opacity:.7;margin-top:14px">Cash balance</div><div style="font-size:26px;font-weight:900;margin-top:4px">$1,204</div><div style="background:#04220f;color:#00c244;border-radius:22px;padding:8px;font-weight:800;font-size:8px;margin-top:22px">Add Cash</div><div style="background:rgba(0,0,0,.12);border-radius:22px;padding:8px;font-weight:700;font-size:8px;margin-top:7px">Send</div></div><div class="nav" style="color:#04220f;background:#00b23e"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Cash App <span>· פשטות</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <div><h4>החשיבה — למה ככה</h4>
+        <p>זו התבנית שהוכיחה את עצמה באפליקציות פיננסיות מובילות. העין סורקת מלמעלה למטה בסדר של חשיבות: <b>יתרה → פעולה ראשית → מה קורה עכשיו (פוזיציות) → כלים</b>. המשתמש לא לומד כלום — המבנה כבר מוכר לו מהבנק ומ-Revolut, וההיכרות הזו מייצרת אמון ומורידה עומס תמיכה. הפעולה הראשית "מעל הקיפול" מגדילה את השימוש בליבת המוצר, והניווט התחתון נגיש לאגודל בכל גודל מסך.</p>
+        <div class="proscons">
+          <div class="pros"><span class="h">יתרונות</span><ul><li>מוכר → אמון מיידי</li><li>עקומת למידה אפסית</li><li>נגיש לכל סוגי המשתמשים</li></ul></div>
+          <div class="cons"><span class="h">שים לב</span><ul><li>עלול להיראות "גנרי"</li><li>פחות בידול ויזואלי</li></ul></div>
+        </div>
+        <div class="bestfor">מתאים ל: <b>אימוץ רחב ואמון</b> — הבחירה הכי בטוחה כברירת מחדל.</div>
+      </div>
+      <div><h4>מהלכים מרכזיים</h4>
+        <ul class="moves"><li>כרטיס יתרה דומיננטי בראש</li><li>2 פעולות ראשיות מעל הקיפול</li><li>רשימת פוזיציות תמציתית</li><li>כלים כרשת אייקונים משנית</li><li>5 טאבים תחתונים סטנדרטיים</li></ul>
+        <div class="links"><span class="h">לבדיקה יסודית</span>
+          <a href="https://www.revolut.com" target="_blank" rel="noopener">Revolut · revolut.com</a> ·
+          <a href="https://cash.app" target="_blank" rel="noopener">Cash App · cash.app</a> ·
+          <a href="https://www.wealthfront.com" target="_blank" rel="noopener">Wealthfront · wealthfront.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 2 ============ -->
+  <div class="opt">
+    <div class="ohead"><span class="num" style="background:#0c2b22;color:#28d17c">2</span><h3>פשוט וקל להבנה</h3><span class="badge" style="background:#0c2b22;color:#28d17c">למתחילים</span></div>
+    <div class="stage">
+      <div class="ours"><div class="caplabel">הגרסה שלנו</div>
+        <div class="ph"><div class="notch"></div><div class="scr" style="background:#f4f7fb;color:#0e1a26">
+          <div class="sbar">9:41<span>5G</span></div>
+          <div class="body">
+            <div class="brand"><span class="logo" style="color:#0e1a26">STRATETEACH</span><span class="pill" style="border-color:#c9d6e4">☰</span></div>
+            <div style="text-align:center;margin-top:22px"><div class="mini" style="opacity:.6">היתרה שלך</div><div style="font-size:38px;font-weight:800">$270<span style="font-size:20px;opacity:.5">.26</span></div><div style="color:#1eae67;font-weight:700;font-size:11px">היום ▲ +$1.19</div></div>
+            <div class="cta" style="background:#12b886;color:#fff;margin-top:24px;font-size:13px;padding:14px">▶ הפעל סריקה יומית</div>
+            <div class="cta" style="background:#eaf0f7;color:#0e1a26;border:1px solid #d5e0ec">מנוע רווח</div>
+            <div class="row" style="margin-top:14px;text-align:center;font-size:8.5px"><div style="flex:1"><div style="font-size:19px">📡</div>סיגנל</div><div style="flex:1"><div style="font-size:19px">📊</div>פוזיציות</div><div style="flex:1"><div style="font-size:19px">🔗</div>בורסה</div><div style="flex:1"><div style="font-size:19px">🎓</div>למידה</div></div>
+          </div>
+          <div class="nav" style="color:#12b886;background:#fff;border-top:1px solid #e4ebf3"><div class="on"><i></i>בית</div><div><i></i>מסחר</div><div><i></i>למידה</div><div><i></i>בורסה</div><div><i></i>חשבון</div></div>
+        </div></div>
+      </div>
+      <div class="refs"><div class="caplabel">בהשראת מתחרים</div>
+        <div class="refrow">
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#00c244;color:#04220f"><div class="sbar">9:41<span>5G</span></div><div class="body" style="text-align:center"><div style="font-size:28px;font-weight:900;margin-top:26px">$0</div><div style="font-size:7px;opacity:.7">Cash balance</div><div style="background:#04220f;color:#00c244;border-radius:22px;padding:9px;font-weight:800;font-size:9px;margin-top:30px">＄ Add Money</div></div><div class="nav" style="color:#04220f;background:#00b23e"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Cash App <span>· מינימלי</span></div></div>
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#fff;color:#14233b"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-size:7px;opacity:.55">Total balance</div><div style="font-size:19px;font-weight:800">£3,120</div><div style="display:flex;gap:5px;margin-top:10px;font-size:6px;text-align:center"><div style="flex:1"><div style="width:20px;height:20px;border-radius:9px;background:#14233b;margin:0 auto 3px"></div>Pay</div><div style="flex:1"><div style="width:20px;height:20px;border-radius:9px;background:#14233b;margin:0 auto 3px"></div>Move</div></div><div style="height:9px;background:#eef1f6;border-radius:5px;margin-top:10px"></div><div style="height:9px;background:#eef1f6;border-radius:5px;margin-top:5px"></div></div><div class="nav" style="color:#14233b;background:#fff;border-top:1px solid #eef1f6"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Monzo <span>· נקי</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <div><h4>החשיבה — למה ככה</h4>
+        <p>המטרה: שכל אחד יבין בשנייה מה לעשות. מזקקים למספר אחד גדול (היתרה) ולשתי פעולות ענק, ומורידים כל "רעש". לפי <b>חוק Hick</b> — פחות אפשרויות = החלטה מהירה יותר; רקע בהיר ואוורירי מקטין עומס קוגניטיבי. זו הגישה שבזכותה Cash App ו-Monzo הפכו מוצרים פיננסיים מורכבים לנגישים להמונים. מצוין לאונבורדינג ולקהל שאינו סוחר מנוסה.</p>
+        <div class="proscons">
+          <div class="pros"><span class="h">יתרונות</span><ul><li>מובן בשנייה</li><li>אונבורדינג מעולה</li><li>פנייה לקהל רחב</li></ul></div>
+          <div class="cons"><span class="h">שים לב</span><ul><li>דל מדי לסוחר כבד</li><li>מסתיר עומק/פיצ'רים</li></ul></div>
+        </div>
+        <div class="bestfor">מתאים ל: <b>מתחילים וקהל רחב</b> — אפס בלבול.</div>
+      </div>
+      <div><h4>מהלכים מרכזיים</h4>
+        <ul class="moves"><li>מספר יתרה ענק במרכז</li><li>2 כפתורי פעולה גדולים בלבד</li><li>רקע בהיר, הרבה מרווח לבן</li><li>שאר הכלים במרחק נגיעה אחת</li></ul>
+        <div class="links"><span class="h">לבדיקה יסודית</span>
+          <a href="https://cash.app" target="_blank" rel="noopener">Cash App · cash.app</a> ·
+          <a href="https://monzo.com" target="_blank" rel="noopener">Monzo · monzo.com</a> ·
+          <a href="https://www.paypal.com" target="_blank" rel="noopener">PayPal · paypal.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 3 ============ -->
+  <div class="opt">
+    <div class="ohead"><span class="num" style="background:#20262e;color:#cfd8e2">3</span><h3>סגנון אפליקציות מניות</h3><span class="badge" style="background:#20262e;color:#cfd8e2">רצינות ואמינות</span></div>
+    <div class="stage">
+      <div class="ours"><div class="caplabel">הגרסה שלנו</div>
+        <div class="ph"><div class="notch"></div><div class="scr" style="background:#0a0e12;color:#e8edf2">
+          <div class="sbar">9:41<span>5G</span></div>
+          <div class="body">
+            <div class="brand"><span class="logo">STRATETEACH</span><span class="pill" style="border-color:#2a3038">Watchlist</span></div>
+            <div style="background:#0f141a;border:1px solid #1c232c;border-radius:13px;padding:11px"><div class="bal"><div class="lab">שווי תיק</div><div class="big" style="font-weight:700">$270.26</div><div class="chg" style="color:#4cd07d">+$1.19 (0.44%) היום</div></div><svg class="spark" viewBox="0 0 210 38" preserveAspectRatio="none"><polyline fill="none" stroke="#4cd07d" stroke-width="2" points="0,30 22,26 44,28 66,18 88,22 110,13 132,17 154,10 176,13 198,6 210,9"/></svg></div>
+            <div class="sect">אחזקות</div>
+            <div style="font-size:9.5px"><div class="posr" style="padding-top:0"><span><b>BNB</b></span><span style="text-align:end">$0.70 <span style="color:#4cd07d">+1.4%</span></span></div><div class="posr"><span><b>WLD</b></span><span>$0.368 <span style="color:#ff5d6c">−11.5%</span></span></div><div class="posr"><span><b>ALLO</b></span><span>$0.245 <span style="color:#ff5d6c">−16%</span></span></div></div>
+            <div class="row" style="font-size:8px;margin-top:8px"><div style="flex:1;background:#0f141a;border:1px solid #1c232c;border-radius:8px;padding:6px">📈 סריקה</div><div style="flex:1;background:#0f141a;border:1px solid #1c232c;border-radius:8px;padding:6px">🤖 בוט</div><div style="flex:1;background:#0f141a;border:1px solid #1c232c;border-radius:8px;padding:6px">🧪 בקטסט</div></div>
+          </div>
+          <div class="nav" style="color:#e8edf2;background:#0a0e12"><div class="on"><i></i>בית</div><div><i></i>שווקים</div><div><i></i>סיגנל</div><div><i></i>בורסה</div><div><i></i>חשבון</div></div>
+        </div></div>
+      </div>
+      <div class="refs"><div class="caplabel">בהשראת מתחרים</div>
+        <div class="refrow">
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#fff;color:#1c1c28"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-size:18px;font-weight:800">$12,480<span style="color:#00c805;font-size:9px"> ▲2.1%</span></div><svg class="spark" viewBox="0 0 130 40"><polyline fill="none" stroke="#00c805" stroke-width="2" points="0,32 20,28 40,30 60,18 80,22 100,10 130,6"/></svg><div style="font-size:6.5px;opacity:.5;margin-top:6px">Stocks</div><div class="posr" style="font-size:8px"><b>AAPL</b><span style="color:#00c805">+1.7%</span></div><div class="posr" style="font-size:8px"><b>TSLA</b><span style="color:#ff3b30">−0.9%</span></div></div><div class="nav" style="color:#00c805;background:#fff;border-top:1px solid #eee"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Robinhood <span>· ברוקראז'</span></div></div>
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#0b0e14;color:#e6e9ef"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-size:6.5px;opacity:.6">Portfolio</div><div style="font-size:15px;font-weight:700">$48,120</div><svg class="spark" viewBox="0 0 130 34"><polyline fill="none" stroke="#e9c46a" stroke-width="1.6" points="0,26 20,22 40,25 60,15 80,19 100,9 130,12"/></svg><div class="posr" style="font-size:7.5px"><b>SPX</b><span style="color:#4cd07d">+0.6%</span></div><div class="posr" style="font-size:7.5px"><b>NDX</b><span style="color:#4cd07d">+0.9%</span></div></div><div class="nav" style="color:#e9c46a;background:#0b0e14"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Bloomberg <span>· פרו</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <div><h4>החשיבה — למה ככה</h4>
+        <p>קהל שמגיע משוק המניות מצפה ל"שפה" מסוימת: <b>שווי תיק + גרף ביצועים</b> בראש, ואז אחזקות עם אחוזים. פלטה כהה ומאופקת וטיפוגרפיה נקייה משדרות "זה כלי פיננסי אמיתי, לא צעצוע". Robinhood הנגיש את זה לקהל צעיר; Fidelity ו-Bloomberg שומרים על ההוד המקצועי. מתאים אם רוצים למצב את Strateteach כפלטפורמת השקעות רצינית מול משקיעים.</p>
+        <div class="proscons">
+          <div class="pros"><span class="h">יתרונות</span><ul><li>אמינות ורצינות</li><li>מוכר למשקיעים</li><li>ממוקד-נתונים</li></ul></div>
+          <div class="cons"><span class="h">שים לב</span><ul><li>עלול להרגיש "כבד"</li><li>פחות ידידותי למתחיל</li></ul></div>
+        </div>
+        <div class="bestfor">מתאים ל: <b>משקיעים רציניים</b> ותחושת בורסה קלאסית.</div>
+      </div>
+      <div><h4>מהלכים מרכזיים</h4>
+        <ul class="moves"><li>גרף ביצועים תחת שווי התיק</li><li>Watchlist / רשימת אחזקות</li><li>אחוזים ירוק/אדום מדודים</li><li>טיפוגרפיה מאופקת, מעט צבע</li></ul>
+        <div class="links"><span class="h">לבדיקה יסודית</span>
+          <a href="https://robinhood.com" target="_blank" rel="noopener">Robinhood · robinhood.com</a> ·
+          <a href="https://www.fidelity.com" target="_blank" rel="noopener">Fidelity · fidelity.com</a> ·
+          <a href="https://www.webull.com" target="_blank" rel="noopener">Webull · webull.com</a> ·
+          <a href="https://www.bloomberg.com" target="_blank" rel="noopener">Bloomberg · bloomberg.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 4 ============ -->
+  <div class="opt">
+    <div class="ohead"><span class="num" style="background:#182a10;color:#a6ff6a">4</span><h3>סגנון קריפטו / מסחר</h3><span class="badge" style="background:#182a10;color:#a6ff6a">אנרגטי · לסוחרים</span></div>
+    <div class="stage">
+      <div class="ours"><div class="caplabel">הגרסה שלנו</div>
+        <div class="ph"><div class="notch"></div><div class="scr" style="background:radial-gradient(120% 80% at 50% 0%,#141b12,#0a0d0a);color:#e7ffe9">
+          <div class="sbar" style="color:#c8f9cb">9:41<span>5G</span></div>
+          <div class="body">
+            <div class="brand"><span class="logo" style="color:#c6ff5b">ALGO770</span><span class="pill" style="border-color:#2d5a1f;color:#a6ff6a">● LIVE</span></div>
+            <div style="display:flex;gap:4px;font-size:6.5px;margin-bottom:7px"><span style="background:#111a10;border:1px solid #24371c;border-radius:5px;padding:3px 5px">BTC <b style="color:#4cd07d">+2.1%</b></span><span style="background:#111a10;border:1px solid #24371c;border-radius:5px;padding:3px 5px">SOL <b style="color:#ff5d6c">−3.5%</b></span><span style="background:#111a10;border:1px solid #24371c;border-radius:5px;padding:3px 5px">BNB <b style="color:#4cd07d">+.9%</b></span></div>
+            <div class="bal" style="background:linear-gradient(135deg,#16240f,#0e1a0b);border:1px solid #2c4a1e;border-radius:13px;padding:11px"><div class="lab" style="color:#a6ff6a">Equity · LIVE</div><div class="big" style="color:#eaffe3">$270.26</div><div class="chg" style="color:#7dff4c">+0.44% · Binance ✓</div></div>
+            <div class="sect" style="color:#a6ff6a">🔥 פריצות היום</div>
+            <div style="background:#101a0c;border:1px solid #2c4a1e;border-radius:10px;padding:7px;font-size:8.5px"><div class="posr" style="padding-top:0"><span>☕ Coffee</span><span style="color:#7dff4c">breaking out</span></div><div class="posr"><span>🍎 AAPL</span><span style="color:#7dff4c">breaking out</span></div></div>
+            <div class="tiles" style="margin-top:8px"><div class="tile" style="background:#101a0c;border:1px solid #24371c;color:#c8f9cb"><span class="ic" style="background:#7dff4c"></span>Scan</div><div class="tile" style="background:#101a0c;border:1px solid #24371c;color:#c8f9cb"><span class="ic" style="background:#c6ff5b"></span>Bot</div><div class="tile" style="background:#101a0c;border:1px solid #24371c;color:#c8f9cb"><span class="ic" style="background:#8a7cff"></span>Test</div><div class="tile" style="background:#101a0c;border:1px solid #24371c;color:#c8f9cb"><span class="ic" style="background:#e9c46a"></span>Profit</div></div>
+          </div>
+          <div class="nav" style="color:#a6ff6a;background:#0a0f08"><div class="on"><i></i>בית</div><div><i></i>מסחר</div><div><i></i>למידה</div><div><i></i>ארנק</div><div><i></i>אני</div></div>
+        </div></div>
+      </div>
+      <div class="refs"><div class="caplabel">בהשראת מתחרים</div>
+        <div class="refrow">
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#0b0e11;color:#eaecef"><div class="sbar" style="color:#f0b90b">9:41<span>5G</span></div><div class="body"><div style="font-size:6.5px;opacity:.6">Est. Balance</div><div style="font-size:14px;font-weight:800">0.842 BTC</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:7px;font-size:6px"><div style="background:#161a1e;border-radius:5px;padding:4px">BTC <b style="color:#4cd07d">+2.1%</b></div><div style="background:#161a1e;border-radius:5px;padding:4px">ETH <b style="color:#ff5d6c">−1.2%</b></div><div style="background:#161a1e;border-radius:5px;padding:4px">SOL <b style="color:#4cd07d">+3%</b></div><div style="background:#161a1e;border-radius:5px;padding:4px">BNB <b style="color:#4cd07d">+.9%</b></div></div><div style="background:#f0b90b;color:#000;border-radius:6px;padding:5px;text-align:center;font-weight:800;font-size:7px;margin-top:7px">Trade</div></div><div class="nav" style="color:#f0b90b;background:#0b0e11"><div class="on"><i></i></div><div><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Binance <span>· קריפטו</span></div></div>
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#12100a;color:#f7e9c8"><div class="sbar" style="color:#f7a600">9:41<span>5G</span></div><div class="body"><div style="font-size:6.5px;opacity:.6">Total assets</div><div style="font-size:14px;font-weight:800">$5,120</div><div style="height:26px;background:linear-gradient(90deg,#f7a600,transparent);border-radius:5px;margin-top:7px;opacity:.5"></div><div class="posr" style="font-size:7px;color:#f7e9c8">BTC/USDT<span style="color:#4cd07d">+2.1%</span></div><div class="posr" style="font-size:7px">SOL/USDT<span style="color:#ff5d6c">−3.5%</span></div></div><div class="nav" style="color:#f7a600;background:#12100a"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Bybit <span>· מסחר</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <div><h4>החשיבה — למה ככה</h4>
+        <p>סוחרי קריפטו רגילים לסביבה מסוימת: <b>קנבס כהה, ירוק/אדום עז, סרגל טיקרים חי וגישה מהירה לפעולה</b>. הכהות מפחיתה עייפות עיניים בשימוש ממושך, והצבעים החיים יוצרים תחושת זמן-אמת ודחיפות. כרטיס "פריצות היום" בראש מנצל בדיוק את מה ש-Strateteach ייחודי בו. Binance ו-Bybit בנו את שפת השוק הזו — אימוצה גורם לאפליקציה להרגיש נייטיב וטבעית לקהל הסוחרים.</p>
+        <div class="proscons">
+          <div class="pros"><span class="h">יתרונות</span><ul><li>מרגיש נייטיב לסוחר</li><li>אנרגיית זמן-אמת</li><li>מבליט את הפריצות</li></ul></div>
+          <div class="cons"><span class="h">שים לב</span><ul><li>מאיים/"עמוס" למתחיל</li><li>דורש היכרות</li></ul></div>
+        </div>
+        <div class="bestfor">מתאים ל: <b>סוחרים ותחום הקריפטו</b> — ממוקד-פעולה.</div>
+      </div>
+      <div><h4>מהלכים מרכזיים</h4>
+        <ul class="moves"><li>קנבס כהה + אקסנט ניאון</li><li>סרגל טיקרים חי בראש</li><li>כרטיס פריצות בולט</li><li>ירוק/אדום עז לרווח/הפסד</li></ul>
+        <div class="links"><span class="h">לבדיקה יסודית</span>
+          <a href="https://www.binance.com" target="_blank" rel="noopener">Binance · binance.com</a> ·
+          <a href="https://www.bybit.com" target="_blank" rel="noopener">Bybit · bybit.com</a> ·
+          <a href="https://www.coinbase.com" target="_blank" rel="noopener">Coinbase · coinbase.com</a> ·
+          <a href="https://www.okx.com" target="_blank" rel="noopener">OKX · okx.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 5 ============ -->
+  <div class="opt">
+    <div class="ohead"><span class="num" style="background:#221f3a;color:#c9c2ff">5</span><h3>Premium Minimal</h3><span class="badge" style="background:#221f3a;color:#c9c2ff">בחירתי · מיתוגי</span></div>
+    <div class="stage">
+      <div class="ours"><div class="caplabel">הגרסה שלנו</div>
+        <div class="ph"><div class="notch"></div><div class="scr" style="background:#101014;color:#f2f0ff">
+          <div class="sbar">9:41<span>5G</span></div>
+          <div class="body">
+            <div class="brand"><span class="logo" style="color:#c9c2ff">STRATETEACH</span><span class="pill" style="border-color:#2a2740">◐</span></div>
+            <div style="background:linear-gradient(135deg,#6c5ce7,#8a7cff);border-radius:20px;padding:16px;color:#fff"><div style="font-size:8px;opacity:.85;letter-spacing:.1em">TOTAL</div><div style="font-size:29px;font-weight:800">$270.26</div><div style="font-size:11px;font-weight:700;margin-top:1px">▲ +0.44% היום</div></div>
+            <div class="row" style="margin-top:10px"><div style="flex:1;background:#191922;border-radius:14px;padding:11px 8px"><div style="font-size:17px">▶</div><div style="font-size:10px;font-weight:700;margin-top:3px">סריקה יומית</div></div><div style="flex:1;background:#191922;border-radius:14px;padding:11px 8px"><div style="font-size:17px">✦</div><div style="font-size:10px;font-weight:700;margin-top:3px">מנוע רווח</div></div></div>
+            <div class="sect" style="color:#c9c2ff">פוזיציות</div>
+            <div style="background:#191922;border-radius:14px;padding:9px;font-size:10px"><div class="posr" style="padding-top:0"><span>BNB</span><span style="color:#28d17c">+$0.37</span></div><div class="posr"><span>WLD</span><span style="color:#ff5d6c">−$3.10</span></div></div>
+          </div>
+          <div class="nav" style="color:#c9c2ff;background:#0d0d12"><div class="on"><i></i>בית</div><div><i></i>מסחר</div><div><i></i>למידה</div><div><i></i>בורסה</div><div><i></i>חשבון</div></div>
+        </div></div>
+      </div>
+      <div class="refs"><div class="caplabel">בהשראת מתחרים</div>
+        <div class="refrow">
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#f9f7ff;color:#1a1440"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="background:linear-gradient(135deg,#ff5f6d,#ffc371);border-radius:14px;padding:12px;color:#fff"><div style="font-size:7px;opacity:.9">Balance</div><div style="font-size:18px;font-weight:800">€2,430</div></div><div class="row" style="margin-top:8px;gap:5px"><div style="flex:1;background:#efeafc;border-radius:10px;padding:9px;text-align:center;font-size:6.5px">Pots</div><div style="flex:1;background:#efeafc;border-radius:10px;padding:9px;text-align:center;font-size:6.5px">Send</div></div></div><div class="nav" style="color:#6c5ce7;background:#fff;border-top:1px solid #eee"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Monzo <span>· בלוקים נועזים</span></div></div>
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#111014;color:#fff"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-size:7px;opacity:.6">Main · EUR</div><div style="font-size:22px;font-weight:800;margin-top:3px">€8,240</div><div style="background:#1e1c26;border-radius:12px;padding:10px;margin-top:12px;font-size:7px;opacity:.8">Analytics ▸</div><div style="background:#1e1c26;border-radius:12px;padding:10px;margin-top:7px;font-size:7px;opacity:.8">Crypto ▸</div></div><div class="nav" style="color:#fff;background:#0d0d12"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">N26 <span>· פרימיום כהה</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <div><h4>החשיבה — למה ככה</h4>
+        <p>כאן העיצוב הוא חלק מהמיתוג. <b>בלוק צבע "הירו" ליתרה, מספרים גדולים, מרווחים נדיבים ופעולה ראשית אחת</b> — מייצרים תחושת פרימיום ו"יוקרה" בלי להעמיס. המרווח הלבן והטיפוגרפיה הנועזת יוצרים ערך נתפס גבוה ורושם ראשוני חזק. Monzo ו-N26 בנו מותגים חזקים דרך שפה ויזואלית נועזת וזכירה. אם רוצים ש-Strateteach יבלוט ויֵראה "יקר" ומודרני מהרגע הראשון — זה הכיוון.</p>
+        <div class="proscons">
+          <div class="pros"><span class="h">יתרונות</span><ul><li>זכיר ומבדל</li><li>תחושת פרימיום</li><li>רושם ראשוני חזק</li></ul></div>
+          <div class="cons"><span class="h">שים לב</span><ul><li>סגנון על חשבון צפיפות</li><li>פחות מידע במבט אחד</li></ul></div>
+        </div>
+        <div class="bestfor">מתאים ל: <b>מיתוג חזק ובידול</b> — בולט ומזמין.</div>
+      </div>
+      <div><h4>מהלכים מרכזיים</h4>
+        <ul class="moves"><li>בלוק צבע הירו ליתרה</li><li>מספרים גדולים, טיפוגרפיה נועזת</li><li>מרווח נדיב, מעט אלמנטים</li><li>פעולה ראשית אחת דומיננטית</li></ul>
+        <div class="links"><span class="h">לבדיקה יסודית</span>
+          <a href="https://monzo.com" target="_blank" rel="noopener">Monzo · monzo.com</a> ·
+          <a href="https://n26.com" target="_blank" rel="noopener">N26 · n26.com</a> ·
+          <a href="https://www.revolut.com" target="_blank" rel="noopener">Revolut · revolut.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 6 ============ -->
+  <div class="opt">
+    <div class="ohead"><span class="num" style="background:#0d2b33;color:#33c9d6">6</span><h3>Pro Dashboard</h3><span class="badge" style="background:#0d2b33;color:#33c9d6">בחירתי · מתקדמים</span></div>
+    <div class="stage">
+      <div class="ours"><div class="caplabel">הגרסה שלנו</div>
+        <div class="ph"><div class="notch"></div><div class="scr" style="background:#080b0f;color:#dbe6f0">
+          <div class="sbar">9:41<span>5G</span></div>
+          <div class="body" style="padding:6px 8px 0">
+            <div class="brand" style="margin-bottom:6px"><span class="logo" style="color:#33c9d6;font-size:9px">ALGO770 · לוח</span><span class="pill" style="font-size:7px">⟳</span></div>
+            <div class="row" style="gap:5px"><div style="flex:1;background:#0e151d;border:1px solid #1b2732;border-radius:9px;padding:7px"><div class="mini" style="font-size:7px">Real P&amp;L</div><div style="font-size:12px;font-weight:800">$1.19</div></div><div style="flex:1;background:#0e151d;border:1px solid #1b2732;border-radius:9px;padding:7px"><div class="mini" style="font-size:7px">Positions</div><div style="font-size:12px;font-weight:800">3</div></div></div>
+            <div style="background:#0e151d;border:1px solid #1b2732;border-radius:9px;padding:7px;margin-top:5px"><div class="mini" style="font-size:7px;margin-bottom:3px">Allocation</div><div style="display:flex;height:8px;border-radius:4px;overflow:hidden"><span style="flex:3;background:#33c9d6"></span><span style="flex:2;background:#8a7cff"></span><span style="flex:2;background:#e9c46a"></span><span style="flex:1;background:#28d17c"></span></div></div>
+            <div class="row" style="gap:5px;margin-top:5px"><div style="flex:1;background:#0e151d;border:1px solid #1b2732;border-radius:9px;padding:7px;font-size:8px">🔥 Coffee·AAPL</div><div style="flex:1;background:#0e151d;border:1px solid #1b2732;border-radius:9px;padding:7px;font-size:8px;color:#28d17c">🤖 Active</div></div>
+            <svg class="spark" viewBox="0 0 210 32" preserveAspectRatio="none" style="margin-top:6px"><polyline fill="none" stroke="#33c9d6" stroke-width="1.5" points="0,24 22,20 44,22 66,13 88,17 110,9 132,13 154,7 176,10 198,4 210,7"/></svg>
+            <div class="tiles" style="grid-template-columns:repeat(5,1fr);margin-top:6px;gap:4px"><div class="tile" style="background:#0e151d;border:1px solid #1b2732;font-size:6.5px;padding:5px 1px"><span class="ic" style="width:14px;height:14px;background:#33c9d6"></span>Scan</div><div class="tile" style="background:#0e151d;border:1px solid #1b2732;font-size:6.5px;padding:5px 1px"><span class="ic" style="width:14px;height:14px;background:#c6ff5b"></span>Bot</div><div class="tile" style="background:#0e151d;border:1px solid #1b2732;font-size:6.5px;padding:5px 1px"><span class="ic" style="width:14px;height:14px;background:#8a7cff"></span>Test</div><div class="tile" style="background:#0e151d;border:1px solid #1b2732;font-size:6.5px;padding:5px 1px"><span class="ic" style="width:14px;height:14px;background:#e9c46a"></span>Profit</div><div class="tile" style="background:#0e151d;border:1px solid #1b2732;font-size:6.5px;padding:5px 1px"><span class="ic" style="width:14px;height:14px;background:#28d17c"></span>Exch</div></div>
+          </div>
+          <div class="nav" style="color:#33c9d6;background:#080b0f"><div class="on"><i></i>בית</div><div><i></i>מסחר</div><div><i></i>למידה</div><div><i></i>בורסה</div><div><i></i>חשבון</div></div>
+        </div></div>
+      </div>
+      <div class="refs"><div class="caplabel">בהשראת מתחרים</div>
+        <div class="refrow">
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#0d1116;color:#d6dde6"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-size:7px;font-weight:700">BTCUSDT <span style="color:#4cd07d">61,240</span></div><svg class="spark" viewBox="0 0 130 40"><polyline fill="none" stroke="#33c9d6" stroke-width="1.4" points="0,30 15,24 30,28 45,16 60,20 75,10 90,14 105,7 130,11"/></svg><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:6px;font-size:6px"><div style="background:#141a20;border-radius:4px;padding:4px">RSI 62</div><div style="background:#141a20;border-radius:4px;padding:4px">MACD ▲</div><div style="background:#141a20;border-radius:4px;padding:4px">Vol +18%</div><div style="background:#141a20;border-radius:4px;padding:4px">MA200 ▲</div></div></div><div class="nav" style="color:#33c9d6;background:#0d1116"><div class="on"><i></i></div><div><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">TradingView <span>· ווידג'טים</span></div></div>
+          <div class="refcard"><div class="ref"><div class="notch"></div><div class="scr" style="background:#0b0e11;color:#e6e9ef"><div class="sbar" style="color:#f0b90b">9:41<span>5G</span></div><div class="body"><div style="font-size:6px;opacity:.6">Futures · PnL</div><div style="font-size:12px;font-weight:800;color:#4cd07d">+$318</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:5px;font-size:5.5px"><div style="background:#161a1e;border-radius:4px;padding:3px">Margin</div><div style="background:#161a1e;border-radius:4px;padding:3px">Positions 4</div><div style="background:#161a1e;border-radius:4px;padding:3px">Orders</div><div style="background:#161a1e;border-radius:4px;padding:3px">Funding</div></div><div style="height:16px;background:linear-gradient(90deg,#f0b90b,transparent);opacity:.4;border-radius:4px;margin-top:5px"></div></div><div class="nav" style="color:#f0b90b;background:#0b0e11"><div class="on"><i></i></div><div><i></i></div><div><i></i></div></div></div></div><div class="name">Binance Pro <span>· צפוף</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <div><h4>החשיבה — למה ככה</h4>
+        <p>למשתמש-על שרוצה "הכל במבט אחד": <b>רשת ווידג'טים — הקצאה, רווח/הפסד, פוזיציות, פריצות, סטטוס בוט</b> — בלי גלילה. צפיפות מידע גבוהה מכבדת את הזמן של סוחר מנוסה, והמבנה תואם את המודל המנטלי של TradingView ו-Binance Pro. עוצמתי מאוד — אך דורש היכרות, ולכן פחות מתאים כברירת מחדל למתחילים ומצוין כ<b>"מצב Pro" אופציונלי</b> לצד גרסה פשוטה יותר.</p>
+        <div class="proscons">
+          <div class="pros"><span class="h">יתרונות</span><ul><li>מקסימום מידע במבט</li><li>אפס גלילה</li><li>אהוב על משתמשי-על</li></ul></div>
+          <div class="cons"><span class="h">שים לב</span><ul><li>תלול למתחילים</li><li>עדיף כ-opt-in, לא ברירת מחדל</li></ul></div>
+        </div>
+        <div class="bestfor">מתאים ל: <b>משתמשים מתקדמים</b> — כ"מצב Pro" אופציונלי.</div>
+      </div>
+      <div><h4>מהלכים מרכזיים</h4>
+        <ul class="moves"><li>רשת ווידג'טים דחוסה</li><li>מדדי מפתח + גרף למעלה</li><li>כל הנתונים ללא גלילה</li><li>אידאלי כ"מצב Pro"</li></ul>
+        <div class="links"><span class="h">לבדיקה יסודית</span>
+          <a href="https://www.tradingview.com" target="_blank" rel="noopener">TradingView · tradingview.com</a> ·
+          <a href="https://www.binance.com" target="_blank" rel="noopener">Binance · binance.com</a> ·
+          <a href="https://www.bloomberg.com" target="_blank" rel="noopener">Bloomberg · bloomberg.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MENU ===== -->
+  <h2 class="sec">תפריט ראשי — 3 גישות</h2>
+  <div class="subc">אותם יעדי ניווט, שלוש דרכים להציג.</div>
+  <div class="gal">
+    <div class="galitem">
+      <div class="ph" style="width:200px;height:410px"><div class="notch"></div><div class="scr" style="background:#0e1520;color:#eaf1f8"><div class="sbar">9:41<span>5G</span></div><div class="body"><div class="logo" style="color:#33c9d6;margin:1px 0 9px">STRATETEACH</div>
+        <div style="font-size:10.5px"><div style="display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #1b2837"><span style="width:17px;height:17px;border-radius:5px;background:#33c9d6"></span>בית</div><div style="display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #1b2837"><span style="width:17px;height:17px;border-radius:5px;background:#28d17c"></span>סריקה יומית</div><div style="display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #1b2837"><span style="width:17px;height:17px;border-radius:5px;background:#e9c46a"></span>מנוע רווח</div><div style="display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #1b2837"><span style="width:17px;height:17px;border-radius:5px;background:#8a7cff"></span>סיגנל בוט</div><div style="display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #1b2837"><span style="width:17px;height:17px;border-radius:5px;background:#ff8a5d"></span>בקטסט</div><div style="display:flex;gap:8px;align-items:center;padding:9px 0"><span style="width:17px;height:17px;border-radius:5px;background:#5db9ff"></span>בורסה · צ'אט · חשבון</div></div>
+      </div></div></div>
+      <div class="t">א · רשימה נקייה</div><div class="d">פשוט, שטוח, הכל במבט אחד.</div>
+    </div>
+    <div class="galitem">
+      <div class="ph" style="width:200px;height:410px"><div class="notch"></div><div class="scr" style="background:#0e1520;color:#eaf1f8"><div class="sbar">9:41<span>5G</span></div><div class="body" style="font-size:10px"><div class="logo" style="color:#33c9d6;margin:1px 0 8px">STRATETEACH</div>
+        <div style="background:#16212e;border-radius:9px;padding:8px 10px;margin-bottom:7px;font-weight:700;color:#33c9d6">🏠 בית</div><div style="font-size:8px;color:#7f92a6;margin:5px 2px 3px">מסחר וניתוח ▾</div><div style="background:#131c27;border-radius:9px;padding:6px 10px;margin-bottom:4px">סריקה יומית</div><div style="background:#131c27;border-radius:9px;padding:6px 10px">מנוע רווח · בקטסט</div><div style="font-size:8px;color:#7f92a6;margin:7px 2px">חיבורים ▸</div><div style="font-size:8px;color:#7f92a6;margin:7px 2px">למידה ▸</div><div style="font-size:8px;color:#7f92a6;margin:7px 2px">ניהול ▸</div></div></div></div>
+      <div class="t">ב · מקובץ לקטגוריות</div><div class="d">אקורדיון: קטגוריה אחת פתוחה (הגרסה הנוכחית).</div>
+    </div>
+    <div class="galitem">
+      <div class="ph" style="width:200px;height:410px"><div class="notch"></div><div class="scr" style="background:#101014;color:#f2f0ff"><div class="sbar">9:41<span>5G</span></div><div class="body"><div class="logo" style="color:#c9c2ff;margin:1px 0 9px">STRATETEACH</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;font-size:8px;text-align:center"><div style="background:#191922;border-radius:12px;padding:10px 3px">🏠<br>בית</div><div style="background:#191922;border-radius:12px;padding:10px 3px">📈<br>סריקה</div><div style="background:#191922;border-radius:12px;padding:10px 3px">✦<br>מנוע</div><div style="background:#191922;border-radius:12px;padding:10px 3px">🤖<br>בוט</div><div style="background:#191922;border-radius:12px;padding:10px 3px">🧪<br>בקטסט</div><div style="background:#191922;border-radius:12px;padding:10px 3px">🔗<br>בורסה</div><div style="background:#191922;border-radius:12px;padding:10px 3px">💬<br>צ'אט</div><div style="background:#191922;border-radius:12px;padding:10px 3px">🎓<br>למידה</div><div style="background:#191922;border-radius:12px;padding:10px 3px">👤<br>חשבון</div></div></div></div></div>
+      <div class="t">ג · רשת אייקונים</div><div class="d">"springboard" ויזואלי, נגיעה מהירה.</div>
+    </div>
+  </div>
+
+  <!-- ===== EXCHANGE ===== -->
+  <h2 class="sec">חיבור בורסה — 3 גישות</h2>
+  <div class="subc">אותה פעולה (חיבור קיים / פתיחת חשבון), שלוש דרכים.</div>
+  <div class="gal">
+    <div class="galitem">
+      <div class="ph" style="width:200px;height:410px"><div class="notch"></div><div class="scr" style="background:#0e1520;color:#eaf1f8"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-weight:800;font-size:11px;margin:3px 0 10px">חיבור בורסה</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"><div style="background:#131c27;border:1px solid #22354a;border-radius:12px;padding:11px;text-align:center;font-size:9.5px"><div style="width:28px;height:28px;border-radius:8px;background:#f3ba2f;margin:0 auto 5px;color:#000;font-weight:900;line-height:28px">B</div>Binance<br><span style="color:#28d17c;font-size:8px">מחובר ✓</span></div><div style="background:#131c27;border:1px solid #22354a;border-radius:12px;padding:11px;text-align:center;font-size:9.5px"><div style="width:28px;height:28px;border-radius:8px;background:#f7a600;margin:0 auto 5px;color:#000;font-weight:900;line-height:28px">BY</div>Bybit<br><span style="color:#33c9d6;font-size:8px">חבר</span></div><div style="background:#131c27;border:1px solid #22354a;border-radius:12px;padding:11px;text-align:center;font-size:9.5px"><div style="width:28px;height:28px;border-radius:8px;background:#1652f0;margin:0 auto 5px;color:#fff;font-weight:900;line-height:28px">C</div>Coinbase</div><div style="background:#131c27;border:1px solid #22354a;border-radius:12px;padding:11px;text-align:center;font-size:9.5px"><div style="width:28px;height:28px;border-radius:8px;background:#0a2540;margin:0 auto 5px;color:#fff;font-weight:900;line-height:28px">C</div>Crypto<br><span style="opacity:.5;font-size:8px">בקרוב</span></div></div></div></div></div>
+      <div class="t">א · רשת לוגואים</div><div class="d">בחירה ויזואלית מהירה.</div>
+    </div>
+    <div class="galitem">
+      <div class="ph" style="width:200px;height:410px"><div class="notch"></div><div class="scr" style="background:#0e1520;color:#eaf1f8"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-weight:800;font-size:11px;margin:3px 0 10px">חיבור בורסה</div>
+        <div style="background:#131c27;border:1px solid #22354a;border-radius:12px;padding:10px;margin-bottom:9px"><div style="display:flex;align-items:center;gap:7px;font-size:10px"><span style="width:26px;height:26px;border-radius:8px;background:#f7a600;color:#000;font-weight:900;line-height:26px;text-align:center">BY</span>Bybit</div><div class="row" style="margin-top:8px;gap:6px"><div style="flex:1;background:#33c9d6;color:#04222a;border-radius:8px;padding:7px;text-align:center;font-size:9px;font-weight:700">חבר קיים</div><div style="flex:1;background:#1b2a3a;border:1px solid #2a3d51;border-radius:8px;padding:7px;text-align:center;font-size:9px">פתח חדש ↗</div></div></div>
+        <div style="background:#131c27;border:1px solid #22354a;border-radius:12px;padding:10px"><div style="display:flex;align-items:center;gap:7px;font-size:10px"><span style="width:26px;height:26px;border-radius:8px;background:#1652f0;color:#fff;font-weight:900;line-height:26px;text-align:center">C</span>Coinbase</div><div class="row" style="margin-top:8px;gap:6px"><div style="flex:1;background:#33c9d6;color:#04222a;border-radius:8px;padding:7px;text-align:center;font-size:9px;font-weight:700">חבר קיים</div><div style="flex:1;background:#1b2a3a;border:1px solid #2a3d51;border-radius:8px;padding:7px;text-align:center;font-size:9px">פתח חדש ↗</div></div></div></div></div></div>
+      <div class="t">ב · כרטיסים + 2 כפתורים</div><div class="d">הגרסה הנוכחית.</div>
+    </div>
+    <div class="galitem">
+      <div class="ph" style="width:200px;height:410px"><div class="notch"></div><div class="scr" style="background:#101014;color:#f2f0ff"><div class="sbar">9:41<span>5G</span></div><div class="body"><div style="font-weight:800;font-size:11px;margin:3px 0 12px">חיבור ב-3 צעדים</div>
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px"><span style="width:21px;height:21px;border-radius:50%;background:#6c5ce7;color:#fff;text-align:center;line-height:21px;font-weight:800;font-size:10px;flex:0 0 auto">1</span><div style="font-size:10px">בחר בורסה<br><span class="mini">Binance · Bybit · Coinbase</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px"><span style="width:21px;height:21px;border-radius:50%;background:#6c5ce7;color:#fff;text-align:center;line-height:21px;font-weight:800;font-size:10px;flex:0 0 auto">2</span><div style="font-size:10px">צור מפתח API<br><span class="mini">מדריך מובנה בלחיצה</span></div></div><div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:16px"><span style="width:21px;height:21px;border-radius:50%;background:#6c5ce7;color:#fff;text-align:center;line-height:21px;font-weight:800;font-size:10px;flex:0 0 auto">3</span><div style="font-size:10px">הדבק וחבר<br><span class="mini">non-custodial · הכספים אצלך</span></div></div><div style="background:#8a7cff;color:#fff;border-radius:11px;padding:11px;text-align:center;font-weight:800;font-size:11px">התחל חיבור</div></div></div></div>
+      <div class="t">ג · אשף מודרך</div><div class="d">צעד-אחר-צעד למתחילים.</div>
+    </div>
+  </div>
+
+  <!-- ===== recommendation ===== -->
+  <h2 class="sec">המלצה לסיכום</h2>
+  <div class="subc" style="max-width:720px;margin:0 auto 8px">אין "נכון" אחד — תלוי בקהל היעד ובמיצוב. אנחנו ממליצים על גישה משולבת:</div>
+  <div class="principles" style="grid-template-columns:repeat(3,1fr)">
+    <div class="pr"><div class="n">ברירת מחדל</div><div class="t">גרסה 1 (Best-Practice)</div><div class="d">הכי בטוחה לרוב המשתמשים — מוכרת, אמינה, אפס עקומת למידה.</div></div>
+    <div class="pr"><div class="n">אם רוצים בידול</div><div class="t">גרסה 5 (Premium)</div><div class="d">נראית "יקרה" ומודרנית — מצוינת למיתוג ולרושם ראשוני.</div></div>
+    <div class="pr"><div class="n">מצב מתקדם</div><div class="t">גרסה 6 (Pro)</div><div class="d">להציע כ-toggle אופציונלי לסוחרים כבדים, לצד ברירת המחדל.</div></div>
+  </div>
+
+  <!-- ===== VOTING (guided, one match at a time) ===== -->
+  <h2 class="sec">הצבעה · בחירה בין שניים</h2>
+  <div class="subc">בכל שלב בוחרים בין <b>שתי גרסאות בלבד</b> — המנצחת עולה שלב — עד שנשאר עיצוב מנצח אחד. אנונימי לגמרי, מכשיר אחד = הצבעה אחת.</div>
+  <div class="vote" id="dv-vote">
+    <div class="howto" id="dv-howto">👥 <b>לפאנל (8 מעריכים):</b> עברו על 6 הגרסאות למעלה, ואז כאן — בכל התאמה לחצו על הגרסה שאתם מעדיפים. המנצחת עולה אוטומטית לשלב הבא, עד ל<b>עיצוב מנצח</b> אחד. בסוף שלחו את התוצאה לאדמין.</div>
+
+    <!-- guided flow -->
+    <div id="dv-flow">
+      <div class="dv-progress" id="dv-step">התאמה 1 מתוך 5</div>
+      <div class="dv-progbar"><i id="dv-progfill"></i></div>
+      <div class="dv-stage" id="dv-stage">סבב 1</div>
+      <div class="dv-prompt">איזו גרסה אתם מעדיפים?</div>
+      <div class="dv-match">
+        <button type="button" class="dv-card" id="dv-cardA"></button>
+        <div class="dv-or">מול</div>
+        <button type="button" class="dv-card" id="dv-cardB"></button>
+      </div>
+      <div class="dv-back"><span class="rvote" id="dv-restart">↺ התחלה מחדש</span></div>
+    </div>
+
+    <!-- favorite + submit -->
+    <div id="dv-done" hidden>
+      <div class="dv-fav">המועדף שלך:<span class="big" id="dv-favname"></span><span class="dv-favthumb" id="dv-favthumb"></span></div>
+      <button type="button" class="dv-submit" id="dv-submit">שלח את התוצאה שלי לאדמין</button>
+      <div class="dv-msg" id="dv-msg"></div>
+      <div class="dv-back">
+        <span class="rvote" id="dv-again">↺ להצביע שוב</span>
+        <span class="rvote" id="dv-see">צפייה בתוצאות</span>
+      </div>
+    </div>
+
+    <!-- reveal / results slide -->
+    <div id="dv-results" hidden>
+      <div class="dv-rhead">
+        <div class="dv-rtitle">🏆 העיצוב המוביל כרגע</div>
+        <div class="dv-wincard" id="dv-wincard">
+          <div class="dv-winthumb" id="dv-winthumb"></div>
+          <div class="dv-winname" id="dv-winname"></div>
+        </div>
+      </div>
+      <div class="dv-bars" id="dv-bars"></div>
+      <div class="dv-total" id="dv-total"></div>
+      <div class="dv-back">
+        <span class="rvote" id="dv-refresh">⟳ רענון</span>
+        <span class="rvote" id="dv-backvote">חזרה להצבעה</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Strateteach · ALGO770 — כל המסכים הם מוקאפים להדגמה בלבד · אותן פונקציות, סידור וסגנון שונה · האפליקציה עצמה לא שונתה.<br>מסכי ההתייחסות הם רנדור סגנוני בהשראת האפליקציות שצוינו (לא צילומי מסך מקוריים); הלינקים לאתרים הרשמיים לבדיקה עצמאית.</p>
+</div>
+<script>
+(function(){
+  // Anonymous design poll — guided single-match tournament + animated reveal.
+  // One device = one vote (random uuid in localStorage). Same-origin API.
+  var OPT={
+    1:{name:'Best-Practice',c:'#33c9d6'},
+    2:{name:'פשוט וקל',c:'#28d17c'},
+    3:{name:'מניות',c:'#cfd8e2'},
+    4:{name:'קריפטו',c:'#a6ff6a'},
+    5:{name:'Premium',c:'#c9c2ff'},
+    6:{name:'Pro',c:'#33c9d6'}
+  };
+  var L={
+    step:function(cur,tot){return 'התאמה '+cur+' מתוך '+tot;},
+    stages:['סבב 1','סבב 1','סבב 1','חצי גמר','גמר'],
+    optName:function(id){return 'גרסה '+id+' · '+OPT[id].name;},
+    favName:function(id){return 'גרסה '+id+' · '+OPT[id].name;},
+    submit:'שלח את התוצאה שלי לאדמין', sending:'שולח…', sent:'נשלח ✓',
+    okMsg:function(t){return 'התקבל! תודה 🙏 · סה״כ הצביעו: '+t;},
+    errMsg:'שליחה נכשלה — בדקו חיבור ונסו שוב.',
+    barLabel:function(id){return 'גרסה '+id;},
+    totalMsg:function(t){return 'סה״כ '+t+' הצביעו';},
+    noVotes:'עדיין אין הצבעות — היו הראשונים!',
+    winName:function(id){return 'גרסה '+id+' · '+OPT[id].name;}
+  };
+  var VKEY='algo770_design_voter', TOTAL=5;
+  function voterId(){
+    var v=null; try{v=localStorage.getItem(VKEY);}catch(e){}
+    if(!v){
+      try{v=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;}catch(e){}
+      if(!v){v='v-'+new Date().getTime()+'-'+Math.floor(Math.random()*1e9).toString(16);}
+      try{localStorage.setItem(VKEY,v);}catch(e){}
+    }
+    return v;
+  }
+  var $=function(id){return document.getElementById(id);};
+  function paintThumb(el,id){el.style.background=OPT[id].c;el.textContent=id;}
+
+  // ── tournament state ──
+  var picks;  // [w1,w2,w3, semiWinner, finalWinner]
+  function pairAt(i){
+    if(i===0)return[1,2]; if(i===1)return[3,4]; if(i===2)return[5,6];
+    if(i===3)return[picks[0],picks[1]];       // semifinal: W1 vs W2
+    return[picks[3],picks[2]];                 // final: semi-winner vs W3
+  }
+  var idx;
+  function cardHTML(id){
+    // preview thumbnail (relative /design/thumbs/) + colored number badge + name.
+    return '<img class="dv-img" src="thumbs/opt'+id+'.png" alt="">'
+         +'<span class="dv-cname"><span class="dv-badge" style="background:'+OPT[id].c+'">'+id+'</span>'+L.optName(id)+'</span>';
+  }
+  function renderMatch(){
+    var p=pairAt(idx), a=p[0], b=p[1];
+    $('dv-step').textContent=L.step(idx+1,TOTAL);
+    $('dv-progfill').style.width=((idx)/TOTAL*100)+'%';
+    $('dv-stage').textContent=L.stages[idx];
+    var ca=$('dv-cardA'), cb=$('dv-cardB');
+    ca.innerHTML=cardHTML(a); cb.innerHTML=cardHTML(b);
+    ca.dataset.id=a; cb.dataset.id=b;
+  }
+  function choose(id){
+    picks[idx]=id; idx++;
+    if(idx>=TOTAL){ showDone(); } else { renderMatch(); }
+  }
+  function startFlow(){
+    picks=[]; idx=0;
+    show('flow'); renderMatch();
+  }
+
+  // ── views ──
+  function show(which){
+    $('dv-flow').hidden=(which!=='flow');
+    $('dv-done').hidden=(which!=='done');
+    $('dv-results').hidden=(which!=='results');
+    $('dv-howto').hidden=(which==='results');
+  }
+  function showDone(){
+    $('dv-progfill').style.width='100%';
+    var fav=picks[TOTAL-1];
+    $('dv-favname').textContent=L.favName(fav);
+    paintThumb($('dv-favthumb'),fav);
+    var b=$('dv-submit'); b.disabled=false; b.textContent=L.submit;
+    $('dv-msg').textContent='';
+    show('done');
+  }
+
+  // ── submit ──
+  function submit(){
+    var fav=picks[TOTAL-1];
+    var btn=$('dv-submit'); btn.disabled=true; btn.textContent=L.sending;
+    $('dv-msg').textContent='';
+    fetch('/design/vote',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({voter_id:voterId(),choice:fav,path:picks})
+    }).then(function(r){return r.ok?r.json():Promise.reject();})
+      .then(function(d){
+        btn.textContent=L.sent;
+        $('dv-msg').textContent=L.okMsg(d&&d.total!=null?d.total:'');
+        loadResults(); show('results');
+      }).catch(function(){
+        btn.disabled=false; btn.textContent=L.submit;
+        $('dv-msg').textContent=L.errMsg;
+      });
+  }
+
+  // ── reveal / results ──
+  function loadResults(){
+    $('dv-total').textContent='…';
+    fetch('/design/results').then(function(r){return r.json();}).then(renderResults).catch(function(){
+      $('dv-total').textContent=L.errMsg;
+    });
+  }
+  function renderResults(d){
+    var counts=(d&&d.counts)||{}, total=(d&&d.total)||0, winner=d&&d.winner;
+    var max=0,i; for(i=1;i<=6;i++){max=Math.max(max,counts[i]||0);}
+    // winner card
+    var wt=$('dv-winthumb'), wn=$('dv-winname');
+    if(winner&&total>0){paintThumb(wt,winner);wn.textContent='🏆 '+L.winName(winner);$('dv-wincard').style.display='';}
+    else{$('dv-wincard').style.display='none';}
+    // bars
+    var html='';
+    for(i=1;i<=6;i++){
+      var n=counts[i]||0, w=max>0?Math.round(n/max*100):0;
+      var isw=(winner===i&&total>0);
+      html+='<div class="dv-bar'+(isw?' win':'')+'">'
+          +'<span class="dv-blabel">'+(isw?'🏆 ':'')+L.barLabel(i)+'</span>'
+          +'<span class="dv-btrack"><span class="dv-bfill" data-w="'+w+'" style="background:'+OPT[i].c+'"></span></span>'
+          +'<span class="dv-bval">'+n+'</span></div>';
+    }
+    $('dv-bars').innerHTML=html;
+    // animate fills next frame
+    var fills=$('dv-bars').querySelectorAll('.dv-bfill');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      for(var k=0;k<fills.length;k++){fills[k].style.width=fills[k].getAttribute('data-w')+'%';}
+    });});
+    $('dv-total').textContent=total>0?L.totalMsg(total):L.noVotes;
+  }
+
+  // ── wiring ──
+  $('dv-cardA').addEventListener('click',function(){choose(parseInt(this.dataset.id,10));});
+  $('dv-cardB').addEventListener('click',function(){choose(parseInt(this.dataset.id,10));});
+  $('dv-restart').addEventListener('click',startFlow);
+  $('dv-again').addEventListener('click',startFlow);
+  $('dv-submit').addEventListener('click',submit);
+  $('dv-see').addEventListener('click',function(){location.hash='results';loadResults();show('results');});
+  $('dv-refresh').addEventListener('click',loadResults);
+  $('dv-backvote').addEventListener('click',function(){if(location.hash)history.replaceState(null,'',location.pathname+location.search);startFlow();});
+  window.addEventListener('hashchange',function(){if(location.hash==='#results'){loadResults();show('results');}});
+
+  // ── init ──
+  // Preload all 6 thumbnails up front so every match's images are cached before
+  // the user advances match-to-match (no flash).
+  [1,2,3,4,5,6].forEach(function(n){var im=new Image(); im.src='thumbs/opt'+n+'.png';});
+  if(location.hash==='#results'){loadResults();show('results');}else{startFlow();}
+})();
+</script>
+</body>
+</html>
