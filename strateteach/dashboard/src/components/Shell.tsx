@@ -14,6 +14,7 @@ import { C, UI } from "../theme";
 import type { User } from "../App";
 import Home from "../screens/Home";            // landing — keep eager so first paint is instant
 import Placeholder from "../screens/Placeholder";
+import PraxisConnect from "../screens/PraxisConnect";  // Phase 2C-A · M5 — connect exchange → Praxis
 import HomeBackdrop from "./HomeBackdrop";
 import TabBar from "./TabBar";
 import ThemeControl from "./ThemeControl";
@@ -352,6 +353,7 @@ export default function Shell({ user, onLogout }: { user: User; onLogout: () => 
                   <ReplyUsers />
                 </div>
               ) : <Navigate to="/" replace />} />
+              <Route path="/praxis-connect" element={<PraxisConnect />} />
               <Route path="/guide" element={<BeginnerGuide />} />
               {/* Guided strategy builder — an OPEN educational/demo feature (never plan-locked):
                   explicit route so it renders for every user, reached from the Home tile. */}

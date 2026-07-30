@@ -1216,6 +1216,17 @@ export class Api {
   // Admin (main-admin) clear: wipe the exchange PIN so a fresh one can be set. `username` is audit-only.
   adminResetPin(username?: string) { return this.request<{ ok: boolean; pinSet: boolean; message?: string }>("POST", "/exchange/pin/admin-reset", { body: { username } }); }
   saveExchangeConfig(body: Record<string, unknown>) { return this.request<{ ok: boolean }>("POST", "/exchange/config", { body, pin: true }); }
+
+  // ── Phase 2C (Option A) — Praxis provisioning. These StrateTeach routes are bearer-authed and mint signed
+  // tickets; the exchange key NEVER passes through them (it goes browser→Praxis via praxisFn/connect-credential).
+  praxisLink() { return this.request<{ linked: boolean; already?: boolean }>("POST", "/praxis/link"); }
+  praxisBotTicket() { return this.request<{ ticket: string }>("POST", "/praxis/bot-ticket"); }
+  praxisCredentialTicket(bot_id: string, exchange: string, env: string) {
+    return this.request<{ ticket: string }>("POST", "/praxis/credential-ticket", { body: { bot_id, exchange, env } });
+  }
+  praxisStatusTicket() { return this.request<{ ticket: string }>("POST", "/praxis/status-ticket"); }
+  praxisPauseTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/pause-ticket", { body: { bot_id } }); }
+  praxisArmTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/arm-ticket", { body: { bot_id } }); }
   testExchange() { return this.request<{ ok: boolean; message: string }>("POST", "/exchange/test", { pin: true }); }
   balance(market?: string) { return this.request<unknown>("GET", "/exchange/balance" + (market ? `?market=${encodeURIComponent(market)}` : ""), { pin: true }); }
   positions() { return this.request<unknown>("GET", "/exchange/positions", { pin: true }); }
@@ -1383,4 +1394,26 @@ export class Api {
   autopilotGoLive(body: ApGoLiveInput) { return this.request<ApSimState & { message?: string; masterGate?: boolean }>("POST", "/autopilots/go-live", { body }); }
   autopilotStopLive(pilotId: string) { return this.request<ApSimState & { message?: string }>("POST", "/autopilots/stop-live", { body: { pilotId } }); }
   autopilotAudit() { return this.request<{ ok: boolean; audit: any[] }>("GET", "/autopilots/audit"); }
+}
+
+// ── Phase 2C (Option A) — direct browser→Praxis calls (M5) ───────────────────────────────────────────
+// The exchange key is POSTed STRAIGHT to Praxis (never to StrateTeach, never localStorage). These functions
+// call the Praxis Edge functions directly with a StrateTeach-minted TICKET as the authority — NOT a bearer.
+// Default "/pfn" = the nginx single-origin proxy to the Praxis Edge functions (no CORS). Override with an
+// absolute VITE_PRAXIS_FUNCTIONS_BASE for a direct base.
+export const PRAXIS_FN_BASE: string =
+  ((import.meta as any).env?.VITE_PRAXIS_FUNCTIONS_BASE as string) || "/pfn";
+
+export async function praxisFn<T = any>(fn: string, body: unknown): Promise<T> {
+  const res = await fetch(`${PRAXIS_FN_BASE.replace(/\/+$/, "")}/${fn}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let data: any = {};
+  try { data = await res.json(); } catch { /* empty */ }
+  if (!res.ok || data?.ok === false) {
+    throw new ApiError(res.status, data?.error || `praxis:${fn}:${res.status}`);
+  }
+  return data as T;
 }

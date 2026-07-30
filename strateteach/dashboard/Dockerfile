@@ -11,6 +11,12 @@ COPY dashboard/package.json dashboard/package-lock.json* ./
 RUN npm install --include=optional \
     && npm install --no-save "@rollup/rollup-linux-$(node -p process.arch)-musl@$(node -p "require('rollup/package.json').version")"
 COPY dashboard/ ./
+# Phase 2C-A · M5: bake the API bases so the browser reaches the StrateTeach backend + Praxis functions
+# directly (no nginx proxy / caddy off in local dev). CORS on both is "*" for dev.
+ARG VITE_API_BASE=""
+ARG VITE_PRAXIS_FUNCTIONS_BASE=""
+ENV VITE_API_BASE=$VITE_API_BASE
+ENV VITE_PRAXIS_FUNCTIONS_BASE=$VITE_PRAXIS_FUNCTIONS_BASE
 RUN npm run build
 
 FROM nginx:alpine
