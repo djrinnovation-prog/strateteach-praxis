@@ -85,6 +85,11 @@ def connect_keys(username: str, api_key: str, api_secret: str, environment: str 
     """Owner connects THEIR OWN exchange keys (Bybit or Binance — their choice). Encrypts +
     stores server-side. NEVER logs the raw values; audit records only a masked hint, the
     exchange, and the environment."""
+    # Phase 2B · M4: in the unified app StrateTeach holds NO exchange keys. Refuse to store one unless the
+    # legacy engine is explicitly armed — users connect their key straight to Praxis (connect-credential).
+    if not ex._engine_enabled():
+        return {"ok": False,
+                "message": "strateteach_engine_disabled: connect your exchange key to Praxis, not StrateTeach."}
     exchange = (exchange or "bybit").strip().lower()
     api_key = (api_key or "").strip()
     api_secret = (api_secret or "").strip()
@@ -207,6 +212,11 @@ def go_live(username: str, pilot_id: str, cap: float, typed_confirm: str, ack_re
       · the owner typed the exact GO-LIVE phrase and acknowledged real-money risk
     Sets mode='live' + stores the cap. (Real orders still require the MASTER gate at
     run time — this only records the owner's intent.)"""
+    # Phase 2B · M4: the legacy live engine is retired in the unified app — live trading runs through
+    # Praxis, not StrateTeach. Refuse to arm live here unless the engine is explicitly re-enabled.
+    if not ex._engine_enabled():
+        return {"ok": False,
+                "message": "strateteach_engine_disabled: live trading runs through Praxis in the unified app."}
     armed = db.get_autopilot_armed(username, pilot_id)
     if not armed:
         return {"ok": False, "message": "That pilot is not loaded."}

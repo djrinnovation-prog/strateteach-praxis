@@ -22,6 +22,9 @@ _ccxt.BaseError = _Base
 sys.modules.setdefault("ccxt", _ccxt)
 
 import os
+# This suite exercises the LEGACY direct-exchange engine, which is OFF by default in the unified app
+# (Phase 2B · M4). Arm it so place_order takes the direct path under test.
+os.environ.setdefault("STRATETEACH_ENGINE_ENABLED", "true")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.services import exchange as ex  # noqa: E402
 
