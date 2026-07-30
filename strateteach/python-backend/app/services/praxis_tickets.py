@@ -62,6 +62,18 @@ def pause_bot_ticket(praxis_user_id: str, praxis_bot_id: str, ttl_s: int = 120) 
                   "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
 
 
+def arm_bot_ticket(praxis_user_id: str, praxis_bot_id: str, ttl_s: int = 120) -> str:
+    """Single-use ticket to arm a bot to LIVE (Praxis arm-bot gates on credential='valid' + not mainnet)."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "arm_bot", "praxis_bot_id": praxis_bot_id,
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
+def validate_credential_ticket(praxis_user_id: str, praxis_bot_id: str, ttl_s: int = 120) -> str:
+    """Single-use ticket to request EP6 validation of a bot's credential (Praxis enqueues a worker job)."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "validate_credential", "praxis_bot_id": praxis_bot_id,
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
 def connect_credential_ticket(praxis_user_id: str, praxis_bot_id: str, exchange_ccxt_id: str,
                               env: str, ttl_s: int = 120) -> str:
     return _sign({"praxis_user_id": praxis_user_id, "action": "connect_credential",

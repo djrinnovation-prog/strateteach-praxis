@@ -197,3 +197,29 @@ def praxis_pause_ticket(body: PauseTicketReq, user: str = Depends(current_user))
     if not bot_id:
         raise HTTPException(400, "bad_request")
     return {"ticket": tickets.pause_bot_ticket(puid, bot_id)}
+
+
+@router.post("/praxis/arm-ticket")
+def praxis_arm_ticket(body: PauseTicketReq, user: str = Depends(current_user)) -> dict:
+    """Mint a single-use arm_bot ticket. Praxis arm-bot gates on credential='valid' + not mainnet (INV-6)."""
+    ident = _guard(user, "arm-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    bot_id = (body.bot_id or "").strip()
+    if not bot_id:
+        raise HTTPException(400, "bad_request")
+    return {"ticket": tickets.arm_bot_ticket(puid, bot_id)}
+
+
+@router.post("/praxis/validate-ticket")
+def praxis_validate_ticket(body: PauseTicketReq, user: str = Depends(current_user)) -> dict:
+    """Mint a single-use validate_credential ticket (EP6): Praxis enqueues a worker validate job."""
+    ident = _guard(user, "validate-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    bot_id = (body.bot_id or "").strip()
+    if not bot_id:
+        raise HTTPException(400, "bad_request")
+    return {"ticket": tickets.validate_credential_ticket(puid, bot_id)}

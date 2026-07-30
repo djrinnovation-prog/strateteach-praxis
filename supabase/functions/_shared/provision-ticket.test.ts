@@ -123,6 +123,21 @@ Deno.test("pause_bot missing praxis_bot_id fails", async () => {
   assertEquals(await verifyTicket(m, t, now(), "pause_bot"), null);
 });
 
+Deno.test("valid arm_bot ticket verifies (praxis_user_id + praxis_bot_id); missing bot_id fails", async () => {
+  const m = await mat();
+  const ok = await signTicket(m, { praxis_user_id: USER, action: "arm_bot", praxis_bot_id: "b1", jti: "nonce-arm12345", exp: now() + 120 });
+  assert(await verifyTicket(m, ok, now(), "arm_bot"));
+  const bad = await signTicket(m, { praxis_user_id: USER, action: "arm_bot", jti: "nonce-arm-nobot", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, bad, now(), "arm_bot"), null);
+});
+
+Deno.test("action-bound: an arm_bot ticket fails on pause_bot/create_bot", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: USER, action: "arm_bot", praxis_bot_id: "b1", jti: "nonce-arm-xact1", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, t, now(), "pause_bot"), null);
+  assertEquals(await verifyTicket(m, t, now(), "create_bot"), null);
+});
+
 Deno.test("action-bound: read_status ↔ pause_bot cross-use fails both ways", async () => {
   const m = await mat();
   const rt = await signTicket(m, { praxis_user_id: USER, action: "read_status", jti: "nonce-rs-xact1", exp: now() + 120 });

@@ -463,6 +463,16 @@ verify_jwt = false
 # per-bot pause token the user holds (StrateTeach-independent). Pause-only. verify_jwt=false.
 verify_jwt = false
 
+[functions.arm-bot]
+# Phase 2C-A · M8: arm a bot to LIVE (trading_enabled=true). Public: single-use arm_bot ticket; gated on
+# credential status='valid' + not operator_locked + not mainnet (until S3). verify_jwt=false.
+verify_jwt = false
+
+# NOTE (M8 EP6 — remaining): the validate_credential ticket/route + verifyTicket action are in place, but the
+# validate-credential Edge fn + WORKER validate handler (fetchBalance auth-check → set status valid/invalid,
+# only the worker has ccxt+Vault+egress) are the remaining EP6 piece — they need a valid SPOT testnet key to
+# verify to 'valid' (the provided key is futures) and their own code audit. arm-bot already gates on 'valid'.
+
 # [experimental.pgdelta]
 # When enabled, pg-delta becomes the active engine for supported schema flows.
 # enabled = false

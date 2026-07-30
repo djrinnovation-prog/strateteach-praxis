@@ -21,7 +21,8 @@ const dec = new TextDecoder();
 export const MAX_TICKET_TTL_S = 300;
 
 export type TicketAction =
-  | "create_bot" | "connect_credential" | "provision_user" | "read_status" | "pause_bot";
+  | "create_bot" | "connect_credential" | "provision_user" | "read_status" | "pause_bot"
+  | "arm_bot" | "validate_credential";
 
 export interface TicketPayload {
   praxis_user_id: string;                 // required for create_bot / connect_credential; ABSENT for provision_user
@@ -102,7 +103,7 @@ export async function verifyTicket(
           || typeof p.exchange_ccxt_id !== "string" || !p.exchange_ccxt_id
           || (p.env !== "testnet" && p.env !== "mainnet")) return null;
     }
-    if (expectedAction === "pause_bot") {
+    if (expectedAction === "pause_bot" || expectedAction === "arm_bot" || expectedAction === "validate_credential") {
       if (typeof p.praxis_bot_id !== "string" || !p.praxis_bot_id) return null;
     }
     // read_status needs only praxis_user_id (already checked above) — it is a MULTI-use read token
