@@ -65,3 +65,40 @@ Deno.test("garbage fails", async () => {
   assertEquals(await verifyTicket(m, "notaticket", now(), "create_bot"), null);
   assertFalse(!!(await verifyTicket(m, "", now(), "create_bot")));
 });
+
+// ── provision_user (M2) ─────────────────────────────────────────────────────────────────────────────
+const ST_REF = "abcdefghijklmnopqrstuvwxyz0123456789-_ABCDE"; // 43 chars, base64url shape
+
+Deno.test("valid provision_user ticket verifies (st_ref, NO praxis_user_id required)", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: "", action: "provision_user", st_ref: ST_REF, jti: "nonce-prov1234", exp: now() + 120 });
+  const v = await verifyTicket(m, t, now(), "provision_user");
+  assert(v && v.action === "provision_user" && v.st_ref === ST_REF);
+});
+
+Deno.test("provision_user missing st_ref fails", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: "", action: "provision_user", jti: "nonce-prov-nost", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, t, now(), "provision_user"), null);
+});
+
+Deno.test("provision_user malformed st_ref (wrong length/charset) fails", async () => {
+  const m = await mat();
+  for (const bad of ["short", ST_REF + "x", "has space in it 34567890123456789012345", ST_REF.replace("-", "+")]) {
+    const t = await signTicket(m, { praxis_user_id: "", action: "provision_user", st_ref: bad, jti: "nonce-prov-bad1", exp: now() + 120 });
+    assertEquals(await verifyTicket(m, t, now(), "provision_user"), null);
+  }
+});
+
+Deno.test("action-bound: a provision_user ticket fails on create_bot / connect_credential", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: "", action: "provision_user", st_ref: ST_REF, jti: "nonce-prov-xact", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, t, now(), "create_bot"), null);
+  assertEquals(await verifyTicket(m, t, now(), "connect_credential"), null);
+});
+
+Deno.test("a create_bot ticket fails on provision_user (no st_ref)", async () => {
+  const m = await mat();
+  const t = await signTicket(m, { praxis_user_id: USER, action: "create_bot", jti: "nonce-cb-noref1", exp: now() + 120 });
+  assertEquals(await verifyTicket(m, t, now(), "provision_user"), null);
+});

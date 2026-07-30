@@ -20,10 +20,10 @@ const dec = new TextDecoder();
 // jti-ledger cleanup can safely key off exp. Independent of what the issuer requests.
 export const MAX_TICKET_TTL_S = 300;
 
-export type TicketAction = "create_bot" | "connect_credential";
+export type TicketAction = "create_bot" | "connect_credential" | "provision_user";
 
 export interface TicketPayload {
-  praxis_user_id: string;
+  praxis_user_id: string;                 // required for create_bot / connect_credential; ABSENT for provision_user
   action: TicketAction;                   // binds the ticket to ONE operation (no cross-use)
   jti: string;                            // unique nonce — enforces single-use (server dedups)
   exp: number;                            // epoch SECONDS; ticket invalid after this
@@ -31,6 +31,8 @@ export interface TicketPayload {
   praxis_bot_id?: string;
   exchange_ccxt_id?: string;              // e.g. 'binance'
   env?: "testnet" | "mainnet";
+  // Required ONLY for action === "provision_user" (the identity BOOTSTRAP — no praxis_user_id yet):
+  st_ref?: string;                        // opaque base64url(32B) handle = keyed HMAC of StrateTeach user_uid
 }
 
 function bytesToHex(b: Uint8Array): string {
@@ -82,13 +84,23 @@ export async function verifyTicket(
   try { p = JSON.parse(b64urlToStr(body)); } catch { return null; }
   if (!p || typeof p.exp !== "number" || !Number.isFinite(p.exp) || p.exp < nowSec) return null;   // expired
   if (p.exp - nowSec > MAX_TICKET_TTL_S) return null;                                               // over-long lifetime
-  if (typeof p.praxis_user_id !== "string" || !p.praxis_user_id
-      || typeof p.jti !== "string" || p.jti.length < 8
-      || p.action !== expectedAction) return null;                                                  // action-bound
-  if (expectedAction === "connect_credential") {
-    if (typeof p.praxis_bot_id !== "string" || !p.praxis_bot_id
-        || typeof p.exchange_ccxt_id !== "string" || !p.exchange_ccxt_id
-        || (p.env !== "testnet" && p.env !== "mainnet")) return null;
+  if (typeof p.jti !== "string" || p.jti.length < 8 || p.action !== expectedAction) return null;    // action-bound
+  // Action-aware, default-deny field checks.
+  if (expectedAction === "provision_user") {
+    // Identity BOOTSTRAP: no praxis_user_id yet. Require a strict base64url(32-byte) st_ref (mirrors the
+    // connect_credential field validation). praxis_user_id must NOT be required/relied on for this action.
+    if (typeof p.st_ref !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(p.st_ref)) return null;
+    // Reject NON-CANONICAL base64url (the 43rd char's low bits): otherwise two distinct st_ref strings could
+    // decode to the same 32 bytes → same shadow email but different link PK (audit finding). Enforce a
+    // bijection between the st_ref string and its decoded bytes.
+    try { if (bytesToB64url(b64urlToBytes(p.st_ref)) !== p.st_ref) return null; } catch { return null; }
+  } else {
+    if (typeof p.praxis_user_id !== "string" || !p.praxis_user_id) return null;
+    if (expectedAction === "connect_credential") {
+      if (typeof p.praxis_bot_id !== "string" || !p.praxis_bot_id
+          || typeof p.exchange_ccxt_id !== "string" || !p.exchange_ccxt_id
+          || (p.env !== "testnet" && p.env !== "mainnet")) return null;
+    }
   }
   return p;
 }

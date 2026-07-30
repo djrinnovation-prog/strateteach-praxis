@@ -447,6 +447,12 @@ verify_jwt = false
 # ticket (action=create_bot). Safe defaults: trading_enabled=false, signing-required, pending_setup.
 verify_jwt = false
 
+[functions.provision-user]
+# Phase 2C-A · M2: idempotent StrateTeach->Praxis identity provisioning. Public: authenticated by a signed,
+# single-use provisioning ticket (action=provision_user), NOT a Supabase JWT. Maps st_ref -> one shadow
+# auth.users. verify_jwt=false (the ticket is the authority).
+verify_jwt = false
+
 # [experimental.pgdelta]
 # When enabled, pg-delta becomes the active engine for supported schema flows.
 # enabled = false

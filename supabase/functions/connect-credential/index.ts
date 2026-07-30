@@ -41,13 +41,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const t = await verifyTicket(material, ticket, Math.floor(Date.now() / 1000), "connect_credential");
   if (!t) return json(401, { ok: false, error: "invalid_or_expired_ticket" });
 
+  // 1b) R3-F0 fail-closed edge guard. "Mainnet is unreachable until the S3 approval gate exists" must be a
+  // real Praxis-edge boundary, not an assumption about ticket provenance: a forged ticket could carry
+  // env:"mainnet". Reject it here until the mainnet_provision_approvals gate ships. (Checked BEFORE the jti
+  // claim so a rejected mainnet attempt does not burn a single-use ticket.)
+  if (t.env === "mainnet") return json(403, { ok: false, error: "mainnet_not_yet_enabled" });
+
   // 2) SINGLE-USE: claim the jti. A conflict means the ticket was already used ⇒ reject (replay).
   const { error: jerr } = await sb.from("provision_tickets_used").insert({ jti: t.jti });
   if (jerr) return json(409, { ok: false, error: "ticket_already_used" });
 
   // 3) Resolve the exchange row (fail-closed on an unknown venue).
-  const { data: ex } = await sb.from("exchanges").select("id").eq("ccxt_id", t.exchange_ccxt_id).maybeSingle();
+  const { data: ex } = await sb.from("exchanges").select("id, is_active").eq("ccxt_id", t.exchange_ccxt_id).maybeSingle();
   if (!ex) return json(422, { ok: false, error: "unknown_exchange" });
+  // R3-F0: refuse a venue that is not operator-activated (EP1b two-layer gate). connect-credential must not
+  // store a key for a dormant venue the worker would then refuse to execute — fail closed at intake.
+  if (ex.is_active !== true) return json(422, { ok: false, error: "venue_not_active" });
 
   // 3b) Early target-state check (before any Vault write): the bot must exist, be owned by this user, and
   // have NO credential yet. Gives a clean 404/409 (re-connect an already-connected bot ⇒ 409) and avoids
