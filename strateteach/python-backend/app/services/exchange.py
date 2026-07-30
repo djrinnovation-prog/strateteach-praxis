@@ -563,13 +563,27 @@ def place_order(cfg: dict, symbol: str, side: str, pct: float,
     order_type = (order_type or "market").lower()
     if side not in ("buy", "sell"):
         return {"ok": False, "message": "side must be 'buy' or 'sell'."}
-    # Phase 2B · M2 (SHADOW): mirror this signal as a SIGNED INTENT to Praxis. Fire-and-forget; never
-    # affects this order (no-op unless PRAXIS_SHADOW_ENABLED=true and the credential is mapped).
+    # ── Phase 2B · M3 (CUTOVER) / M2 (SHADOW) ──────────────────────────────────────────────────────
+    # If this credential is CUT OVER, Praxis is the SOLE executor: route the intent to Praxis and return
+    # WITHOUT ever placing a direct order. Fail-CLOSED — a route miss/failure returns ok=False, never a
+    # direct trade and never a double (route_to_praxis makes a single attempt). If NOT cut over, mirror
+    # the signal to Praxis (fire-and-forget) and continue on the direct path. A cut-over bot can never
+    # fall through to client.create_order below. Entirely a no-op unless the PRAXIS_* flags are set.
     try:
         from . import praxis_relay
-        praxis_relay.send_shadow(cfg, symbol, side, source="place_order")
     except Exception:
-        pass
+        praxis_relay = None  # noqa: E501 — handled below; import of this pure module effectively never fails
+    if os.getenv("PRAXIS_CUTOVER_ENABLED", "false").lower() == "true":
+        if praxis_relay is None:
+            return {"ok": False, "message": "cutover_failclosed: praxis_relay unavailable; refusing direct order."}
+        routed = praxis_relay.maybe_route(cfg, symbol, side)
+        if routed is not None:
+            return routed  # cut over → Praxis handled it; NEVER place a direct order
+    if praxis_relay is not None:
+        try:
+            praxis_relay.send_shadow(cfg, symbol, side, source="place_order")
+        except Exception:
+            pass
     if order_type not in ("market", "limit"):
         return {"ok": False, "message": "orderType must be 'market' or 'limit'."}
     qa = float(quote_amount or 0)
@@ -769,6 +783,16 @@ def withdraw(cfg: dict, code: str, amount: float, address: str,
     a whitelisted address. Withdrawal also requires that the user has enabled
     withdrawal permission (and, ideally, an address whitelist) on the exchange itself.
     """
+    # Phase 2B · M3: a CUT-OVER credential is managed SOLELY by Praxis — refuse any direct order here
+    # (no 1:1 Praxis intent for a bulk close/withdraw; Praxis owns exits via reconciliation/flatten).
+    if os.getenv("PRAXIS_CUTOVER_ENABLED", "false").lower() == "true":
+        try:
+            from . import praxis_relay
+            _blocked = praxis_relay.is_credential_cutover(cfg)
+        except Exception:
+            _blocked = True  # cutover globally on but relay unavailable → fail CLOSED
+        if _blocked:
+            return {"ok": False, "message": "cutover_direct_disabled: Praxis is the sole executor for this credential."}
     code = (code or "").upper().strip()
     address = (address or "").strip()
     if not code:
@@ -912,6 +936,16 @@ def close_profitable_positions(cfg: dict) -> dict:
     accounts have no positions concept, so nothing is sold and we say so honestly
     rather than blindly dumping holdings we cannot attribute to a known entry.
     """
+    # Phase 2B · M3: a CUT-OVER credential is managed SOLELY by Praxis — refuse any direct order here
+    # (no 1:1 Praxis intent for a bulk close/withdraw; Praxis owns exits via reconciliation/flatten).
+    if os.getenv("PRAXIS_CUTOVER_ENABLED", "false").lower() == "true":
+        try:
+            from . import praxis_relay
+            _blocked = praxis_relay.is_credential_cutover(cfg)
+        except Exception:
+            _blocked = True  # cutover globally on but relay unavailable → fail CLOSED
+        if _blocked:
+            return {"ok": False, "message": "cutover_direct_disabled: Praxis is the sole executor for this credential."}
     try:
         client, _ = _client_from_config(cfg)
         if not client.has.get("fetchPositions"):
@@ -1160,6 +1194,16 @@ def close_profitable_spot(cfg: dict, orders: list) -> dict:
     dust, and anything not in profit. ``orders`` is the live order log (passed in
     from the route, which owns DB access) so the cost basis matches live-pnl 1:1.
     """
+    # Phase 2B · M3: a CUT-OVER credential is managed SOLELY by Praxis — refuse any direct order here
+    # (no 1:1 Praxis intent for a bulk close/withdraw; Praxis owns exits via reconciliation/flatten).
+    if os.getenv("PRAXIS_CUTOVER_ENABLED", "false").lower() == "true":
+        try:
+            from . import praxis_relay
+            _blocked = praxis_relay.is_credential_cutover(cfg)
+        except Exception:
+            _blocked = True  # cutover globally on but relay unavailable → fail CLOSED
+        if _blocked:
+            return {"ok": False, "message": "cutover_direct_disabled: Praxis is the sole executor for this credential."}
     from collections import defaultdict
     try:
         client, _ = _client_from_config(cfg, "spot")
@@ -1242,6 +1286,16 @@ def close_all_spot(cfg: dict) -> dict:
     Spot has no per-position cost basis, so this closes *all* holdings (it can't
     isolate 'profitable' ones) — the UI labels it accordingly.
     """
+    # Phase 2B · M3: a CUT-OVER credential is managed SOLELY by Praxis — refuse any direct order here
+    # (no 1:1 Praxis intent for a bulk close/withdraw; Praxis owns exits via reconciliation/flatten).
+    if os.getenv("PRAXIS_CUTOVER_ENABLED", "false").lower() == "true":
+        try:
+            from . import praxis_relay
+            _blocked = praxis_relay.is_credential_cutover(cfg)
+        except Exception:
+            _blocked = True  # cutover globally on but relay unavailable → fail CLOSED
+        if _blocked:
+            return {"ok": False, "message": "cutover_direct_disabled: Praxis is the sole executor for this credential."}
     try:
         client, _ = _client_from_config(cfg, "spot")
         client.load_markets()
@@ -1406,6 +1460,16 @@ def clean_dust_spot(cfg: dict, max_value: float = 5.0) -> dict:
     Efficiency: balance + all held prices are fetched ONCE (a single fetch_tickers), so an
     account with dozens of dust tokens doesn't stall on per-token network calls.
     """
+    # Phase 2B · M3: a CUT-OVER credential is managed SOLELY by Praxis — refuse any direct order here
+    # (no 1:1 Praxis intent for a bulk close/withdraw; Praxis owns exits via reconciliation/flatten).
+    if os.getenv("PRAXIS_CUTOVER_ENABLED", "false").lower() == "true":
+        try:
+            from . import praxis_relay
+            _blocked = praxis_relay.is_credential_cutover(cfg)
+        except Exception:
+            _blocked = True  # cutover globally on but relay unavailable → fail CLOSED
+        if _blocked:
+            return {"ok": False, "message": "cutover_direct_disabled: Praxis is the sole executor for this credential."}
     try:
         client, plain = _client_from_config(cfg, "spot")
         client.load_markets()

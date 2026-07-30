@@ -209,3 +209,39 @@ StrateTeach's stores, and drop `PRAXIS_CUTOVER_KEYS` (cutover becomes unconditio
 StrateTeach structurally cannot touch an exchange — the one-way boundary is permanent. That final
 teardown is a separate cleanup PR, done only after the pilot is proven. Real funds NO-GO until Stage 11
 + Stage 12 (A1/A4/A11 + M7).
+
+---
+
+## APPLIED — 2026-07-30 (repo: strateteach-praxis)
+
+Implemented in `strateteach/python-backend/` on the new unified app (not the live StrateTeach). Still
+**dormant** — every effect is gated on `PRAXIS_CUTOVER_ENABLED=true` + an explicit `PRAXIS_CUTOVER_KEYS`
+list, both unset by default, so current behaviour is unchanged.
+
+**What landed:**
+1. `praxis_relay.py` — `maybe_route` / `route_to_praxis` / `is_cutover` already present (M2/M3 base).
+   Added `is_credential_cutover(cfg)` — a symbol-agnostic, credential-level check.
+2. `exchange.py::place_order` — the M2 shadow-only hook is now **cutover-first**: if the credential is cut
+   over, it routes to Praxis and RETURNS before any client is built (`create_order` unreachable). Also
+   **fail-CLOSED on import failure**: if cutover is globally enabled but `praxis_relay` can't be imported,
+   the order is refused rather than placed directly. Non-cutover path unchanged (shadow then direct).
+3. **NEW hardening beyond the original packet** — the packet structurally guarded only `place_order` and
+   left `close_*`/`withdraw` to the teardown. To close the interim window, a credential-level fail-closed
+   guard now also refuses `withdraw`, `close_profitable_positions`, `close_profitable_spot`,
+   `close_all_spot`, and `clean_dust_spot` for a cut-over credential (`cutover_direct_disabled`) — so a
+   cut-over credential cannot place ANY direct order (entry OR exit), even before the Stage-11 teardown.
+
+**Proof:** `tests/test_praxis_cutover_dryrun.py` (runs with plain `python3`, ccxt stubbed, client factory
+replaced by a sentinel that raises if built). 6/6 pass:
+- cut-over BUY routes to Praxis; exchange client never built.
+- cut-over route failure (non-2xx) ⇒ ok=False, still no direct order (fail-closed).
+- non-cutover ⇒ direct path reached + shadow mirrored.
+- cutover ON but credential unlisted ⇒ still direct (only listed credentials cut over).
+- `close_all_spot` refused for a cut-over credential; client never built.
+- `is_cutover` / `is_credential_cutover` gate correctly.
+All existing dry-run suites (OCO, reconcile-fees, manual-close, fees-net) remain green — no regression.
+
+**Operator arming (per bot, only after its M2 shadow-compare is green + its key is in Praxis Vault):**
+set `PRAXIS_CUTOVER_ENABLED=true` and add the bot's `account_key` (or `account_key:SYMBOL`) to
+`PRAXIS_CUTOVER_KEYS`. Ensure the matching Praxis bot has `sell_enabled=true` (EP3) so routed SELL/exit
+intents execute. Real funds NO-GO until Stage 11 + Stage 12 (A1/A4/A11 + M7).

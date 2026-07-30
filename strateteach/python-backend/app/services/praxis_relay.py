@@ -143,6 +143,18 @@ def is_cutover(cfg: dict, symbol: str) -> bool:
     return (f"{ak}:{symbol}" in ks) or (ak in ks)
 
 
+def is_credential_cutover(cfg: dict) -> bool:
+    """CREDENTIAL-level cutover (symbol-agnostic): True iff the master flag is on AND this credential
+    appears in the cutover set — either credential-wide (`account_key`) OR under ANY `account_key:<symbol>`
+    entry. Used to fail-CLOSE the bulk/close/withdraw/dust paths for a cut-over credential: those are not a
+    single buy/sell INTENT, so there is no 1:1 Praxis signal to route — a cut-over credential is simply
+    REFUSED there, and Praxis owns exits via its own reconciliation / flatten. Pure (env reads only)."""
+    if _env("PRAXIS_CUTOVER_ENABLED", "false").lower() != "true":
+        return False
+    ak = account_key(cfg)
+    return any(k == ak or k.startswith(ak + ":") for k in cutover_keys())
+
+
 def route_to_praxis(cfg: dict, symbol: str, side: str) -> dict:
     """SYNCHRONOUS authoritative route to Praxis for a cut-over bot. Returns a result dict; NEVER raises.
     ok=True only on a 2xx (Praxis accepted the signal — it then applies its own gates). Any miss / non-2xx
