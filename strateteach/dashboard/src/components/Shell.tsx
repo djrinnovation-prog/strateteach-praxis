@@ -83,6 +83,11 @@ const GuideManager = lazy(() => import("../screens/GuideManager"));
 // Review inbox — Dan's mini-portal for the multi-user Review board (owners + it_editor).
 const ReviewInbox = lazy(() => import("../screens/ReviewInbox"));
 
+// M7: legacy StrateTeach trading screens that ingest exchange keys — RETIRED. Their routes redirect to
+// the secure Praxis connect flow (the key must never be typed into a StrateTeach screen), and the backend
+// key/order/withdraw routes return 410. Full retirement per the Option A model.
+const LEGACY_RETIRED_PATHS = new Set<string>(["/exchange", "/bots", "/profit"]);
+
 const SCREENS: Record<string, React.FC<any>> = {
   "/scanner": Scanner,
   "/backtests": Backtests,
@@ -329,8 +334,13 @@ export default function Shell({ user, onLogout }: { user: User; onLogout: () => 
           }>
             <Routes>
               {NAV.map(({ path, key }) => {
+                // M7: the legacy key-ingest / trading screens are RETIRED — the exchange key must go
+                // ONLY through the secure Praxis flow (never typed into a StrateTeach screen). Redirect
+                // instead of rendering the old Exchange/SignalBots screens. Backend also returns 410.
                 const Screen = SCREENS[path];
-                const el = locked.includes(path) ? <Navigate to="/" replace /> : (Screen ? <Screen /> : <Placeholder title={key} />);
+                const el = LEGACY_RETIRED_PATHS.has(path)
+                  ? <Navigate to="/praxis-connect" replace />
+                  : locked.includes(path) ? <Navigate to="/" replace /> : (Screen ? <Screen /> : <Placeholder title={key} />);
                 return <Route key={path} path={path} element={el} />;
               })}
               <Route path="/activity" element={<Activity_ />} />
@@ -378,7 +388,8 @@ export default function Shell({ user, onLogout }: { user: User; onLogout: () => 
                 : isBizEditor() ? <Navigate to="/biz-portal" replace />
                 : <Owners />
               } />
-              <Route path="/bots" element={<SignalBots />} />
+              {/* M7: legacy SignalBots (create-bot-with-keys) retired → secure Praxis flow. */}
+              <Route path="/bots" element={<Navigate to="/praxis-connect" replace />} />
               {/* Staff Audit landing — reachable directly, and where the "/" role-aware
                   redirect sends staff collaborators (non-owner legal/IT/biz editors / admin). */}
               <Route path="/staff-audit" element={<StaffAudit />} />

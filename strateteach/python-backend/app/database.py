@@ -3901,9 +3901,22 @@ def get_exchange_config() -> dict:
     return {**_EXCHANGE_DEFAULTS, **(_get_singleton("exchange_config", {}) or {})}
 
 
+def _assert_key_storage_retired() -> None:
+    """M7 (full retirement): StrateTeach must NEVER store an exchange key. This is the DATA-LAYER
+    guarantee — every key-WRITE helper calls it, so even a future un-guarded route or a flipped
+    STRATETEACH_LEGACY_ENGINE_ENABLED flag cannot land a key in this DB. Execution + key custody
+    live ONLY in Praxis (browser → Praxis Vault). The HTTP routes already return 410; this makes the
+    storage physically impossible one layer deeper. Raises unless the legacy engine is explicitly
+    re-enabled (the default is retired)."""
+    import os as _os
+    if _os.getenv("STRATETEACH_LEGACY_ENGINE_ENABLED", "false").strip().lower() != "true":
+        raise RuntimeError("legacy_key_storage_retired")
+
+
 def save_exchange_config(exchange: str, environment: str, sub_account: str,
                          api_key_enc: str, api_secret_enc: str,
                          api_passphrase_enc: str, default_pct: float) -> None:
+    _assert_key_storage_retired()  # M7: StrateTeach holds no keys
     cfg = get_exchange_config()
     cfg.update(exchange=exchange, environment=environment, subAccount=sub_account,
                apiKeyEnc=api_key_enc, apiSecretEnc=api_secret_enc,
@@ -4360,6 +4373,7 @@ def create_bot(*, username: str, label: Optional[str], exchange: Optional[str], 
                size_pct: float = 100.0) -> dict[str, Any]:
     """Insert a bot with a fresh unguessable webhook token; returns the RAW row
     (callers mask it before returning to a client)."""
+    _assert_key_storage_retired()  # M7: no key-holding bot creation in StrateTeach
     import secrets as _s
     token = _s.token_urlsafe(24)
     sm = size_mode if size_mode in ("fixed", "balance_pct") else "fixed"
@@ -4415,6 +4429,7 @@ def save_exchange_creds_backup(*, username: str, exchange: Optional[str], enviro
                                sub_account: Optional[str], enc_key: str, enc_secret: str,
                                enc_passphrase: str) -> None:
     """Upsert the caller's encrypted exchange creds (ciphertext only)."""
+    _assert_key_storage_retired()  # M7: StrateTeach holds no keys
     execute(
         "INSERT INTO exchange_creds_backup "
         "(username, exchange, environment, sub_account, enc_key, enc_secret, enc_passphrase, updated_at) "
@@ -7182,6 +7197,7 @@ def save_autopilot_keys(*, username: str, exchange: str, environment: str,
                         enc_key: str, enc_secret: str) -> None:
     """Upsert the owner's encrypted AutoPilots exchange keys (CIPHERTEXT only — the route
     encrypts before calling this). NEVER stores plaintext, NEVER logs the values."""
+    _assert_key_storage_retired()  # M7: StrateTeach holds no keys
     now = now_iso()
     connected = bool(enc_key and enc_secret)
     execute(

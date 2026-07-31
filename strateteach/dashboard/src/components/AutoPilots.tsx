@@ -1855,12 +1855,15 @@ function BybitConnectModal({ he, rtl, bybit, onApplyState, onClose }: {
   useEffect(() => { if (connected) loadBalance(); else setBalance(null); }, [connected]);
   const refresh = async () => { const s = await api.autopilotsState(); onApplyState(s as any); };
   const connect = async () => {
-    if (!apiKey.trim() || !apiSecret.trim()) return;
-    setBusy(true); setTestMsg(null);
-    try { await api.autopilotConnectKeys({ apiKey: apiKey.trim(), apiSecret: apiSecret.trim(), environment, exchange });
-      setApiKey(""); setApiSecret(""); await refresh(); await loadBalance(); track("autopilot_keys_connected", { environment, exchange });
-    } catch (e: any) { alert(he ? `חיבור נכשל: ${e?.message || e}` : `Connect failed: ${e?.message || e}`); }
-    finally { setBusy(false); }
+    // M7 (legacy retirement): the exchange key must NEVER be POSTed to StrateTeach. Key custody +
+    // execution live only in Praxis (browser → Praxis Vault). Do NOT transmit the key here — wipe
+    // whatever was typed and send the user to the secure Praxis connect flow. The backend also 410s
+    // /autopilots/keys, but the real fix is to never let the key leave the browser toward StrateTeach.
+    setApiKey(""); setApiSecret("");
+    alert(he
+      ? "חיבור מפתחות עבר למסלול המאובטח של Praxis — המפתח נשלח ישירות לכספת ולא עובר דרך StrateTeach."
+      : "Key connection has moved to the secure Praxis flow — your key goes straight to the vault and never through StrateTeach.");
+    window.location.assign("/praxis-connect");
   };
   const test = async () => {
     setBusy(true); setTestMsg(null);

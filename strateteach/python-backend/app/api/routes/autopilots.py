@@ -11,7 +11,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from app import database as db
-from app.core.security import require_owner, require_it_editor
+from app.core.security import require_owner, require_it_editor, assert_legacy_engine_enabled
 from app.services import autopilot_sim as sim
 from app.services import autopilot_live as live
 
@@ -212,7 +212,7 @@ async def autopilots_keys_status(owner: str = Depends(require_owner)):
     return {"ok": True, **live.keys_status(owner)}
 
 
-@router.post("/autopilots/keys")
+@router.post("/autopilots/keys", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def autopilots_keys_connect(body: KeysInput, owner: str = Depends(require_owner)):
     """Owner-only: connect the owner's OWN exchange keys (Bybit or Binance — their choice).
     Encrypted server-side; never logged or returned raw. Only a masked hint is echoed back."""
@@ -223,7 +223,7 @@ async def autopilots_keys_connect(body: KeysInput, owner: str = Depends(require_
     return {"ok": True, **res}
 
 
-@router.post("/autopilots/keys/test")
+@router.post("/autopilots/keys/test", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def autopilots_keys_test(owner: str = Depends(require_owner)):
     """Owner-only: READ-ONLY connectivity check (fetch_balance). Places NO order."""
     return {"ok": True, **await run_in_threadpool(live.test_keys, owner)}
@@ -242,7 +242,7 @@ async def autopilots_keys_disconnect(owner: str = Depends(require_owner)):
     return await run_in_threadpool(live.disconnect_keys, owner)
 
 
-@router.post("/autopilots/go-live")
+@router.post("/autopilots/go-live", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def autopilots_go_live(body: GoLiveInput, owner: str = Depends(require_owner)):
     """Owner-only: switch ONE pilot to LIVE after the multi-step confirm (keys connected +
     typed phrase + real-money ack + a low starting-capital cap). Records intent only —

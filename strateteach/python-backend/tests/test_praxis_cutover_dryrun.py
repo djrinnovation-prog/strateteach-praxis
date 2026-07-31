@@ -37,6 +37,7 @@ def _clear_env():
 
 def _arm_engine():
     os.environ["STRATETEACH_ENGINE_ENABLED"] = "true"   # legacy direct engine explicitly ON (opt-in)
+    os.environ["STRATETEACH_LEGACY_ENGINE_ENABLED"] = "true"  # M7: engine-on now requires the master retirement flag too
 
 
 def _explode_client(*a, **k):

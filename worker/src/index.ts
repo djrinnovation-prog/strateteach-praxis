@@ -147,6 +147,7 @@ import { startWorkerStatus } from './workerStatus'
 import { startWebhookRequeueSweeper } from './webhookRequeueSweeper'
 import { resolvePendingReconciliations, RECONCILIATION_RESOLVE_THRESHOLD_SECONDS } from './reconciliation'
 import { startReconciliationScan } from './reconciliationScan'
+import { startCredentialValidation } from './credentialValidation'
 import { resolveEgress, productionEgressOk, egressModeLabel } from './egress'
 import { credentialOwnershipOk } from './credentialOwnership'
 import { SUPPORTED_EXCHANGES } from './supportedExchanges'
@@ -1792,6 +1793,17 @@ async function runWorker(supabase: SupabaseClient, queueEnabled: boolean): Promi
     visibilityTimeoutS: VISIBILITY_TIMEOUT_S, // clamp staleness threshold ≥ visibility + margin
   })
 
+  // M8-validate — read-only credential validation. Drains the DEDICATED `credential_validations`
+  // queue (isolated from trade_signals) and proves a connected key authenticates via fetchBalance —
+  // NEVER an order. Runs on BOTH paths (an operator must be able to validate a key even when the
+  // trade poll loop is off). Flag-gated, default OFF (dark launch): unset ⇒ no timer, no work.
+  // Egress + env + venue + ownership rails are inherited from the trade path (fail-closed).
+  const credentialValidation = startCredentialValidation({
+    supabase,
+    enabled:      process.env.CREDENTIAL_VALIDATION_ENABLED === 'true',
+    isProduction: process.env.PRAXIS_IS_PRODUCTION === 'true',
+  })
+
   if (!queueEnabled) {
     // Disabled path: idle, healthy, silent. One log line, then keep-alive.
     console.log(JSON.stringify({ event: 'worker_queue_disabled' }))
@@ -1805,6 +1817,7 @@ async function runWorker(supabase: SupabaseClient, queueEnabled: boolean): Promi
     clearInterval(heartbeat)
     webhookRequeueSweeper.stop()
     reconciliationScan.stop()
+    credentialValidation.stop()
     await workerStatusWriter.stop()
     console.log(JSON.stringify({ event: 'worker_stopped' }))
     return
@@ -1833,6 +1846,7 @@ async function runWorker(supabase: SupabaseClient, queueEnabled: boolean): Promi
 
   webhookRequeueSweeper.stop()
   reconciliationScan.stop()
+  credentialValidation.stop()
   await workerStatusWriter.stop()
   console.log(JSON.stringify({ event: 'worker_stopped' }))
 }

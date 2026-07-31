@@ -46,5 +46,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .eq("user_id", t.praxis_user_id)
     .order("created_at", { ascending: false });
   if (error) return json(500, { ok: false, error: "read_failed" });
-  return json(200, { ok: true, bots: bots ?? [] });
+
+  // Attach each bot's credential status (non-secret) so the UI can drive the connect → validate → arm
+  // flow: pending_validation → valid | invalid. Fetched in ONE query scoped to the SAME user (INV-9;
+  // never trust a bot's credential_id to belong to another user), then merged in memory. Never selects
+  // vault_secret_id or any secret. A missing/other-user credential surfaces as credential_status=null.
+  const credIds = [...new Set((bots ?? []).map(b => b.credential_id).filter((v): v is string => typeof v === "string"))];
+  const statusById = new Map<string, string>();
+  if (credIds.length > 0) {
+    const { data: creds, error: cerr } = await sb.from("user_exchange_credentials")
+      .select("id, status")
+      .eq("user_id", t.praxis_user_id)
+      .in("id", credIds);
+    if (cerr) return json(500, { ok: false, error: "read_failed" });
+    for (const c of creds ?? []) statusById.set(c.id as string, c.status as string);
+  }
+  const withCred = (bots ?? []).map(b => ({
+    ...b,
+    credential_status: b.credential_id ? (statusById.get(b.credential_id) ?? null) : null,
+  }));
+  return json(200, { ok: true, bots: withCred });
 });

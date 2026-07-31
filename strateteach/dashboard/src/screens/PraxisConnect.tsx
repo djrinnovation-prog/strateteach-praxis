@@ -11,14 +11,19 @@ import { praxisFn } from "../lib/client";
 type Bot = {
   id: string; name: string; trading_pair: string; status: string;
   trading_enabled: boolean; sell_enabled?: boolean; credential_id: string | null;
+  credential_status?: string | null;
 };
 
 export default function PraxisConnect() {
   const [linked, setLinked] = useState<boolean | null>(null);
   const [linkErr, setLinkErr] = useState<string>("");
   const [bots, setBots] = useState<Bot[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false);              // connect FORM only — never gates KILL
+  const [pendingBots, setPendingBots] = useState<Set<string>>(new Set()); // per-bot validate/arm in-flight (concurrent-safe)
+  const addPending = (id: string) => setPendingBots((s) => new Set(s).add(id));
+  const delPending = (id: string) => setPendingBots((s) => { const n = new Set(s); n.delete(id); return n; });
   const [err, setErr] = useState<string>("");
+  const [note, setNote] = useState<string>("");
   const [once, setOnce] = useState<{ bot_id: string; url_token: string; pause_token: string } | null>(null);
 
   // form
@@ -33,12 +38,13 @@ export default function PraxisConnect() {
     try { await api.praxisLink(); setLinked(true); }
     catch (e: any) { setLinked(false); setLinkErr(e?.message || "link_failed"); }
   }
-  async function loadBots() {
+  async function loadBots(): Promise<Bot[]> {
     try {
       const { ticket } = await api.praxisStatusTicket();
       const { bots } = await praxisFn<{ bots: Bot[] }>("bot-status", { ticket });
       setBots(bots || []);
-    } catch (e: any) { setErr(e?.message || "status_failed"); }
+      return bots || [];
+    } catch (e: any) { setErr(e?.message || "status_failed"); return []; }
   }
   useEffect(() => { (async () => { await ensureLinked(); await loadBots(); })(); }, []);
 
@@ -65,14 +71,56 @@ export default function PraxisConnect() {
     finally { setBusy(false); }
   }
 
+  // KILL is the emergency stop. It must NEVER be gated by an unrelated in-flight action (a validate
+  // poll on another bot, a connect, etc.), so it does NOT touch the shared `busy` flag and its button
+  // is never disabled. pause-bot is idempotent, so a double-click is harmless.
   async function onKill(bot_id: string) {
-    setErr(""); setBusy(true);
+    setErr("");
     try {
       const { ticket } = await api.praxisPauseTicket(bot_id);
       await praxisFn("pause-bot", { ticket });
       await loadBots();
     } catch (e: any) { setErr(e?.message || "kill_failed"); }
-    finally { setBusy(false); }
+  }
+
+  // Validate the connected key: StrateTeach mints a validate_credential ticket → Praxis enqueues a
+  // read-only worker check (fetchBalance, NEVER an order). Validation is ASYNC, so poll bot-status until
+  // the credential leaves 'pending_validation'. The key never passes through here.
+  async function onValidate(bot_id: string) {
+    setErr(""); setNote(""); addPending(bot_id);
+    try {
+      const { ticket } = await api.praxisValidateTicket(bot_id);
+      await praxisFn("validate-credential", { ticket });
+      setNote("Validating key… (checking it authenticates)");
+      // Poll up to ~30s for the worker to resolve the status. Only THIS bot's validate/arm buttons are
+      // disabled meanwhile (pendingBot) — KILL on every bot stays live.
+      let resolved: string | null = "pending_validation";
+      for (let i = 0; i < 15; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const list = await loadBots();
+        resolved = list.find((b) => b.id === bot_id)?.credential_status ?? null;
+        if (resolved && resolved !== "pending_validation") break;
+      }
+      setNote(
+        resolved === "valid"   ? "Key validated ✓ — you can arm the bot."
+        : resolved === "invalid" ? "Key rejected by the exchange — check permissions/IP and reconnect."
+        : "Still validating — refresh in a moment.",
+      );
+    } catch (e: any) { setErr(e?.message || "validate_failed"); }
+    finally { delPending(bot_id); }
+  }
+
+  // Arm (go live): allowed ONLY after the credential is 'valid' (arm-bot re-checks this server-side and
+  // refuses mainnet). Flips trading_enabled=true.
+  async function onArm(bot_id: string) {
+    setErr(""); setNote(""); addPending(bot_id);
+    try {
+      const { ticket } = await api.praxisArmTicket(bot_id);
+      await praxisFn("arm-bot", { ticket });
+      setNote("Bot armed — it will act on the next signal.");
+      await loadBots();
+    } catch (e: any) { setErr(e?.message || "arm_failed"); }
+    finally { delPending(bot_id); }
   }
 
   const card: React.CSSProperties = { border: "1px solid #2a2a3a", borderRadius: 10, padding: 16, margin: "12px 0", background: "rgba(255,255,255,0.02)" };
@@ -89,6 +137,7 @@ export default function PraxisConnect() {
 
       {linked === false && <div style={{ ...card, borderColor: "#a33" }}>Not linked to Praxis: {linkErr}</div>}
       {err && <div style={{ ...card, borderColor: "#a33" }}>Error: {err}</div>}
+      {note && <div style={{ ...card, borderColor: "#3a7" }}>{note}</div>}
 
       <form onSubmit={onConnect} style={card}>
         <label>Trading pair</label>
@@ -119,19 +168,43 @@ export default function PraxisConnect() {
 
       <h3 style={{ marginTop: 24 }}>My bots</h3>
       {bots.length === 0 && <p style={{ opacity: 0.6 }}>No bots yet.</p>}
-      {bots.map((b) => (
-        <div key={b.id} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div><b>{b.trading_pair}</b> · {b.status}</div>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>
-              trading {b.trading_enabled ? "ON" : "off"} · key {b.credential_id ? "connected" : "—"}
+      {bots.map((b) => {
+        const cs = b.credential_status ?? (b.credential_id ? "pending_validation" : null);
+        const csLabel =
+          cs === "valid" ? "validated ✓"
+          : cs === "invalid" ? "rejected ✗"
+          : cs === "pending_validation" ? "not validated"
+          : "—";
+        const csColor = cs === "valid" ? "#3a7" : cs === "invalid" ? "#c0392b" : "#c9a227";
+        const rowPending = pendingBots.has(b.id); // this bot has an in-flight validate/arm
+        return (
+          <div key={b.id} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <div>
+              <div><b>{b.trading_pair}</b> · {b.status}</div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>
+                trading {b.trading_enabled ? "ON" : "off"} · key {b.credential_id ? "connected" : "—"}
+                {" · "}<span style={{ color: csColor }}>{csLabel}</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {b.credential_id && cs !== "valid" && (
+                <button style={{ ...btn, background: "#4f7cff", color: "white", opacity: rowPending ? 0.6 : 1 }} disabled={rowPending} onClick={() => onValidate(b.id)}>
+                  {rowPending ? "Validating…" : "Validate key"}
+                </button>
+              )}
+              {cs === "valid" && !b.trading_enabled && (
+                <button style={{ ...btn, background: "#2e8b57", color: "white", opacity: rowPending ? 0.6 : 1 }} disabled={rowPending} onClick={() => onArm(b.id)}>
+                  Arm (go live)
+                </button>
+              )}
+              {/* KILL is the emergency stop — NEVER disabled by an in-flight action (audit HIGH). */}
+              <button style={{ ...btn, background: "#c0392b", color: "white" }} onClick={() => onKill(b.id)}>
+                KILL
+              </button>
             </div>
           </div>
-          <button style={{ ...btn, background: "#c0392b", color: "white" }} disabled={busy} onClick={() => onKill(b.id)}>
-            KILL
-          </button>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

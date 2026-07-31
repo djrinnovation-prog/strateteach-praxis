@@ -468,10 +468,12 @@ verify_jwt = false
 # credential status='valid' + not operator_locked + not mainnet (until S3). verify_jwt=false.
 verify_jwt = false
 
-# NOTE (M8 EP6 — remaining): the validate_credential ticket/route + verifyTicket action are in place, but the
-# validate-credential Edge fn + WORKER validate handler (fetchBalance auth-check → set status valid/invalid,
-# only the worker has ccxt+Vault+egress) are the remaining EP6 piece — they need a valid SPOT testnet key to
-# verify to 'valid' (the provided key is futures) and their own code audit. arm-bot already gates on 'valid'.
+[functions.validate-credential]
+# Phase 2C-A · M8 (EP6): request a READ-ONLY proof that a connected key authenticates. Public: single-use
+# validate_credential ticket. The Edge fn does NO exchange call — it enqueues onto the dedicated
+# credential_validations pgmq queue; the WORKER (single egress point) runs fetchBalance and flips the
+# credential status valid/invalid. Mainnet is fenced here until S3. arm-bot gates on status='valid'.
+verify_jwt = false
 
 # [experimental.pgdelta]
 # When enabled, pg-delta becomes the active engine for supported schema flows.

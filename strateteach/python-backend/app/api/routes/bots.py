@@ -28,7 +28,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from app import database as db
-from app.core.security import current_user
+from app.core.security import current_user, assert_legacy_engine_enabled
 from app.services import exchange as ex
 from app.services import notify
 from app.services import telegram as tg
@@ -182,7 +182,7 @@ def _is_replay(token: str, signature: str) -> bool:
 
 
 # ── bot CRUD (owner-only) ────────────────────────────────────────────────────
-@router.post("/bots")
+@router.post("/bots", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy key-ingest retired
 async def bots_create(body: BotCreateInput, user: str = Depends(current_user)):
     u = db.get_user(user)
     ent = entitlements(u)
@@ -260,7 +260,7 @@ async def bots_dashboard(user: str = Depends(current_user)):
     return {"ok": True, "bots": out, "totalPnl": round(total, 2), "count": len(out)}
 
 
-@router.patch("/bots/{bot_id}")
+@router.patch("/bots/{bot_id}", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy key-update retired
 async def bots_update(bot_id: int, body: BotUpdateInput, user: str = Depends(current_user)):
     _owned_bot_or_404(bot_id, user)
     fields: dict = {}
@@ -333,10 +333,14 @@ async def bots_logs(bot_id: int, user: str = Depends(current_user)):
 
 
 # ── inbound TradingView webhook (PUBLIC — token-gated; see auth_gate allowlist) ─
-@router.post("/signals/webhook/{bot_token}")
+@router.post("/signals/webhook/{bot_token}", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: retired → 410
 async def signal_webhook(bot_token: str, request: Request):
     """PUBLIC inbound alert. Token-gated, size-capped, status-gated. Everything is
-    wrapped so a malformed/hostile alert returns a clean JSON error, never a 500."""
+    wrapped so a malformed/hostile alert returns a clean JSON error, never a 500.
+
+    M7: this legacy StrateTeach signal path is RETIRED (TradingView now targets Praxis's webhook).
+    The guard returns 410 while retired, before any bot-key decrypt or order — belt-and-suspenders
+    with _engine_enabled() (which also fail-closes place_order under the same master flag)."""
     try:
         raw = await request.body()
         if raw and len(raw) > _MAX_WEBHOOK_BYTES:

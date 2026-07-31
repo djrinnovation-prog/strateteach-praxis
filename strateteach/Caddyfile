@@ -13,9 +13,22 @@
 	# NOTE: /legal/*, /it/* AND /biz/* are ALL proxied — they are the three collaborator
 	# portals (Raz legal · Oren IT · Raful business-dev). Without /biz/* here, /biz/portal/*
 	# (incl. POST report/send) falls through to the static frontend and POSTs return 405.
-	@api path /healthz /system/* /auth/* /analytics/* /autopilots/* /audit/* /legal /legal/* /it /it/* /biz /biz/* /symbols/* /config/* /strategy/* /runs /runs/* /signals/* /telegram/* /exchange/* /portfolio/* /dashboard/* /design/vote /design/results /docs /docs/* /openapi.json /redoc /redoc/* /v1/*
+	@api path /healthz /system/* /auth/* /analytics/* /autopilots/* /audit/* /legal /legal/* /it /it/* /biz /biz/* /symbols/* /config/* /strategy/* /runs /runs/* /signals/* /telegram/* /exchange/* /portfolio/* /dashboard/* /praxis/* /design/vote /design/results /docs /docs/* /openapi.json /redoc /redoc/* /v1/*
 	handle @api {
 		reverse_proxy backend:5000
+	}
+
+	# Phase 2C-A · single-origin: proxy the Praxis Edge functions so the BROWSER only ever talks to THIS
+	# origin (no CORS). The exchange key travels browser → /pfn/<fn> → Praxis Vault; it NEVER touches the
+	# StrateTeach backend. PRAXIS_FUNCTIONS_HOST = "<ref>.supabase.co" (the Praxis Supabase project host).
+	# handle_path strips the /pfn prefix; we prepend the Supabase functions path and force the upstream Host
+	# (Supabase routes by Host + SNI). The StrateTeach /praxis/* ticket routes above are DIFFERENT (they mint
+	# tickets on the backend); /pfn/* is the key/validate/arm path straight to Praxis.
+	handle_path /pfn/* {
+		rewrite * /functions/v1{uri}
+		reverse_proxy https://{$PRAXIS_FUNCTIONS_HOST} {
+			header_up Host {$PRAXIS_FUNCTIONS_HOST}
+		}
 	}
 
 	# /bots is BOTH an API path (POST /bots create, GET /bots, /bots/{id}/...) AND a

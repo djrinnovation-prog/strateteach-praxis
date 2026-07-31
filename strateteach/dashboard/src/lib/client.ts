@@ -1227,6 +1227,7 @@ export class Api {
   praxisStatusTicket() { return this.request<{ ticket: string }>("POST", "/praxis/status-ticket"); }
   praxisPauseTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/pause-ticket", { body: { bot_id } }); }
   praxisArmTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/arm-ticket", { body: { bot_id } }); }
+  praxisValidateTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/validate-ticket", { body: { bot_id } }); }
   testExchange() { return this.request<{ ok: boolean; message: string }>("POST", "/exchange/test", { pin: true }); }
   balance(market?: string) { return this.request<unknown>("GET", "/exchange/balance" + (market ? `?market=${encodeURIComponent(market)}` : ""), { pin: true }); }
   positions() { return this.request<unknown>("GET", "/exchange/positions", { pin: true }); }

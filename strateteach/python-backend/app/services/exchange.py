@@ -37,8 +37,16 @@ SUPPORTED_EXCHANGES = {"binance", "bybit", "coinbase"}
 # unaffected — this gates money movement only.
 
 def _engine_enabled() -> bool:
-    """True only if the LEGACY direct-exchange engine is explicitly armed (STRATETEACH_ENGINE_ENABLED).
-    Defaults OFF, so the unified app cannot place a direct order unless someone turns this on."""
+    """True only if the LEGACY direct-exchange engine is explicitly armed. Defaults OFF.
+
+    M7: this is ALSO governed by the master retirement flag STRATETEACH_LEGACY_ENGINE_ENABLED. With
+    the legacy engine retired (the default), direct execution is fail-closed REGARDLESS of
+    STRATETEACH_ENGINE_ENABLED — so the M7 kill-switch actually controls StrateTeach's primary trade
+    path (place_order / withdraw / close / dust, and the public signal webhook that calls place_order).
+    Requiring BOTH flags closes the half-enabled hazard where STRATETEACH_ENGINE_ENABLED was left on
+    after a test while the legacy flag was flipped back to retired."""
+    if os.environ.get("STRATETEACH_LEGACY_ENGINE_ENABLED", "false").strip().lower() != "true":
+        return False
     return os.environ.get("STRATETEACH_ENGINE_ENABLED", "false").strip().lower() in ("1", "true", "yes", "on")
 
 

@@ -222,6 +222,37 @@ def current_user(authorization: str | None = Header(default=None)) -> str:
     return username
 
 
+# ── M7: legacy StrateTeach trading-engine retirement ─────────────────────────
+# Under the Option A model, StrateTeach is the BRAIN/UI only and must NEVER hold an
+# exchange key, place an order, or withdraw funds — execution lives entirely in Praxis
+# (browser → Praxis Edge/Vault → worker). This gate RETIRES the legacy engine's
+# key-ingest / order / withdrawal / creds-backup routes: with the flag OFF (the default,
+# = retired) they return 410 Gone pointing to the secure Praxis flow. The flag exists
+# only as a transitional escape hatch; production leaves it unset. It is NOT a substitute
+# for the Phase 3 wipe (deleting stored ciphertext + dropping the key tables), which
+# removes the data at rest — this only closes the live routes.
+def legacy_engine_enabled() -> bool:
+    """True only if an operator has explicitly re-enabled the legacy engine (default: retired).
+    Read at CALL time (not import) so it is consistent with the data-layer guard in database.py
+    and directly testable. The same flag also hard-OFFs the background autopilot LIVE gate."""
+    return os.getenv("STRATETEACH_LEGACY_ENGINE_ENABLED", "false").strip().lower() == "true"
+
+
+def assert_legacy_engine_enabled() -> None:
+    """Route dependency: 410 Gone unless the legacy StrateTeach trading engine is explicitly
+    re-enabled. Applied to every route that ingests an exchange key, places an order, or
+    withdraws — so StrateTeach can no longer hold keys or move money (M7 full retirement)."""
+    if not legacy_engine_enabled():
+        raise HTTPException(
+            status_code=410,
+            detail=(
+                "This flow has been retired. Connect your exchange through the secure Praxis "
+                "flow — your key goes straight to the isolated execution vault and never touches "
+                "this service."
+            ),
+        )
+
+
 def require_admin(authorization: str | None = Header(default=None)) -> str:
     """Route dependency: resolve the bearer token AND require ADMIN-tier access —
     i.e. a product OWNER (Dan/Rafi/Yoav) OR a role=='admin' user (Oren). This is the

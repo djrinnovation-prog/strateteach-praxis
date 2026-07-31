@@ -59,7 +59,16 @@ ALLOWED_EXCHANGES = {"bybit", "binance"}
 
 
 def live_master_enabled() -> bool:
-    """The ultimate gate. OFF by default — an operator must set AUTOPILOT_LIVE_ENABLED."""
+    """The ultimate gate for the legacy autopilot LIVE executor. OFF by default.
+
+    M7 (full retirement): this whole path — including the BACKGROUND autopilot loop that can
+    reach ``apply_pilot_live`` for a live-mode pilot — is retired while the legacy engine is
+    retired. Execution lives ONLY in Praxis now. So the gate is hard-OFF unless BOTH the legacy
+    engine is explicitly re-enabled AND the operator sets AUTOPILOT_LIVE_ENABLED. With the legacy
+    flag unset (the default), no stored autopilot key can ever place a real order, regardless of
+    AUTOPILOT_LIVE_ENABLED — closing the one live path that is NOT behind an HTTP route."""
+    if os.environ.get("STRATETEACH_LEGACY_ENGINE_ENABLED", "false").strip().lower() != "true":
+        return False
     return os.environ.get("AUTOPILOT_LIVE_ENABLED", "").strip().lower() in ("1", "true", "yes", "on")
 
 

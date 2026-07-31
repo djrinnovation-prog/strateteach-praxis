@@ -123,7 +123,10 @@ describe('A1 Option B — BinanceAdapter construction call sites (static guard)'
     const filesWithSites = sites.map((s) => s.file).sort()
     // flatten.ts (EP5): a reviewed construction site — resolveAdapterForBot fail-closes on
     // unconfigured production egress BEFORE constructing, and passes the egress args (6-arg form).
-    expect(filesWithSites).toEqual(['flatten.ts', 'index.ts', 'reconciliation.ts', 'spike-binance.ts'])
+    // credentialValidation.ts (M8): a reviewed READ-ONLY site — fail-closes on ownership / venue
+    // is_active+SUPPORTED / env / production egress BEFORE constructing, passes the egress args
+    // (6-arg form), and calls ONLY fetchBalance (never createOrder).
+    expect(filesWithSites).toEqual(['credentialValidation.ts', 'flatten.ts', 'index.ts', 'reconciliation.ts', 'spike-binance.ts'])
   })
 
   test('no production processMessage() call injects the adapter factory (T3a seam is test-only, ≤2 args)', () => {

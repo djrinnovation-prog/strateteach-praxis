@@ -14,7 +14,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from app import database as db
-from app.core.security import current_user, require_owner
+from app.core.security import current_user, require_owner, assert_legacy_engine_enabled
 from app.services.auth import verify_password
 from app.services import exchange as ex
 from app.services import profit_engine as pe
@@ -288,7 +288,7 @@ async def exchange_pin_admin_reset(body: PinAdminResetInput, admin: str = Depend
     return {"ok": True, "pinSet": False, "message": f"{target}'s exchange PIN cleared — they can now set a fresh one."}
 
 
-@router.post("/exchange/config")
+@router.post("/exchange/config", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_set_config(
     body: ExchangeConfigInput,
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
@@ -312,7 +312,7 @@ async def exchange_set_config(
     return {"ok": True, "message": "Exchange settings saved."}
 
 
-@router.post("/exchange/test")
+@router.post("/exchange/test", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_test(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
@@ -325,7 +325,7 @@ async def exchange_test(
     return result
 
 
-@router.get("/exchange/balance")
+@router.get("/exchange/balance", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_balance(
     market: str = "spot",
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
@@ -336,7 +336,7 @@ async def exchange_balance(
     return await run_in_threadpool(ex.get_balances, cfg, market)
 
 
-@router.get("/exchange/positions")
+@router.get("/exchange/positions", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_positions(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
@@ -346,7 +346,7 @@ async def exchange_positions(
     return await run_in_threadpool(ex.get_positions, cfg)
 
 
-@router.get("/exchange/protective-orders")
+@router.get("/exchange/protective-orders", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_protective_orders(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
@@ -358,7 +358,7 @@ async def exchange_protective_orders(
     return await run_in_threadpool(ex.get_protective_orders, cfg)
 
 
-@router.get("/exchange/symbols")
+@router.get("/exchange/symbols", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: builds an authed client from header creds
 async def exchange_symbols(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
@@ -369,7 +369,7 @@ async def exchange_symbols(
     return await run_in_threadpool(ex.get_market_symbols, cfg)
 
 
-@router.get("/exchange/engine-live-pnl")
+@router.get("/exchange/engine-live-pnl")  # M7: keyless local-DB read — intentionally NOT retired (historical P&L display)
 async def exchange_engine_live_pnl(user: str = Depends(current_user)):
     """LIVE Trading Engine realized P&L — ALL the engine's OWN live closes (runs_log
     mode='live', NOT a signal bot: bot_id IS NULL), fired manually or by the auto-batch,
@@ -378,7 +378,7 @@ async def exchange_engine_live_pnl(user: str = Depends(current_user)):
     return {"ok": True, **db.profit_engine_live_stats(user)}
 
 
-@router.get("/exchange/live-pnl")
+@router.get("/exchange/live-pnl", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_live_pnl(
     tzOffset: int = 0,
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
@@ -565,7 +565,7 @@ async def exchange_set_cost_basis(body: CostBasisInput, user: str = Depends(curr
 # device gets their connection back. Ciphertext-at-rest (Fernet / SESSION_SECRET —
 # the SAME scheme the Signal Bots use). Strict per-user isolation: every route keys
 # on the authenticated caller's own username; a user can only ever touch their own row.
-@router.post("/exchange/creds-backup")
+@router.post("/exchange/creds-backup", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_save_creds_backup(body: ExchangeCredsBackupInput, user: str = Depends(current_user)):
     """Save (encrypt at rest) the authenticated user's exchange creds for cross-device
     restore. Plaintext keys are encrypted here and NEVER stored in the clear."""
@@ -621,7 +621,7 @@ async def exchange_delete_creds_backup(user: str = Depends(current_user)):
     return {"ok": True}
 
 
-@router.post("/exchange/order")
+@router.post("/exchange/order", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_order(
     body: ExchangeOrderInput,
     request: Request,
@@ -687,7 +687,7 @@ async def exchange_order(
     return result
 
 
-@router.post("/exchange/withdraw")
+@router.post("/exchange/withdraw", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_withdraw(
     body: WithdrawInput,
     request: Request,
@@ -716,7 +716,7 @@ async def exchange_withdraw(
     return result
 
 
-@router.post("/exchange/close-profitable")
+@router.post("/exchange/close-profitable", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_close_profitable(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
@@ -765,7 +765,7 @@ async def exchange_close_profitable(
     return result
 
 
-@router.post("/exchange/close-spot")
+@router.post("/exchange/close-spot", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_close_spot(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
@@ -789,7 +789,7 @@ async def exchange_close_spot(
     return result
 
 
-@router.post("/exchange/clean-dust")
+@router.post("/exchange/clean-dust", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired
 async def exchange_clean_dust(
     x_exchange_pin: Optional[str] = Header(None, alias="X-Exchange-Pin"),
     creds: dict = Depends(exchange_creds),
