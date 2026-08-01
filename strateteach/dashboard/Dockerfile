@@ -15,8 +15,12 @@ COPY dashboard/ ./
 # directly (no nginx proxy / caddy off in local dev). CORS on both is "*" for dev.
 ARG VITE_API_BASE=""
 ARG VITE_PRAXIS_FUNCTIONS_BASE=""
+# Cloud only: the PUBLIC anon key, baked so the browser can route to Praxis Edge functions through the
+# Supabase gateway (see praxisFn). Empty in local dev (single-origin /pfn proxy needs none). Not a secret.
+ARG VITE_SUPABASE_ANON_KEY=""
 ENV VITE_API_BASE=$VITE_API_BASE
 ENV VITE_PRAXIS_FUNCTIONS_BASE=$VITE_PRAXIS_FUNCTIONS_BASE
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 RUN npm run build
 
 FROM nginx:alpine

@@ -1405,10 +1405,23 @@ export class Api {
 export const PRAXIS_FN_BASE: string =
   ((import.meta as any).env?.VITE_PRAXIS_FUNCTIONS_BASE as string) || "/pfn";
 
+// Cloud Supabase routes Edge functions through a gateway (Kong) that requires the PUBLIC anon key as an
+// `apikey` header to route the request — even for verify_jwt=false functions. Set VITE_SUPABASE_ANON_KEY in
+// a direct-base (cloud) deploy. It is NOT a secret (browser-safe) and is NOT the request's authority — the
+// StrateTeach-minted ticket in the BODY is. The exchange key is never in these headers. Empty on the local
+// single-origin /pfn proxy (nginx forwards without needing it).
+export const PRAXIS_ANON_KEY: string =
+  ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string) || "";
+
 export async function praxisFn<T = any>(fn: string, body: unknown): Promise<T> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (PRAXIS_ANON_KEY) {
+    headers["apikey"] = PRAXIS_ANON_KEY;
+    headers["Authorization"] = `Bearer ${PRAXIS_ANON_KEY}`;
+  }
   const res = await fetch(`${PRAXIS_FN_BASE.replace(/\/+$/, "")}/${fn}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
   let data: any = {};
