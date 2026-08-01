@@ -1449,6 +1449,14 @@ def _seed_demo_accounts() -> None:
     once both exist (see demo_seed.seed). Never blocks boot: any failure is
     swallowed exactly like the other startup seeds. Lazy import avoids a cycle."""
     try:
+        # SECURITY (partner-pilot hardening): the demo accounts include a role='admin' STAFF login whose
+        # default password is REPO-KNOWN (demo_seed.STAFF_PW). Seeding by default stands up a guessable
+        # admin on every deploy — a takeover vector the moment a second (partner) user shares the instance.
+        # Gate seeding behind DEMO_SEED_ENABLED (default OFF / fail-closed). Local dev + demo environments
+        # opt in explicitly; production pilots stay clean. Any demo rows from earlier boots are removed or
+        # password-rotated operator-side.
+        if os.environ.get("DEMO_SEED_ENABLED", "false").strip().lower() != "true":
+            return
         from app.services import demo_seed
         demo_seed.seed(force=False)
     except Exception:  # noqa: BLE001 — demo seeding must never fail a boot

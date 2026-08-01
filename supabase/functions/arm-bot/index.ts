@@ -51,7 +51,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!bot.credential_id) return json(409, { ok: false, error: "no_credential" });
 
   const { data: cred } = await sb.from("user_exchange_credentials")
-    .select("status, exchange_environment").eq("id", bot.credential_id).maybeSingle();
+    .select("status, exchange_environment").eq("id", bot.credential_id).eq("user_id", t.praxis_user_id).maybeSingle();
   if (!cred) return json(409, { ok: false, error: "no_credential" });
   if (cred.status !== "valid") return json(409, { ok: false, error: "credential_not_valid" }); // EP6 must pass first
   if (cred.exchange_environment === "mainnet") return json(403, { ok: false, error: "mainnet_arm_not_enabled" });

@@ -386,7 +386,11 @@ export class BinanceAdapter implements ExchangeAdapter {
     } catch (e) {
       if (e instanceof ccxt.AuthenticationError || e instanceof ccxt.PermissionDenied) throw new ExchangeAuthError()
       if (e instanceof ccxt.RequestTimeout) throw new ExchangeTimeoutError()
-      throw new ExchangeUnavailableError()
+      // Carry the ORIGINAL ccxt error CLASS (+ httpStatus) as a NON-SECRET diagnostic so the caller can
+      // log WHY the authenticated read failed (network vs geo-block vs clock-skew), class/status ONLY —
+      // never the message/URL/query/headers/body/signature/credentials. See safeExchangeDetail. Matches
+      // the same treatment already used by getMarketRules/createOrder/fetchOrder.
+      throw new ExchangeUnavailableError(safeExchangeDetail(e))
     } finally {
       exchange.apiKey = ''
       exchange.secret = ''

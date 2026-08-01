@@ -83,9 +83,19 @@ def create_app() -> FastAPI:
     _init_sentry()
     app = FastAPI(title="770 Trend Diamonds API", version="1.0.0")
 
+    # CORS — tightened for the cloud multi-origin deploy (Phase 2C). The browser SPA is served from a
+    # DIFFERENT origin than this API, so we echo an EXPLICIT allowlist. A wildcard '*' is both a security
+    # hole AND invalid together with allow_credentials (browsers reject '*'+credentials), so it is never
+    # used. Origins come from CORS_ALLOWED_ORIGINS (comma-separated) — falling back to the single
+    # CONNECT_ALLOWED_ORIGIN (shared with the Edge functions) — and finally to the deployed frontend so a
+    # missing var fails SAFE (locked to the known frontend), never open. Local/dev sets it to include
+    # http://localhost:<port>. Empty entries are dropped.
+    _cors_default = "https://strateteach-praxis-front-production.up.railway.app"
+    _cors_raw = os.environ.get("CORS_ALLOWED_ORIGINS") or os.environ.get("CONNECT_ALLOWED_ORIGIN") or _cors_default
+    _cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=_cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

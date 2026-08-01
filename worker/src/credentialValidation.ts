@@ -35,6 +35,7 @@ import { resolveEgress, productionEgressOk, type EgressConfig } from './egress'
 import {
   type ExchangeAdapter,
   ExchangeAuthError,
+  ExchangeUnavailableError,
   VaultSecretNotFoundError,
 } from './types'
 
@@ -336,7 +337,16 @@ export function startCredentialValidation(opts: StartCredentialValidationOptions
         return ACK
       }
       // Transient (timeout / exchange or vault outage / unknown) — truth unknown. Bounded retry via VT; no status change.
-      console.error(JSON.stringify({ event: 'validate_transient', credential_id: credentialId, request_id: requestId, error: e instanceof Error ? e.constructor.name : 'unknown' }))
+      // `detail` carries the ORIGINAL ccxt class (+ httpStatus) for ExchangeUnavailableError — NON-SECRET
+      // (class/status only) — so an operator can tell a network/geo-block/clock-skew failure apart from a
+      // real key problem WITHOUT ever mis-stamping the user's key 'invalid' for a server-side condition.
+      console.error(JSON.stringify({
+        event: 'validate_transient',
+        credential_id: credentialId,
+        request_id: requestId,
+        error: e instanceof Error ? e.constructor.name : 'unknown',
+        detail: e instanceof ExchangeUnavailableError ? e.detail : undefined,
+      }))
       return retryOrGiveUp('fetch_balance_transient')
     }
 

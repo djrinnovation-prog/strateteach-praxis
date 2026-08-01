@@ -11,7 +11,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from app import database as db
-from app.core.security import current_user
+from app.core.security import current_user, assert_legacy_engine_enabled
 from app.services import exchange as ex
 from app.services import paper_trading as paper
 from app.services import signals as sig_scanner
@@ -385,7 +385,7 @@ async def paper_daily_pnl(who: tuple[str, bool] = Depends(viewer)):
     return {"days": out}
 
 
-@router.get("/exchange/paper/closed-log")
+@router.get("/exchange/paper/closed-log", dependencies=[Depends(assert_legacy_engine_enabled)])  # M7: legacy engine retired — this route ingests a raw X-Exchange-Key and builds a ccxt client, so it must stay 410'd (key never touches StrateTeach)
 async def paper_closed_log(
     limit: int = 500,
     who: tuple[str, bool] = Depends(viewer),
