@@ -102,10 +102,12 @@ def test_execution_gate_escape_hatch_both_flags():
 
 
 def test_escape_hatch_reenables_route_guard():
+    # Mainnet Plan v1.1 · 1.4 (closes mainnet-review MED-2): the escape hatch is now PERMANENTLY CLOSED. Even
+    # with the flag ON, the route guard STILL raises (410) — a raw exchange key can never touch StrateTeach via
+    # any env flag (symmetry with exchange._engine_enabled). Re-enabling requires a deliberate code revert.
     os.environ["STRATETEACH_LEGACY_ENGINE_ENABLED"] = "true"
     try:
-        # With the flag ON, the route guard must NOT raise (deliberate re-enable).
-        security.assert_legacy_engine_enabled()
+        _expect_raise(security.assert_legacy_engine_enabled, HTTPException, "route guard raises even with flag on")
         print("test_escape_hatch_reenables_route_guard PASS")
     finally:
         os.environ.pop("STRATETEACH_LEGACY_ENGINE_ENABLED", None)

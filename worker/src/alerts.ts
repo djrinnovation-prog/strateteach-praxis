@@ -52,9 +52,10 @@ export function emitAlert(event: string, fields: AlertFields = {}): void {
   const url = alertUrl;
   const fetchImpl = alertFetch;
   if (!url || !fetchImpl) return; // default OFF
-  const body = JSON.stringify({ source: 'praxis-worker', event, ...fields });
+  // (mainnet-review LOW-1) JSON.stringify runs INSIDE the promise chain — a non-serializable field (BigInt /
+  // circular ref) would then land in .catch instead of throwing into the caller (which runs in processMessage).
   void Promise.resolve()
-    .then(() => fetchImpl(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body }))
+    .then(() => fetchImpl(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ source: 'praxis-worker', event, ...fields }) }))
     .then((res) => {
       if (!res || res.ok !== true) {
         console.log(JSON.stringify({ event: 'alert_failed', alert_event: event, error_type: 'http_not_ok', status: typeof res?.status === 'number' ? res.status : undefined }));

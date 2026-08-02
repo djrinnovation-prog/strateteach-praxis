@@ -17,8 +17,12 @@ CREATE TABLE IF NOT EXISTS public.mainnet_approvals (
   approved_by   text        NOT NULL,                 -- operator identity who approved (audit)
   approved_at   timestamptz NOT NULL DEFAULT now(),
   evidence_hash text        NOT NULL,                 -- non-secret hash of the operator's approval evidence (A4)
-  active        boolean     NOT NULL DEFAULT true     -- flip to false to revoke a single user's mainnet access
+  active        boolean     NOT NULL DEFAULT true     -- honored by the EDGE gate (blocks NEW connect/validate/arm for this user).
 );
+-- REVOCATION SCOPE (mainnet-review MED-1): active=false blocks the user at the Edge (no new connect/validate/arm),
+-- but the WORKER trade loop currently re-checks only the GLOBAL switch (PRAXIS_MAINNET_ENABLED), NOT this row.
+-- So to stop a user's ALREADY-ARMED bot: disarm/pause that bot (pause-bot / KILL) OR flip the global switch.
+-- Full runtime per-user revocation in the worker is a REQUIRED follow-up BEFORE a 2nd (partner) real-money user.
 
 ALTER TABLE public.mainnet_approvals ENABLE ROW LEVEL SECURITY;
 -- No RLS policies ⇒ deny-all to anon/authenticated. service_role bypasses RLS by design.

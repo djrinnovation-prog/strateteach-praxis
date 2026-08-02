@@ -232,10 +232,13 @@ def current_user(authorization: str | None = Header(default=None)) -> str:
 # for the Phase 3 wipe (deleting stored ciphertext + dropping the key tables), which
 # removes the data at rest — this only closes the live routes.
 def legacy_engine_enabled() -> bool:
-    """True only if an operator has explicitly re-enabled the legacy engine (default: retired).
-    Read at CALL time (not import) so it is consistent with the data-layer guard in database.py
-    and directly testable. The same flag also hard-OFFs the background autopilot LIVE gate."""
-    return os.getenv("STRATETEACH_LEGACY_ENGINE_ENABLED", "false").strip().lower() == "true"
+    """PERMANENTLY RETIRED — returns False unconditionally (Mainnet Plan v1.1 · 1.4; symmetry with
+    exchange._engine_enabled, closes mainnet-review MED-2). The legacy HTTP routes that ingest a raw
+    exchange key (e.g. /exchange/paper/closed-log, which builds a ccxt client from X-Exchange-* headers)
+    stay 410 regardless of any env flag, so a raw key can NEVER touch StrateTeach — the core custody
+    invariant the whole architecture rests on. Re-enabling requires a deliberate code revert, not a
+    config change. (The startup CRITICAL alert in main.py still fires if a stale flag is set.)"""
+    return False
 
 
 def assert_legacy_engine_enabled() -> None:

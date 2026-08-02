@@ -31,7 +31,9 @@ async def portfolio_activity(
     # Live activity is the user's own order log (already behind login). Unlock it the
     # same way as balance/positions: open if no PIN is set, OR the browser is holding
     # its own keys (non-custodial header creds), OR a valid PIN is supplied.
-    pin_ok = (not stored) or bool(x_exchange_key) or bool(x_exchange_pin and ex.verify_pin(x_exchange_pin, stored))
+    # (mainnet-review LOW-2) live activity unlocks ONLY with no PIN set OR a valid PIN — the mere PRESENCE of an
+    # X-Exchange-Key header no longer bypasses the PIN (that legacy non-custodial unlock is retired).
+    pin_ok = (not stored) or bool(x_exchange_pin and ex.verify_pin(x_exchange_pin, stored))
     m = mode if mode in ("demo", "live") else None
     if not pin_ok:
         if m == "live":

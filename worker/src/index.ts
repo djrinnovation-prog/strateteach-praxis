@@ -998,6 +998,11 @@ async function processMessage(
         && (process.env.PRAXIS_MAINNET_ENABLED ?? '').trim().toLowerCase() !== 'true') {
       throw new SizingUnavailableError('mainnet_master_switch_off')
     }
+    // MED-1 (pre-multi-user follow-up): this checks only the GLOBAL switch. Per-user revocation via
+    // mainnet_approvals.active=false is enforced at the Edge (new connect/validate/arm), and for a single
+    // approved user the global switch + pause-bot are effective kills. BEFORE a 2nd real-money user, add a
+    // per-order `mainnet_approvals.active` re-check for cred.user_id here (fail-closed) so one user can be
+    // revoked at runtime without killing everyone.
     // A1 (B0): in production, egress must be EXPLICITLY configured — a proxy OR native static egress. An
     // unconfigured egress is a fail-closed config fault — BLOCK here, BEFORE constructing the adapter.
     // Native mode = direct egress via Railway's static outbound IPs (no proxy passed to ccxt).
