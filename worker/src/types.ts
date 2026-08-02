@@ -280,6 +280,25 @@ export class ExchangeAuthError extends Error {
   }
 }
 
+/**
+ * Binance error -2015 ("Invalid API-key, IP, or permissions for action") — DELIBERATELY DISTINCT from
+ * ExchangeAuthError. -2015 is AMBIGUOUS: Binance returns it for a genuinely bad/revoked key AND for a GOOD,
+ * IP-allowlisted key called from an egress IP not (yet) on its allowlist AND for a key missing a required
+ * permission. On mainnet these are indistinguishable from the response alone (A4), so the worker must NOT
+ * brand the credential a permanent 'invalid' (that would disable a good key on an infra/allowlist condition)
+ * NOR retry forever (a truly bad key would loop). Callers treat this as OPERATOR-ACTIONABLE: fail-closed
+ * (never trade), leave credential.status untouched, and surface a clear reason (verify the key's IP allowlist
+ * + trade permission). Latent today — testnet keys are not IP-bound so -2015 never fires; this arms the
+ * mainnet path (Plan v1.1 · 1.1).
+ */
+export class ExchangeAuthIpError extends Error {
+  constructor() {
+    super('Exchange: -2015 invalid key, IP, or permissions — verify IP allowlist + trade permission')
+    this.name = 'ExchangeAuthIpError'
+    Object.setPrototypeOf(this, ExchangeAuthIpError.prototype)
+  }
+}
+
 // ─── Sizing + risk config (S5-A3/B4) ──────────────────────────────────────────
 // DB-configured policy; the worker is the guardrail, the DB config is the policy.
 

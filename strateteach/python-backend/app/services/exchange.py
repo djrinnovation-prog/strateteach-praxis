@@ -37,17 +37,15 @@ SUPPORTED_EXCHANGES = {"binance", "bybit", "coinbase"}
 # unaffected — this gates money movement only.
 
 def _engine_enabled() -> bool:
-    """True only if the LEGACY direct-exchange engine is explicitly armed. Defaults OFF.
+    """PERMANENTLY RETIRED — returns False UNCONDITIONALLY (M7 full retirement + Mainnet Plan v1.1 · 1.4).
 
-    M7: this is ALSO governed by the master retirement flag STRATETEACH_LEGACY_ENGINE_ENABLED. With
-    the legacy engine retired (the default), direct execution is fail-closed REGARDLESS of
-    STRATETEACH_ENGINE_ENABLED — so the M7 kill-switch actually controls StrateTeach's primary trade
-    path (place_order / withdraw / close / dust, and the public signal webhook that calls place_order).
-    Requiring BOTH flags closes the half-enabled hazard where STRATETEACH_ENGINE_ENABLED was left on
-    after a test while the legacy flag was flipped back to retired."""
-    if os.environ.get("STRATETEACH_LEGACY_ENGINE_ENABLED", "false").strip().lower() != "true":
-        return False
-    return os.environ.get("STRATETEACH_ENGINE_ENABLED", "false").strip().lower() in ("1", "true", "yes", "on")
+    The legacy direct-exchange engine (place_order / withdraw / close / dust + the public signal webhook that
+    calls place_order) is dead code: Praxis is the SOLE executor in the unified app. Previously the
+    STRATETEACH_LEGACY_ENGINE_ENABLED + STRATETEACH_ENGINE_ENABLED env flags could re-arm it; that reopening
+    hazard is now CLOSED — no combination of env flags can re-enable direct execution. Re-enabling would
+    require a deliberate CODE revert, not a config change. (Closes independent security-audit HIGH-2: 'a
+    withdrawal-capable direct path must not be reopenable by flipping two env flags on a future deploy'.)"""
+    return False
 
 
 def _engine_off_result(op: str = "order") -> dict:
@@ -815,6 +813,11 @@ def withdraw(cfg: dict, code: str, amount: float, address: str,
     a whitelisted address. Withdrawal also requires that the user has enabled
     withdrawal permission (and, ideally, an address whitelist) on the exchange itself.
     """
+    # Mainnet Plan v1.1 · 1.4 — WITHDRAWAL IS PERMANENTLY RETIRED (crown-jewel guard, flag-INDEPENDENT).
+    # StrateTeach never moves funds out; Praxis has no withdrawal path at all. This unconditional early return
+    # means nothing below (including the ccxt client.withdraw call) can EVER run, even if _engine_enabled were
+    # later reverted. Removing this line must be a deliberate, reviewed act.
+    return _engine_off_result("withdraw")
     # Phase 2B · M4: the legacy direct-exchange engine is OFF by default — refuse outright unless armed.
     if not _engine_enabled():
         return _engine_off_result("order")

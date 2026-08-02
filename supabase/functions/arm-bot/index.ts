@@ -10,6 +10,7 @@
 // verify_jwt=false (the ticket is the authority).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { deriveProvisionKeyMaterial, verifyTicket } from "../_shared/provision-ticket.ts";
+import { mainnetAllowed } from "../_shared/mainnet-gate.ts";
 
 const PEPPER = Deno.env.get("WEBHOOK_SECRET_PEPPER") ?? "";
 const ALLOWED_ORIGIN = Deno.env.get("CONNECT_ALLOWED_ORIGIN") ?? "*";
@@ -54,7 +55,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .select("status, exchange_environment").eq("id", bot.credential_id).eq("user_id", t.praxis_user_id).maybeSingle();
   if (!cred) return json(409, { ok: false, error: "no_credential" });
   if (cred.status !== "valid") return json(409, { ok: false, error: "credential_not_valid" }); // EP6 must pass first
-  if (cred.exchange_environment === "mainnet") return json(403, { ok: false, error: "mainnet_arm_not_enabled" });
+  // Mainnet double-gate (Plan v1.1 · 1.2): arming a mainnet bot is rejected UNLESS the global master-switch is
+  // on AND this user has an active operator approval. Default (switch off / no approval) ⇒ rejected, identical
+  // to pre-1.2. (The worker independently re-checks the master-switch on every mainnet order.)
+  if (cred.exchange_environment === "mainnet" && !(await mainnetAllowed(sb, t.praxis_user_id))) {
+    return json(403, { ok: false, error: "mainnet_not_enabled" });
+  }
 
   // Arm. Ownership re-checked in the predicate; assert exactly one row. (operator_locked was checked above;
   // a concurrent lock is covered by the independent operator kill, the authoritative control.)

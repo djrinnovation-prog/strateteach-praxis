@@ -58,6 +58,7 @@ import {
   Position,
   ExchangeReturnedStatus,
   ExchangeAuthError,
+  ExchangeAuthIpError,
   ExchangeRejectedError,
   ExchangeTimeoutError,
   ExchangeUnavailableError,
@@ -87,6 +88,19 @@ function safeExchangeDetail(e: unknown): string {
   const cls    = e instanceof Error ? e.constructor.name : 'unknown'
   const status = (e as { httpStatus?: number } | null)?.httpStatus
   return typeof status === 'number' ? `${cls}:http_${status}` : cls
+}
+
+/**
+ * True iff a caught ccxt error is Binance code -2015 ("Invalid API-key, IP, or permissions for action").
+ * This is the AMBIGUOUS IP/permission/bad-key case (see ExchangeAuthIpError). Reads e.message ONLY to branch
+ * on the numeric Binance code — it is NEVER logged, so no IP/URL/signature/credential can leak. Checked
+ * BEFORE the generic AuthenticationError→ExchangeAuthError mapping so a good, IP-allowlisted key called from
+ * an egress IP not yet on its allowlist is never mis-branded a permanent 'invalid'. (Plan v1.1 · 1.1)
+ */
+function isAuthIpOrPermError(e: unknown): boolean {
+  if (!(e instanceof ccxt.AuthenticationError || e instanceof ccxt.PermissionDenied)) return false
+  const msg = e instanceof Error && typeof e.message === 'string' ? e.message : ''
+  return msg.includes('-2015')
 }
 
 // ─── Status mapping ───────────────────────────────────────────────────────────
@@ -384,6 +398,7 @@ export class BinanceAdapter implements ExchangeAdapter {
       const raw = await exchange.fetchBalance()
       return mapCcxtBalances(raw)
     } catch (e) {
+      if (isAuthIpOrPermError(e)) throw new ExchangeAuthIpError() // -2015: ambiguous IP/permission — operator-actionable, never a silent permanent 'invalid'
       if (e instanceof ccxt.AuthenticationError || e instanceof ccxt.PermissionDenied) throw new ExchangeAuthError()
       if (e instanceof ccxt.RequestTimeout) throw new ExchangeTimeoutError()
       // Carry the ORIGINAL ccxt error CLASS (+ httpStatus) as a NON-SECRET diagnostic so the caller can
@@ -518,6 +533,7 @@ export class BinanceAdapter implements ExchangeAdapter {
       // ExchangeRejectedError) must propagate AS-IS — never be re-mapped by the ccxt mapping below.
       // The finally still zeroes the credentials.
       if (e instanceof ExchangeRejectedError) throw e
+      if (isAuthIpOrPermError(e)) throw new ExchangeAuthIpError() // -2015: ambiguous IP/permission — operator-actionable, never a silent permanent 'invalid'
       if (e instanceof ccxt.AuthenticationError || e instanceof ccxt.PermissionDenied) throw new ExchangeAuthError()
       if (e instanceof ccxt.RequestTimeout)    throw new ExchangeTimeoutError()
       if (e instanceof ccxt.InvalidOrder)      throw new ExchangeRejectedError()
@@ -564,6 +580,7 @@ export class BinanceAdapter implements ExchangeAdapter {
 
       return mapCcxtOrder(raw)
     } catch (e) {
+      if (isAuthIpOrPermError(e)) throw new ExchangeAuthIpError() // -2015: ambiguous IP/permission — operator-actionable, never a silent permanent 'invalid'
       if (e instanceof ccxt.AuthenticationError || e instanceof ccxt.PermissionDenied) throw new ExchangeAuthError()
       if (e instanceof ccxt.OrderNotFound)      return null
       if (e instanceof ccxt.RequestTimeout)     throw new ExchangeTimeoutError()
@@ -597,6 +614,7 @@ export class BinanceAdapter implements ExchangeAdapter {
     } catch (e) {
       if (e instanceof ExchangeRejectedError || e instanceof ExchangeAuthError
         || e instanceof ExchangeTimeoutError || e instanceof ExchangeUnavailableError) throw e
+      if (isAuthIpOrPermError(e)) throw new ExchangeAuthIpError() // -2015: ambiguous IP/permission — operator-actionable, never a silent permanent 'invalid'
       if (e instanceof ccxt.AuthenticationError || e instanceof ccxt.PermissionDenied) throw new ExchangeAuthError()
       if (e instanceof ccxt.RequestTimeout) throw new ExchangeTimeoutError()
       if (e instanceof ccxt.InvalidOrder || e instanceof ccxt.InsufficientFunds || e instanceof ccxt.BadSymbol) throw new ExchangeRejectedError()

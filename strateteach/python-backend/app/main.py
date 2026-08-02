@@ -80,6 +80,13 @@ ROUTERS = (meta, auth, strategy, runs, signals, telegram, exchange, paper, portf
 
 def create_app() -> FastAPI:
     configure_logging()
+    # Mainnet Plan v1.1 · 1.4 — direct execution is PERMANENTLY retired in code. The old re-arm flags are
+    # now no-ops; if one is still set, log it loudly (CRITICAL) so an operator notices + removes the stale intent.
+    if (os.environ.get("STRATETEACH_LEGACY_ENGINE_ENABLED", "").strip().lower() == "true"
+            or os.environ.get("STRATETEACH_ENGINE_ENABLED", "").strip().lower() in ("1", "true", "yes", "on")):
+        logging.getLogger("algo770").critical(
+            "legacy engine env flags are SET but direct execution is PERMANENTLY RETIRED (Plan v1.1 · 1.4) — "
+            "flags are no-ops; remove them.")
     _init_sentry()
     app = FastAPI(title="770 Trend Diamonds API", version="1.0.0")
 

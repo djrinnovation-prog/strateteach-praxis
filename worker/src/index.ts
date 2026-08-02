@@ -124,6 +124,7 @@ import type { ExchangeAdapter } from './types'
 import {
   BotSizingConfig,
   ExchangeAuthError,
+  ExchangeAuthIpError,
   ExchangeRejectedError,
   ExchangeTimeoutError,
   ExchangeUnavailableError,
@@ -535,6 +536,35 @@ async function disableCredentialAndBot(
     signal_id,
     reason,
   }))
+}
+
+/**
+ * Auth-ATTENTION pause (mainnet -2015 handling, Plan v1.1 · 1.1). A ccxt -2015 ("invalid key, IP, or
+ * permissions") is AMBIGUOUS — most often, on mainnet, a GOOD IP-allowlisted key called from an egress IP
+ * not yet on its allowlist. We must NOT brand the credential 'invalid' (disableCredentialAndBot) off that
+ * infra/allowlist condition. Instead fail-closed by PAUSING the bot (disarm) WITHOUT touching
+ * credential.status, and surface an operator-actionable audit so the operator verifies the key's IP allowlist
+ * + trade permission, then re-arms. credential.status stays whatever it was (typically 'valid').
+ */
+async function pauseBotForAuthAttention(
+  supabase:  SupabaseClient,
+  bot:       BotRow,
+  signal_id: string,
+  reason:    string,
+): Promise<void> {
+  const { error: botError } = await supabase
+    .from('bots')
+    .update({ trading_enabled: false, status: 'paused' })
+    .eq('id', bot.id)
+  if (botError) {
+    console.error(JSON.stringify({ event: 'bot_pause_auth_attention_error', bot_id: bot.id, error: botError.code }))
+  }
+  await insertAuditLog(
+    supabase, 'bot', bot.id, 'bot.paused_auth_attention',
+    { status: bot.status },
+    { status: 'paused', reason },
+  )
+  console.error(JSON.stringify({ event: 'bot_paused_auth_attention', bot_id: bot.id, signal_id, reason }))
 }
 
 // ─── Misconfigured-bot helper (F-01) ─────────────────────────────────────────
@@ -957,6 +987,14 @@ async function processMessage(
     }
     assertTradingEnabled(botSizing)                                   // kill switch (both sides)
     assertExchangeEnvironment(isProduction, cred.exchange_environment) // testnet/mainnet guard (both sides)
+    // Mainnet GLOBAL master-switch (Plan v1.1 · 1.2). Even a fully-armed mainnet bot is fail-closed the instant
+    // the operator flips PRAXIS_MAINNET_ENABLED off — the worker refuses EVERY mainnet order until it is
+    // explicitly "true". Independent of the Edge per-user approval (which gates arm-time); this is the runtime
+    // global kill for real-money execution. Testnet is unaffected.
+    if (cred.exchange_environment === 'mainnet'
+        && (process.env.PRAXIS_MAINNET_ENABLED ?? '').trim().toLowerCase() !== 'true') {
+      throw new SizingUnavailableError('mainnet_master_switch_off')
+    }
     // A1 (B0): in production, egress must be EXPLICITLY configured — a proxy OR native static egress. An
     // unconfigured egress is a fail-closed config fault — BLOCK here, BEFORE constructing the adapter.
     // Native mode = direct egress via Railway's static outbound IPs (no proxy passed to ccxt).
@@ -1032,6 +1070,13 @@ async function processMessage(
       freeBase  = balance[baseAsset]?.free ?? 0
     }
   } catch (e) {
+    if (e instanceof ExchangeAuthIpError) {
+      // -2015 ambiguous (mainnet): PAUSE (disarm) the bot, do NOT invalidate the key — could be a good key
+      // from a not-yet-allowlisted egress IP. No trade row yet → ack, no DLQ. Operator fixes IP/perm + re-arms.
+      await pauseBotForAuthAttention(supabase, bot, signal_id, 'ip_or_permission')
+      console.error(JSON.stringify({ event: `${side}_market_data_auth_ip`, bot_id, signal_id }))
+      return { ack: true }
+    }
     if (e instanceof VaultSecretNotFoundError || e instanceof ExchangeAuthError) {
       // Permanent credential failure before any trade was created — disable, no DLQ, ack.
       const errorName = e instanceof Error ? e.constructor.name : 'unknown'
@@ -1376,6 +1421,33 @@ async function processMessage(
     // VaultSecretNotFoundError: secret deleted — credential is gone permanently.
     // ExchangeAuthError: API key invalid/revoked — permanent until rotated.
     // No threshold — disable bot + credential immediately, no failures++.
+    // ── Branch 0: -2015 ambiguous (mainnet IP/permission) ─────────────────────
+    // A good, IP-allowlisted key from a not-yet-allowlisted egress IP returns the SAME -2015 as a bad key,
+    // so we must NOT invalidate the credential. The auth failed → the order was almost certainly NOT placed;
+    // mark the trade failed + DLQ (for the audit trail), then PAUSE (disarm) the bot WITHOUT touching
+    // credential.status, and surface an operator-actionable reason. Fail-closed; no retry loop.
+    if (e instanceof ExchangeAuthIpError) {
+      await supabase.from('trades').update({ status: 'failed', error_reason: errorName }).eq('id', tradeId)
+      await insertAuditLog(supabase, 'trade', tradeId, 'trade.failed',
+        { status: 'pending' },
+        { status: 'failed', error_reason: errorName },
+      )
+      const { error: dlqErrorIp } = await supabase.from('trades_dlq').insert({
+        trade_id:       tradeId,
+        bot_id,
+        signal_id,
+        raw_payload:    { side, quantity, trading_pair: bot.trading_pair },
+        failure_reason: errorName,
+        retry_count:    0,
+      })
+      if (dlqErrorIp) {
+        console.error(JSON.stringify({ event: 'dlq_insert_error', trade_id: tradeId, bot_id, error: dlqErrorIp.code }))
+      }
+      await pauseBotForAuthAttention(supabase, bot, signal_id, 'ip_or_permission')
+      console.error(JSON.stringify({ event: 'trade_failed_auth_ip', bot_id, trade_id: tradeId, signal_id }))
+      return { ack: true }
+    }
+
     if (e instanceof VaultSecretNotFoundError || e instanceof ExchangeAuthError) {
       await supabase.from('trades').update({ status: 'failed', error_reason: errorName }).eq('id', tradeId)
       await insertAuditLog(supabase, 'trade', tradeId, 'trade.failed',

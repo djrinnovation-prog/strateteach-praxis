@@ -87,12 +87,14 @@ def test_execution_gate_requires_legacy_flag():
 
 
 def test_execution_gate_escape_hatch_both_flags():
-    # The execution gate must UN-stick only when BOTH flags are on (proves it isn't wedged off).
+    # Mainnet Plan v1.1 · 1.4 — the former "both flags ⇒ open" escape hatch is now PERMANENTLY CLOSED: direct
+    # execution cannot be re-armed by any env flag (closes independent-audit HIGH-2). Even with BOTH flags on,
+    # _engine_enabled stays False; re-enabling requires a deliberate code revert.
     from app.services import exchange as ex_svc
     os.environ["STRATETEACH_LEGACY_ENGINE_ENABLED"] = "true"
     os.environ["STRATETEACH_ENGINE_ENABLED"] = "true"
     try:
-        assert ex_svc._engine_enabled() is True, "both flags on ⇒ execution gate open"
+        assert ex_svc._engine_enabled() is False, "permanently retired ⇒ flags cannot reopen the gate"
     finally:
         os.environ.pop("STRATETEACH_LEGACY_ENGINE_ENABLED", None)
         os.environ.pop("STRATETEACH_ENGINE_ENABLED", None)

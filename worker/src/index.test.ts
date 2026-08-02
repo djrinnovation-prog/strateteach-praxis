@@ -306,6 +306,10 @@ let consoleErrorSpy: jest.SpyInstance
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // Plan v1.1 · 1.2 — default the mainnet master-switch ON for tests so the mainnet-production gate tests
+  // (egress/audit, which use a mainnet credential + PRAXIS_IS_PRODUCTION=true) reach the gate they target.
+  // The dedicated switch-OFF test overrides this locally.
+  process.env.PRAXIS_MAINNET_ENABLED = 'true'
   jest.spyOn(console, 'log').mockImplementation(() => {})
   consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
@@ -320,6 +324,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  delete process.env.PRAXIS_MAINNET_ENABLED
   jest.restoreAllMocks()
 })
 
@@ -974,6 +979,22 @@ describe('Step 6 — BUY sizing/risk wired into processMessage (S5-A3/B4 slice 2
     } finally {
       if (prev === undefined) delete process.env.PRAXIS_IS_PRODUCTION
       else process.env.PRAXIS_IS_PRODUCTION = prev
+    }
+  })
+
+  // ── Plan v1.1 · 1.2 — mainnet GLOBAL master-switch (runtime kill for real-money execution) ──
+
+  test('production + mainnet credential + master-switch OFF → blocked at mainnet_master_switch_off, no adapter', async () => {
+    const prevProd = process.env.PRAXIS_IS_PRODUCTION
+    process.env.PRAXIS_IS_PRODUCTION = 'true'
+    delete process.env.PRAXIS_MAINNET_ENABLED   // engage the global mainnet kill (beforeEach set it 'true')
+    try {
+      const { supabase, audit } = gateBlockChains({}, { exchange_environment: 'mainnet' })
+      expect(await processMessage(supabase, makeMsg({ side: 'buy' }))).toEqual({ ack: true })
+      expectNoExchangeTouchAfterGates()          // fail-closed BEFORE the adapter — no ccxt instance, no order
+      expectBlockedAudit(audit, 'mainnet_master_switch_off')
+    } finally {
+      if (prevProd === undefined) delete process.env.PRAXIS_IS_PRODUCTION; else process.env.PRAXIS_IS_PRODUCTION = prevProd
     }
   })
 

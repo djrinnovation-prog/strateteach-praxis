@@ -7,6 +7,7 @@
 // is born in Praxis Vault. Validation (EP6: trade-only / withdrawals-off) is a SEPARATE step before use.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { deriveProvisionKeyMaterial, verifyTicket } from "../_shared/provision-ticket.ts";
+import { mainnetAllowed } from "../_shared/mainnet-gate.ts";
 
 const PEPPER = Deno.env.get("WEBHOOK_SECRET_PEPPER") ?? "";
 const ALLOWED_ORIGIN = Deno.env.get("CONNECT_ALLOWED_ORIGIN") ?? "*"; // set to the exact StrateTeach origin in prod
@@ -45,7 +46,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // real Praxis-edge boundary, not an assumption about ticket provenance: a forged ticket could carry
   // env:"mainnet". Reject it here until the mainnet_provision_approvals gate ships. (Checked BEFORE the jti
   // claim so a rejected mainnet attempt does not burn a single-use ticket.)
-  if (t.env === "mainnet") return json(403, { ok: false, error: "mainnet_not_yet_enabled" });
+  // Mainnet double-gate (Plan v1.1 · 1.2): mainnet is rejected UNLESS the global master-switch is on AND this
+  // user has an active operator approval. Default (switch off / no approval) ⇒ rejected, identical to pre-1.2.
+  // Checked BEFORE the jti claim so a rejected mainnet attempt does not burn a single-use ticket.
+  if (t.env === "mainnet" && !(await mainnetAllowed(sb, t.praxis_user_id))) {
+    return json(403, { ok: false, error: "mainnet_not_enabled" });
+  }
 
   // 2) SINGLE-USE: claim the jti. A conflict means the ticket was already used ⇒ reject (replay).
   const { error: jerr } = await sb.from("provision_tickets_used").insert({ jti: t.jti });

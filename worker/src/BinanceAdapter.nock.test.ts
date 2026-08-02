@@ -11,7 +11,7 @@
 import nock from 'nock'
 import { BinanceAdapter } from './BinanceAdapter'
 import {
-  ExchangeRejectedError, ExchangeAuthError,
+  ExchangeRejectedError, ExchangeAuthError, ExchangeAuthIpError,
   type SecretsProvider, type ExchangeCredentials,
 } from './types'
 
@@ -152,10 +152,20 @@ describe('BinanceAdapter money-path integration (real ccxt via nock)', () => {
     expect(order).toBeNull()
   })
 
-  test('createOrder → ExchangeAuthError on an auth rejection (401 -2015)', async () => {
+  // Plan v1.1 · 1.1 — -2015 is AMBIGUOUS (bad key OR good key from a non-allowlisted IP OR missing permission),
+  // so it maps to ExchangeAuthIpError (operator-actionable) — NOT ExchangeAuthError (which would brand the key
+  // permanently 'invalid'). This asserts the mapping through ccxt's real HTTP error parsing.
+  test('createOrder → ExchangeAuthIpError on -2015 (invalid key, IP, or permissions)', async () => {
     nock(HOST).post('/api/v3/order').query(true).reply(401, { code: -2015, msg: 'Invalid API-key, IP, or permissions for action.' })
     await expect(adapter().createOrder({
       symbol: 'BTC/USDT', side: 'buy', type: 'market', quantity: 0.001, clientOrderId: 'PRX_y',
+    })).rejects.toBeInstanceOf(ExchangeAuthIpError)
+  })
+
+  test('createOrder → ExchangeAuthError on a genuine non-2015 auth rejection (401 -2014 bad key format)', async () => {
+    nock(HOST).post('/api/v3/order').query(true).reply(401, { code: -2014, msg: 'API-key format invalid.' })
+    await expect(adapter().createOrder({
+      symbol: 'BTC/USDT', side: 'buy', type: 'market', quantity: 0.001, clientOrderId: 'PRX_z',
     })).rejects.toBeInstanceOf(ExchangeAuthError)
   })
 })

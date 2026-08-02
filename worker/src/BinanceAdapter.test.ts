@@ -55,6 +55,8 @@ import { BinanceAdapter } from './BinanceAdapter'
 import {
   SecretsProvider,
   ExchangeCredentials,
+  ExchangeAuthError,
+  ExchangeAuthIpError,
   ExchangeRejectedError,
   ExchangeTimeoutError,
   ExchangeUnavailableError,
@@ -277,6 +279,27 @@ describe('BinanceAdapter.fetchBalance', () => {
     const adapter = makeAdapter()
 
     await expect(adapter.fetchBalance()).rejects.toThrow(ExchangeUnavailableError)
+  })
+
+  // Plan v1.1 · 1.1 — Binance -2015 disambiguation (arms the mainnet A4 path; latent on testnet).
+  test('maps Binance -2015 (invalid key, IP, or permissions) to ExchangeAuthIpError — never ExchangeAuthError', async () => {
+    mockExchangeInstance.fetchBalance.mockRejectedValue(
+      new ccxt.AuthenticationError('binance {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}'),
+    )
+    const adapter = makeAdapter()
+
+    await expect(adapter.fetchBalance()).rejects.toThrow(ExchangeAuthIpError)
+    await expect(adapter.fetchBalance()).rejects.not.toThrow(ExchangeAuthError)
+  })
+
+  test('maps a non-2015 auth error (genuinely bad/revoked key) to ExchangeAuthError', async () => {
+    mockExchangeInstance.fetchBalance.mockRejectedValue(
+      new ccxt.AuthenticationError('binance {"code":-2014,"msg":"API-key format invalid."}'),
+    )
+    const adapter = makeAdapter()
+
+    await expect(adapter.fetchBalance()).rejects.toThrow(ExchangeAuthError)
+    await expect(adapter.fetchBalance()).rejects.not.toThrow(ExchangeAuthIpError)
   })
 
   test('zeros exchange.apiKey and exchange.secret in finally after success', async () => {

@@ -16,6 +16,7 @@
 // verify_jwt=false (the ticket is the authority).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { deriveProvisionKeyMaterial, verifyTicket } from "../_shared/provision-ticket.ts";
+import { mainnetAllowed } from "../_shared/mainnet-gate.ts";
 
 const PEPPER = Deno.env.get("WEBHOOK_SECRET_PEPPER") ?? "";
 const ALLOWED_ORIGIN = Deno.env.get("CONNECT_ALLOWED_ORIGIN") ?? "*";
@@ -65,8 +66,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const { data: cred } = await sb.from("user_exchange_credentials")
     .select("status, exchange_environment").eq("id", bot.credential_id).eq("user_id", t.praxis_user_id).maybeSingle();
   if (!cred) return json(409, { ok: false, error: "no_credential" });
-  // Mainnet stays fully fenced until the S3 approval gate — never validate a mainnet key on this path.
-  if (cred.exchange_environment === "mainnet") return json(403, { ok: false, error: "mainnet_validate_not_enabled" });
+  // Mainnet double-gate (Plan v1.1 · 1.2): rejected UNLESS the global master-switch is on AND this user has an
+  // active operator approval. Default (switch off / no approval) ⇒ rejected, identical to pre-1.2.
+  if (cred.exchange_environment === "mainnet" && !(await mainnetAllowed(sb, t.praxis_user_id))) {
+    return json(403, { ok: false, error: "mainnet_not_enabled" });
+  }
 
   // Enqueue the validate request. A non-secret request_id correlates the UI click ↔ worker outcome
   // in logs. The worker (single egress point) performs the actual read-only fetchBalance.

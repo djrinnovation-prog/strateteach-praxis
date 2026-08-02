@@ -35,6 +35,7 @@ import { resolveEgress, productionEgressOk, type EgressConfig } from './egress'
 import {
   type ExchangeAdapter,
   ExchangeAuthError,
+  ExchangeAuthIpError,
   ExchangeUnavailableError,
   VaultSecretNotFoundError,
 } from './types'
@@ -325,6 +326,20 @@ export function startCredentialValidation(opts: StartCredentialValidationOptions
     try {
       await adapter.fetchBalance()
     } catch (e) {
+      if (e instanceof ExchangeAuthIpError) {
+        // -2015 ambiguous (mainnet, A4): a GOOD IP-allowlisted key called from an egress IP not yet on its
+        // allowlist returns the SAME error as a genuinely bad key. NEVER brand it permanent 'invalid' off an
+        // IP/allowlist condition (credential.status is left UNTOUCHED). Bounded retry (Binance IP-allowlist
+        // changes take ~1 min to propagate); if it persists, give up WITHOUT invalidating + audit an
+        // operator-actionable reason so the operator verifies the key's IP allowlist + trade permission, then
+        // re-validates. (Latent on testnet — testnet keys are not IP-bound.)
+        if (readCt >= MAX_VALIDATION_ATTEMPTS) {
+          await audit(credentialId, 'credential.validation_needs_attention', { status: 'pending_validation', reason: 'ip_or_permission' })
+          console.error(JSON.stringify({ event: 'validate_ip_or_perm', credential_id: credentialId, request_id: requestId, read_ct: readCt }))
+          return ACK
+        }
+        return RETRY
+      }
       if (e instanceof ExchangeAuthError || e instanceof VaultSecretNotFoundError) {
         // Proven-bad credential: key invalid/revoked/wrong-permissions, or the secret is gone.
         const r = await setStatus(credentialId, 'invalid')
