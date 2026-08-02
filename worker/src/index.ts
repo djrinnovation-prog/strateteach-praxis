@@ -144,6 +144,7 @@ import {
   isBotConfigReady,
 } from './sizingRisk'
 import { startHeartbeat } from './heartbeat'
+import { configureAlerts, emitAlert } from './alerts'
 import { startWorkerStatus } from './workerStatus'
 import { startWebhookRequeueSweeper } from './webhookRequeueSweeper'
 import { resolvePendingReconciliations, RECONCILIATION_RESOLVE_THRESHOLD_SECONDS } from './reconciliation'
@@ -536,6 +537,7 @@ async function disableCredentialAndBot(
     signal_id,
     reason,
   }))
+  emitAlert('credential_invalidated', { bot_id: bot.id, signal_id, reason }) // Plan v1.1 · 1.5 — operator-actionable (no-op unless ALERT_WEBHOOK_URL set)
 }
 
 /**
@@ -565,6 +567,7 @@ async function pauseBotForAuthAttention(
     { status: 'paused', reason },
   )
   console.error(JSON.stringify({ event: 'bot_paused_auth_attention', bot_id: bot.id, signal_id, reason }))
+  emitAlert('auth_attention_pause', { bot_id: bot.id, signal_id, reason }) // Plan v1.1 · 1.5 — mainnet IP/permission attention (no-op unless ALERT_WEBHOOK_URL set)
 }
 
 // ─── Misconfigured-bot helper (F-01) ─────────────────────────────────────────
@@ -1945,6 +1948,7 @@ async function main(): Promise<void> {
   // S4-1 dead-man heartbeat — out-of-band, default OFF (no HEALTHCHECKS_URL → no-op). Started here
   // in main() ONLY, never in runWorker/pollOnce/processMessage; stopped on shutdown. Fire-and-forget,
   // unref'd timer, failures swallowed — cannot block, delay, or affect trading.
+  configureAlerts({ url: process.env.ALERT_WEBHOOK_URL }) // Plan v1.1 · 1.5 — default OFF; POSTs operator alerts when set
   const heartbeat = startHeartbeat({ url: process.env.HEALTHCHECKS_URL })
   try {
     await runWorker(supabase, queueEnabled)
