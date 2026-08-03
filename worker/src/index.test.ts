@@ -195,6 +195,9 @@ const DEFAULT_BOT = {
   trading_enabled:         true,
   sell_enabled:            false,
   sell_size_pct:           null,
+  // 045: default to 'live' so the existing execution tests exercise the real order path. Live also proposes
+  // (and needs approval) — buyPrefix/activePrefix mock an APPROVED proposal so the real path proceeds.
+  execution_mode:          'live',
 }
 
 const DEFAULT_MARKET_RULES = {
@@ -232,12 +235,14 @@ function makeOrder(overrides: Record<string, unknown> = {}) {
 }
 
 function makeMsg(
-  overrides: Partial<{ schema_version: string; bot_id: string; signal_id: string; side: 'buy' | 'sell' }> = {}
+  overrides: Partial<{ schema_version: string; bot_id: string; signal_id: string; side: 'buy' | 'sell'; approved: boolean }> = {}
 ): PgmqMessage {
   return {
     msg_id:  42,
     read_ct: 1,   // pgmq: 1 = first delivery (WB7 redelivery counter)
-    message: { schema_version: '1.0', bot_id: BOT_ID, signal_id: SIGNAL_ID, side: 'buy', ...overrides },
+    // 045: default approved:true so the existing execution tests exercise the REAL order path. A fresh webhook
+    // signal omits `approved` (a LIVE bot then PROPOSES); the propose test passes approved:false explicitly.
+    message: { schema_version: '1.0', bot_id: BOT_ID, signal_id: SIGNAL_ID, side: 'buy', approved: true, ...overrides },
   }
 }
 
@@ -2271,6 +2276,41 @@ describe('EP4 futures cage — non-spot account_type is refused (never mis-execu
     mockAdapter.createOrder.mockResolvedValue(makeOrder({ status: 'filled' }))
     const supabase = makeSupabase(...buyPrefix(), sbOk(), sbOk())
     const result = await processMessage(supabase, makeMsg({ side: 'buy' }))
+    expect(result.ack).toBe(true)
+    expect(mockAdapter.createOrder).toHaveBeenCalledTimes(1)
+  })
+})
+
+// ─── 045 — execution_mode (StrateTeach-style: arm=simulation / go-live=per-order approval) ─────────────
+describe('045 — execution_mode: simulation / live-propose / approved', () => {
+  // The 5 from() chains up to the execution-mode branch (bots → trades → count → credentials → exchanges).
+  const prefix5 = (botOverrides: Partial<typeof DEFAULT_BOT> = {}): Chain[] => [
+    sbChain({ data: { ...DEFAULT_BOT, ...botOverrides }, error: null }),
+    sbChain({ data: null, error: null }),
+    sbCount(0),
+    sbChain({ data: { ...VALID_CRED }, error: null }),
+    sbChain({ data: { ...VALID_EXCHANGE }, error: null }),
+  ]
+
+  test('simulation → simulated fill recorded, adapter NEVER places an order', async () => {
+    // after the branch: trades.insert(sim) + audit(order.simulated) — NO reserve rpc, NO createOrder.
+    const supabase = makeSupabase(...prefix5({ execution_mode: 'simulation' }), sbOk(), sbOk())
+    const result = await processMessage(supabase, makeMsg({ side: 'buy' }))
+    expect(result).toEqual({ ack: true })
+    expect(mockAdapter.createOrder).not.toHaveBeenCalled()
+  })
+
+  test('live + NOT approved → order PROPOSED (awaits approval), adapter NEVER places an order', async () => {
+    // after the branch: proposed_trades.insert + audit(order.proposed) — NO reserve rpc, NO createOrder.
+    const supabase = makeSupabase(...prefix5({ execution_mode: 'live' }), sbOk(), sbOk())
+    const result = await processMessage(supabase, makeMsg({ side: 'buy', approved: false }))
+    expect(result).toEqual({ ack: true })
+    expect(mockAdapter.createOrder).not.toHaveBeenCalled()
+  })
+
+  test('live + APPROVED → the real Praxis order path runs (createOrder called once)', async () => {
+    const supabase = makeSupabase(...buyPrefix({ execution_mode: 'live' }), sbOk(), sbOk())
+    const result = await processMessage(supabase, makeMsg({ side: 'buy', approved: true }))
     expect(result.ack).toBe(true)
     expect(mockAdapter.createOrder).toHaveBeenCalledTimes(1)
   })

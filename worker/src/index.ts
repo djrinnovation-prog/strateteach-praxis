@@ -216,6 +216,9 @@ interface TradeSignalMessage {
   bot_id:         string
   signal_id:      string
   side:           'buy' | 'sell'
+  // 045 (optional, backward-compatible): true ONLY on the operator-approved re-enqueue of a live signal.
+  // Absent on a fresh webhook signal ⇒ a LIVE bot proposes. Not part of the frozen v1.0 required-field set.
+  approved?:      boolean
 }
 
 /** pgmq message envelope returned by pgmq_read() (pgmq.message_record). */
@@ -249,6 +252,9 @@ interface BotRow {
   trading_enabled:         boolean | null
   sell_enabled:            boolean | null
   sell_size_pct:           number | null
+  // 045: StrateTeach-style execution mode. 'simulation' = arm/dry-run (no real orders); 'live' = go-live
+  // (each signal is PROPOSED and needs explicit approval before it executes). null/unknown → simulation (fail-closed).
+  execution_mode:          string | null
 }
 
 /** Columns fetched from user_exchange_credentials in Step 4a (F-01). */
@@ -570,6 +576,44 @@ async function pauseBotForAuthAttention(
   emitAlert('auth_attention_pause', { bot_id: bot.id, signal_id, reason }) // Plan v1.1 · 1.5 — mainnet IP/permission attention (no-op unless ALERT_WEBHOOK_URL set)
 }
 
+// ── Execution-mode (045): StrateTeach-style arm=simulation / go-live=per-order approval. The Praxis money
+//    path (insert_pending_trade_atomic + createOrder + every gate) is UNCHANGED — only SIMULATION and
+//    LIVE-propose STOP before it; an APPROVED live order runs the existing path 1:1. ────────────────────
+const APPROVAL_TTL_MS = Number(process.env.PROPOSAL_APPROVAL_TTL_MS ?? 15 * 60_000) // un-approved proposals auto-expire (fail-safe)
+
+/** SIMULATION (arm): record a simulated fill — a trade row marked simulated=true, NEVER sent to the exchange.
+ *  Uses the live signal price so the user's simulated P&L is realistic. Best-effort; never throws. */
+async function recordSimulatedFill(
+  supabase: SupabaseClient,
+  t: { botId: string; userId: string; signalId: string; side: 'buy' | 'sell'; tradingPair: string; quantity: number; price: number; requestedNotional: number | null },
+): Promise<void> {
+  const notional = t.price > 0 ? t.price * t.quantity : 0
+  const { error } = await supabase.from('trades').insert({
+    bot_id: t.botId, user_id: t.userId, signal_id: t.signalId,
+    client_order_id: `SIM_${nanoid(10)}`,
+    side: t.side, trading_pair: t.tradingPair, quantity: t.quantity,
+    price_at_signal: t.price > 0 ? t.price : null, price_at_execution: t.price > 0 ? t.price : null,
+    requested_notional_usdt: t.requestedNotional ?? 0, executed_notional_usdt: notional,
+    status: 'filled', simulated: true,
+  })
+  if (error) console.error(JSON.stringify({ event: 'sim_fill_insert_error', bot_id: t.botId, signal_id: t.signalId, error: error.code }))
+}
+
+/** LIVE fresh signal: record a PROPOSED order awaiting the user's Approve/Reject. NEVER places an order.
+ *  Idempotent on (bot,signal) — a pgmq redelivery just conflicts (23505) and is ignored. */
+async function proposeOrder(
+  supabase: SupabaseClient,
+  t: { botId: string; userId: string; signalId: string; side: 'buy' | 'sell'; tradingPair: string; requestedNotional: number | null; price: number },
+): Promise<void> {
+  const { error } = await supabase.from('proposed_trades').insert({
+    bot_id: t.botId, user_id: t.userId, signal_id: t.signalId,
+    side: t.side, trading_pair: t.tradingPair,
+    requested_notional_usdt: t.requestedNotional, price_at_signal: t.price > 0 ? t.price : null,
+    status: 'pending', expires_at: new Date(Date.now() + APPROVAL_TTL_MS).toISOString(),
+  })
+  if (error && error.code !== '23505') console.error(JSON.stringify({ event: 'propose_insert_error', bot_id: t.botId, signal_id: t.signalId, error: error.code }))
+}
+
 // ─── Misconfigured-bot helper (F-01) ─────────────────────────────────────────
 
 /**
@@ -675,6 +719,11 @@ async function processMessage(
   }
 
   const { bot_id, signal_id, side } = raw
+  // 045: 'approved' is set ONLY by the operator's Approve action (the approve-order Edge re-enqueues the
+  // signal with approved:true). A fresh webhook signal omits it ⇒ a LIVE bot PROPOSES and waits. The queue is
+  // the trust boundary (only the token-authed webhook + the ownership-checked approve Edge can enqueue), and
+  // idempotency (Step 2/3) dedups a redelivered approved message so it can never place a second order.
+  const approved = raw.approved === true
 
   // EP7: per-stage latency instrumentation (logging-only, no behavior change). Marks are stamped at
   // stage boundaries and emitted as a `trade_timing` event ONLY on the success path (an order placed),
@@ -687,7 +736,7 @@ async function processMessage(
   // ── Step 1: Fetch bot ────────────────────────────────────────────────────────
   const { data: botData, error: botError } = await supabase
     .from('bots')
-    .select('id, user_id, credential_id, trading_pair, account_type, status, consecutive_failures, sizing_mode, position_size_pct, fixed_notional_usdt, max_order_notional_usdt, daily_notional_cap_usdt, trading_enabled, sell_enabled, sell_size_pct')
+    .select('id, user_id, credential_id, trading_pair, account_type, status, consecutive_failures, sizing_mode, position_size_pct, fixed_notional_usdt, max_order_notional_usdt, daily_notional_cap_usdt, trading_enabled, sell_enabled, sell_size_pct, execution_mode')
     .eq('id', bot_id)
     .is('deleted_at', null)
     .single()
@@ -1132,6 +1181,25 @@ async function processMessage(
   } catch (e) {
     return await onSizingError(e, 'sizing')
   }
+
+  // ── Execution mode (045) — StrateTeach-style. SIMULATION and un-approved LIVE both STOP here, BEFORE the
+  //    money-path; only an APPROVED live order continues to Step 7 (reserve + createOrder), byte-identical to
+  //    today. Sizing above ran identically for all modes, so the simulated/proposed order is realistic.
+  const execMode = bot.execution_mode === 'live' ? 'live' : 'simulation' // fail-closed: anything not 'live' ⇒ simulation
+  if (execMode === 'simulation') {
+    await recordSimulatedFill(supabase, { botId: bot_id, userId: bot.user_id, signalId: signal_id, side, tradingPair: bot.trading_pair, quantity, price, requestedNotional: requestedNotionalUsdt })
+    await insertAuditLog(supabase, 'bot', bot_id, 'order.simulated', {}, { signal_id, side, quantity, simulated: true })
+    console.log(JSON.stringify({ event: 'sim_fill', bot_id, signal_id, side, quantity }))
+    return { ack: true }
+  }
+  if (!approved) {
+    // LIVE but not yet approved → propose it and WAIT for the user. No reservation, no order.
+    await proposeOrder(supabase, { botId: bot_id, userId: bot.user_id, signalId: signal_id, side, tradingPair: bot.trading_pair, requestedNotional: requestedNotionalUsdt, price })
+    await insertAuditLog(supabase, 'bot', bot_id, 'order.proposed', {}, { signal_id, side })
+    console.log(JSON.stringify({ event: 'order_proposed', bot_id, signal_id, side }))
+    return { ack: true }
+  }
+  // LIVE + APPROVED → fall through to the real order path below, unchanged.
 
   // ── Step 7: reserve the pending trade BEFORE createOrder (crash-recovery invariant). ──────────────
   const clientOrderId = `PRX_${nanoid(10)}`
