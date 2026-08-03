@@ -24,6 +24,11 @@ export class ApiError extends Error {
 }
 
 export type ExchangeCreds = { key?: string; secret?: string; passphrase?: string; name?: string; env?: string };
+// 045 per-order approval: a proposed order awaiting the user's Approve/Reject (non-secret fields only).
+export type ProposedOrder = {
+  id: string; bot_id: string; signal_id: string; side: "buy" | "sell"; trading_pair: string;
+  requested_notional_usdt: number | null; price_at_signal: number | null; expires_at: string; created_at: string;
+};
 
 // ── Layout / location editor ──
 // An arrangement is which buttons/tiles show + their order for one screen:
@@ -1228,6 +1233,23 @@ export class Api {
   praxisPauseTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/pause-ticket", { body: { bot_id } }); }
   praxisArmTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/arm-ticket", { body: { bot_id } }); }
   praxisValidateTicket(bot_id: string) { return this.request<{ ticket: string }>("POST", "/praxis/validate-ticket", { body: { bot_id } }); }
+  // 045 per-order approval — tickets (StrateTeach-signed) for the proposal Edge functions.
+  praxisProposalsTicket() { return this.request<{ ticket: string }>("POST", "/praxis/proposals-ticket"); }
+  praxisApproveTicket() { return this.request<{ ticket: string }>("POST", "/praxis/approve-ticket"); }
+  praxisRejectTicket() { return this.request<{ ticket: string }>("POST", "/praxis/reject-ticket"); }
+  // Convenience: mint the ticket then call the ownership-scoped Praxis Edge (the exchange key never involved).
+  async listProposals() {
+    const { ticket } = await this.praxisProposalsTicket();
+    return praxisFn<{ ok: boolean; proposals: ProposedOrder[] }>("list-proposals", { ticket });
+  }
+  async approveOrder(proposal_id: string) {
+    const { ticket } = await this.praxisApproveTicket();
+    return praxisFn<{ ok: boolean; status: string }>("approve-order", { ticket, proposal_id });
+  }
+  async rejectOrder(proposal_id: string) {
+    const { ticket } = await this.praxisRejectTicket();
+    return praxisFn<{ ok: boolean; status: string }>("reject-order", { ticket, proposal_id });
+  }
   testExchange() { return this.request<{ ok: boolean; message: string }>("POST", "/exchange/test", { pin: true }); }
   balance(market?: string) { return this.request<unknown>("GET", "/exchange/balance" + (market ? `?market=${encodeURIComponent(market)}` : ""), { pin: true }); }
   positions() { return this.request<unknown>("GET", "/exchange/positions", { pin: true }); }
