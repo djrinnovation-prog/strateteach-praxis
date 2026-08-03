@@ -74,6 +74,26 @@ def validate_credential_ticket(praxis_user_id: str, praxis_bot_id: str, ttl_s: i
                   "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
 
 
+def read_proposals_ticket(praxis_user_id: str, ttl_s: int = 240) -> str:
+    """045 per-order approval: MULTI-use read token for list-proposals (Praxis does NOT claim its jti — the UI
+    polls). exp kept BELOW the Praxis MAX_TICKET_TTL_S (300s) for clock-skew headroom."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "read_proposals",
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
+def approve_order_ticket(praxis_user_id: str, ttl_s: int = 120) -> str:
+    """045: single-use ticket to APPROVE a pending proposed order. The proposal id is passed to the Edge in the
+    request body and ownership-checked there (.eq user_id); the ticket only authenticates the session user."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "approve_order",
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
+def reject_order_ticket(praxis_user_id: str, ttl_s: int = 120) -> str:
+    """045: single-use ticket to REJECT a pending proposed order (proposal id in the Edge request body)."""
+    return _sign({"praxis_user_id": praxis_user_id, "action": "reject_order",
+                  "jti": "st-" + uuid.uuid4().hex, "exp": int(time.time()) + ttl_s})
+
+
 def connect_credential_ticket(praxis_user_id: str, praxis_bot_id: str, exchange_ccxt_id: str,
                               env: str, ttl_s: int = 120) -> str:
     return _sign({"praxis_user_id": praxis_user_id, "action": "connect_credential",

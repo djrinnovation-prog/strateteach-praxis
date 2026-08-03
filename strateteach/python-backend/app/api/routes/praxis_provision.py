@@ -223,3 +223,35 @@ def praxis_validate_ticket(body: PauseTicketReq, user: str = Depends(current_use
     if not bot_id:
         raise HTTPException(400, "bad_request")
     return {"ticket": tickets.validate_credential_ticket(puid, bot_id)}
+
+
+@router.post("/praxis/proposals-ticket")
+def praxis_proposals_ticket(user: str = Depends(current_user)) -> dict:
+    """045: mint a MULTI-use read_proposals ticket (session user → the list-proposals Edge). No bot id — the
+    Edge returns all of this user's pending proposals, ownership-scoped."""
+    ident = _guard(user, "proposals-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    return {"ticket": tickets.read_proposals_ticket(puid)}
+
+
+@router.post("/praxis/approve-ticket")
+def praxis_approve_ticket(user: str = Depends(current_user)) -> dict:
+    """045: mint a single-use approve_order ticket. The proposal id is supplied to the approve-order Edge in
+    the request body and ownership-checked there — the ticket only authenticates the session user."""
+    ident = _guard(user, "approve-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    return {"ticket": tickets.approve_order_ticket(puid)}
+
+
+@router.post("/praxis/reject-ticket")
+def praxis_reject_ticket(user: str = Depends(current_user)) -> dict:
+    """045: mint a single-use reject_order ticket."""
+    ident = _guard(user, "reject-ticket")
+    puid = ident.get("praxis_user_id")
+    if not puid:
+        raise HTTPException(409, "not_linked")
+    return {"ticket": tickets.reject_order_ticket(puid)}
