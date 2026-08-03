@@ -30,7 +30,7 @@ export default function PraxisConnect() {
   const [pair, setPair] = useState("BTCUSDT");
   const [notional, setNotional] = useState("11");
   const [exchange] = useState("binance");
-  const [env] = useState("testnet");
+  const [env, setEnv] = useState("testnet");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
 
@@ -145,7 +145,10 @@ export default function PraxisConnect() {
         <label>Order size (USDT, fixed)</label>
         <input style={inp} value={notional} onChange={(e) => setNotional(e.target.value)} inputMode="decimal" />
         <label>Exchange / environment</label>
-        <input style={{ ...inp, opacity: 0.7 }} value={`${exchange} · ${env}`} disabled />
+        <select style={inp} value={env} onChange={(e) => setEnv(e.target.value)}>
+          <option value="testnet">{exchange} · testnet</option>
+          <option value="mainnet">{exchange} · mainnet (real funds)</option>
+        </select>
         <label>API key</label>
         <input style={inp} value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" placeholder="trade-only, no withdrawal" />
         <label>API secret</label>
