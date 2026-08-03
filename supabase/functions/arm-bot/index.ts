@@ -36,6 +36,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "bad_json" }); }
   const ticket = body?.ticket;
   if (typeof ticket !== "string") return json(400, { ok: false, error: "missing_ticket" });
+  // execution_mode (045): 'simulation' (default) arms the bot to run signals as SIMULATED fills — no real
+  // order ever reaches the exchange. 'live' is the deliberate go-live: each signal is PROPOSED and the user
+  // must approve it before the (unchanged) Praxis money-path executes. The money-path, per-order/daily caps,
+  // and the mainnet double-gate below are identical in both modes; mode only selects sim-fill vs propose.
+  const rawMode = typeof body?.mode === "string" ? body.mode : "simulation";
+  if (rawMode !== "simulation" && rawMode !== "live") return json(400, { ok: false, error: "bad_mode" });
+  const execution_mode = rawMode;
 
   const material = await deriveProvisionKeyMaterial(PEPPER);
   const t = await verifyTicket(material, ticket, Math.floor(Date.now() / 1000), "arm_bot");
@@ -65,8 +72,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // Arm. Ownership re-checked in the predicate; assert exactly one row. (operator_locked was checked above;
   // a concurrent lock is covered by the independent operator kill, the authoritative control.)
   const { data: armed, error } = await sb.from("bots")
-    .update({ trading_enabled: true, status: "active" })
+    .update({ trading_enabled: true, status: "active", execution_mode })
     .eq("id", t.praxis_bot_id).eq("user_id", t.praxis_user_id).select("id");
   if (error || !Array.isArray(armed) || armed.length !== 1) return json(409, { ok: false, error: "arm_failed" });
-  return json(200, { ok: true, bot_id: t.praxis_bot_id, trading_enabled: true, status: "active" });
+  return json(200, { ok: true, bot_id: t.praxis_bot_id, trading_enabled: true, status: "active", execution_mode });
 });

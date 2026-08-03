@@ -7,11 +7,12 @@
 import { useEffect, useState } from "react";
 import { api } from "../app/api";
 import { praxisFn } from "../lib/client";
+import { PendingApprovals } from "../components/PendingApprovals";
 
 type Bot = {
   id: string; name: string; trading_pair: string; status: string;
   trading_enabled: boolean; sell_enabled?: boolean; credential_id: string | null;
-  credential_status?: string | null;
+  credential_status?: string | null; execution_mode?: string | null;
 };
 
 export default function PraxisConnect() {
@@ -110,14 +111,23 @@ export default function PraxisConnect() {
     finally { delPending(bot_id); }
   }
 
-  // Arm (go live): allowed ONLY after the credential is 'valid' (arm-bot re-checks this server-side and
-  // refuses mainnet). Flips trading_enabled=true.
-  async function onArm(bot_id: string) {
+  // Arm: allowed ONLY after the credential is 'valid' (arm-bot re-checks server-side + refuses mainnet
+  // unless the double-gate is open). mode='simulation' (default) runs signals as SIMULATED fills — no real
+  // order is ever placed. mode='live' is the deliberate go-live: each signal is PROPOSED and you approve it
+  // before the (unchanged) Praxis money-path executes.
+  async function onArm(bot_id: string, mode: "simulation" | "live") {
+    // Go-live is the moment real orders become possible (after your approval) — confirm explicitly.
+    if (mode === "live" && !window.confirm(
+      "Go LIVE?\n\nAfter this, each incoming signal becomes an order PROPOSAL. Nothing is placed on the " +
+      "exchange until YOU approve it. Real funds only if this bot's key is a mainnet key.\n\nContinue?"
+    )) return;
     setErr(""); setNote(""); addPending(bot_id);
     try {
       const { ticket } = await api.praxisArmTicket(bot_id);
-      await praxisFn("arm-bot", { ticket });
-      setNote("Bot armed — it will act on the next signal.");
+      await praxisFn("arm-bot", { ticket, mode });
+      setNote(mode === "live"
+        ? "Bot is LIVE — each signal will wait for your approval above."
+        : "Bot armed in SIMULATION — signals run as dry-run fills, no real orders.");
       await loadBots();
     } catch (e: any) { setErr(e?.message || "arm_failed"); }
     finally { delPending(bot_id); }
@@ -134,6 +144,9 @@ export default function PraxisConnect() {
         Your API key goes <b>straight to Praxis Vault</b> — it never touches StrateTeach and is never stored in
         this browser. StrateTeach only signs the authorization.
       </p>
+
+      {/* 045 — orders a LIVE bot has proposed and is waiting for you to approve. Renders nothing when empty. */}
+      <PendingApprovals />
 
       {linked === false && <div style={{ ...card, borderColor: "#a33" }}>Not linked to Praxis: {linkErr}</div>}
       {err && <div style={{ ...card, borderColor: "#a33" }}>Error: {err}</div>}
@@ -187,6 +200,11 @@ export default function PraxisConnect() {
               <div style={{ fontSize: 12, opacity: 0.7 }}>
                 trading {b.trading_enabled ? "ON" : "off"} · key {b.credential_id ? "connected" : "—"}
                 {" · "}<span style={{ color: csColor }}>{csLabel}</span>
+                {b.trading_enabled && (
+                  b.execution_mode === "live"
+                    ? <span style={{ color: "#c0392b", fontWeight: 700 }}>{" · "}LIVE — you approve each order</span>
+                    : <span style={{ color: "#c9a227", fontWeight: 700 }}>{" · "}SIMULATION</span>
+                )}
               </div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -195,9 +213,16 @@ export default function PraxisConnect() {
                   {rowPending ? "Validating…" : "Validate key"}
                 </button>
               )}
+              {/* Arm = SIMULATION first (dry-run, no real orders). */}
               {cs === "valid" && !b.trading_enabled && (
-                <button style={{ ...btn, background: "#2e8b57", color: "white", opacity: rowPending ? 0.6 : 1 }} disabled={rowPending} onClick={() => onArm(b.id)}>
-                  Arm (go live)
+                <button style={{ ...btn, background: "#2e8b57", color: "white", opacity: rowPending ? 0.6 : 1 }} disabled={rowPending} onClick={() => onArm(b.id, "simulation")}>
+                  Arm (simulation)
+                </button>
+              )}
+              {/* Deliberate go-live: only offered once armed in simulation. Confirms, then each signal proposes. */}
+              {cs === "valid" && b.trading_enabled && b.execution_mode !== "live" && (
+                <button style={{ ...btn, background: "#b8860b", color: "white", opacity: rowPending ? 0.6 : 1 }} disabled={rowPending} onClick={() => onArm(b.id, "live")}>
+                  Go live
                 </button>
               )}
               {/* KILL is the emergency stop — NEVER disabled by an in-flight action (audit HIGH). */}

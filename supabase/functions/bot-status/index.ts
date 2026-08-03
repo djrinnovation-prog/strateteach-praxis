@@ -42,7 +42,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // NON-secret status only, scoped to the caller's own rows (INV-9). Never select tokens/hashes/vault ids.
   const { data: bots, error } = await sb.from("bots")
-    .select("id, name, trading_pair, account_type, status, trading_enabled, sell_enabled, credential_id, created_at")
+    .select("id, name, trading_pair, account_type, status, trading_enabled, sell_enabled, execution_mode, credential_id, created_at")
     .eq("user_id", t.praxis_user_id)
     .order("created_at", { ascending: false });
   if (error) return json(500, { ok: false, error: "read_failed" });
