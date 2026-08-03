@@ -475,6 +475,21 @@ verify_jwt = false
 # credential status valid/invalid. Mainnet is fenced here until S3. arm-bot gates on status='valid'.
 verify_jwt = false
 
+[functions.list-proposals]
+# 045 per-order approval: return this user's PENDING proposed orders (ownership-scoped, non-secret). MULTI-use
+# read_proposals ticket (the UI polls). verify_jwt=false (the ticket is the authority).
+verify_jwt = false
+
+[functions.approve-order]
+# 045: approve a PENDING proposed order → mark approved + re-enqueue the signal (approved:true) so the WORKER
+# (sole egress) executes the real order. Single-use approve_order ticket + ownership. verify_jwt=false.
+verify_jwt = false
+
+[functions.reject-order]
+# 045: reject a PENDING proposed order → mark rejected (no order placed). Single-use reject_order ticket +
+# ownership. verify_jwt=false.
+verify_jwt = false
+
 # [experimental.pgdelta]
 # When enabled, pg-delta becomes the active engine for supported schema flows.
 # enabled = false

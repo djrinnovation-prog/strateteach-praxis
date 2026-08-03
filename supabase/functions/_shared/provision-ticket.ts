@@ -22,7 +22,11 @@ export const MAX_TICKET_TTL_S = 300;
 
 export type TicketAction =
   | "create_bot" | "connect_credential" | "provision_user" | "read_status" | "pause_bot"
-  | "arm_bot" | "validate_credential";
+  | "arm_bot" | "validate_credential"
+  // 045 per-order approval: read_proposals is a MULTI-use per-user read token (like read_status);
+  // approve_order / reject_order are SINGLE-use actions (jti burned by the Edge). All need only
+  // praxis_user_id — the proposed_trade id is supplied in the request body and ownership-checked (.eq user_id).
+  | "read_proposals" | "approve_order" | "reject_order";
 
 export interface TicketPayload {
   praxis_user_id: string;                 // required for create_bot / connect_credential; ABSENT for provision_user

@@ -150,6 +150,7 @@ import { startWebhookRequeueSweeper } from './webhookRequeueSweeper'
 import { resolvePendingReconciliations, RECONCILIATION_RESOLVE_THRESHOLD_SECONDS } from './reconciliation'
 import { startReconciliationScan } from './reconciliationScan'
 import { startCredentialValidation } from './credentialValidation'
+import { startProposalSweeper } from './proposalSweeper'
 import { resolveEgress, productionEgressOk, egressModeLabel } from './egress'
 import { credentialOwnershipOk } from './credentialOwnership'
 import { SUPPORTED_EXCHANGES } from './supportedExchanges'
@@ -1952,6 +1953,13 @@ async function runWorker(supabase: SupabaseClient, queueEnabled: boolean): Promi
     isProduction: process.env.PRAXIS_IS_PRODUCTION === 'true',
   })
 
+  // 045 — expire stale pending proposals (per-order approval). Flag-gated, default OFF (dark launch until the
+  // approval feature ships). Marks un-approved proposals past their expires_at as 'expired'; no order ever placed.
+  const proposalSweeper = startProposalSweeper({
+    supabase,
+    enabled: process.env.PROPOSAL_SWEEPER_ENABLED === 'true',
+  })
+
   if (!queueEnabled) {
     // Disabled path: idle, healthy, silent. One log line, then keep-alive.
     console.log(JSON.stringify({ event: 'worker_queue_disabled' }))
@@ -1966,6 +1974,7 @@ async function runWorker(supabase: SupabaseClient, queueEnabled: boolean): Promi
     webhookRequeueSweeper.stop()
     reconciliationScan.stop()
     credentialValidation.stop()
+    proposalSweeper.stop()
     await workerStatusWriter.stop()
     console.log(JSON.stringify({ event: 'worker_stopped' }))
     return
