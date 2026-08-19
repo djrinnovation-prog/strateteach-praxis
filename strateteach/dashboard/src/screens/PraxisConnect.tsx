@@ -6,8 +6,41 @@
 // the bot, the key (Vault), execution, and the kill switch.
 import { useEffect, useState } from "react";
 import { api } from "../app/api";
-import { praxisFn } from "../lib/client";
+import { praxisFn, PRAXIS_FN_BASE } from "../lib/client";
 import { PendingApprovals } from "../components/PendingApprovals";
+
+// ── TradingView connect helpers (ported from the original SignalBots UX) ─────
+// The webhook is PUBLIC + token-gated: POST {base}/webhook/{bot_id}/{url_token}.
+// PRAXIS_FN_BASE is "/pfn" (the single-origin Caddy proxy) by default, so the
+// absolute URL is derived from the current origin; an absolute override is used as-is.
+function praxisWebhookUrl(bot_id: string, url_token: string): string {
+  const base = PRAXIS_FN_BASE.startsWith("http")
+    ? PRAXIS_FN_BASE.replace(/\/+$/, "")
+    : `${window.location.origin}${PRAXIS_FN_BASE}`.replace(/\/+$/, "");
+  return `${base}/webhook/${bot_id}/${url_token}`;
+}
+// Canonical TradingView alert Message. The bot is identified by the webhook URL —
+// the body only needs a unique signal_id (dedup anchor; {{timenow}} makes each
+// firing unique) + the action. Two alerts: one buy (entry), one sell (exit).
+const alertTemplate = (action: "buy" | "sell") =>
+  `{"signal_id": "{{ticker}}-${action}-{{timenow}}", "action": "${action}"}`;
+
+// Small copy-to-clipboard button with a transient "Copied ✓" state (SignalBots-style).
+function CopyBtn({ value, label }: { value: string; label?: string }) {
+  const [done, setDone] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(value); setDone(true); setTimeout(() => setDone(false), 1600); }
+    catch { /* clipboard unavailable — the value is visible for manual copy */ }
+  };
+  return (
+    <button type="button" onClick={copy} style={{
+      padding: "4px 10px", borderRadius: 6, border: "1px solid #3a3a4a", background: "#1a1a26",
+      color: "#e8e8ef", cursor: "pointer", fontSize: 12, flexShrink: 0,
+    }}>
+      {done ? "Copied ✓" : (label || "Copy")}
+    </button>
+  );
+}
 
 type Bot = {
   id: string; name: string; trading_pair: string; status: string;
@@ -173,12 +206,50 @@ export default function PraxisConnect() {
 
       {once && (
         <div style={{ ...card, borderColor: "#3a7" }}>
-          <b>Bot created + key connected ✓</b>
-          <p style={{ fontSize: 13, opacity: 0.8 }}>Save these NOW — shown once:</p>
-          <div style={{ fontSize: 12, wordBreak: "break-all" }}>
-            <div>Webhook token (TradingView): <code>{once.url_token}</code></div>
-            <div style={{ marginTop: 6 }}>Kill token (stops the bot even if StrateTeach is down): <code>{once.pause_token}</code></div>
+          <b>Bot created + key connected ✓ — now connect TradingView</b>
+          <p style={{ fontSize: 13, opacity: 0.8, margin: "6px 0 10px" }}>
+            Shown <b>once</b> — copy everything below now. In TradingView: create an alert on your strategy →
+            Notifications → enable <b>Webhook URL</b> → paste the URL; paste the message into <b>Message</b>.
+          </p>
+
+          <div style={{ fontSize: 12, marginBottom: 4, opacity: 0.8 }}>Webhook URL (paste in TradingView → Webhook URL)</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+            <code style={{ flex: 1, wordBreak: "break-all", background: "#12121a", border: "1px solid #3a3a4a", borderRadius: 6, padding: "6px 8px", fontSize: 12 }}>
+              {praxisWebhookUrl(once.bot_id, once.url_token)}
+            </code>
+            <CopyBtn value={praxisWebhookUrl(once.bot_id, once.url_token)} />
           </div>
+
+          <div style={{ fontSize: 12, marginBottom: 4, opacity: 0.8 }}>Alert message — BUY (entry alert)</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
+            <code style={{ flex: 1, wordBreak: "break-all", background: "#12121a", border: "1px solid #3a3a4a", borderRadius: 6, padding: "6px 8px", fontSize: 12 }}>
+              {alertTemplate("buy")}
+            </code>
+            <CopyBtn value={alertTemplate("buy")} />
+          </div>
+
+          <div style={{ fontSize: 12, marginBottom: 4, opacity: 0.8 }}>Alert message — SELL (exit alert, if the bot has sell enabled)</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+            <code style={{ flex: 1, wordBreak: "break-all", background: "#12121a", border: "1px solid #3a3a4a", borderRadius: 6, padding: "6px 8px", fontSize: 12 }}>
+              {alertTemplate("sell")}
+            </code>
+            <CopyBtn value={alertTemplate("sell")} />
+          </div>
+
+          <div style={{ fontSize: 12, marginBottom: 4, opacity: 0.8 }}>
+            Kill token — stops the bot even if this app is down. Store it somewhere safe (NOT in TradingView).
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <code style={{ flex: 1, wordBreak: "break-all", background: "#12121a", border: "1px solid #3a3a4a", borderRadius: 6, padding: "6px 8px", fontSize: 12 }}>
+              {once.pause_token}
+            </code>
+            <CopyBtn value={once.pause_token} />
+          </div>
+
+          <p style={{ fontSize: 12, opacity: 0.65, margin: "10px 0 0" }}>
+            Webhook alerts require a TradingView paid plan. Each firing sends a unique signal_id (dedup-safe).
+            Next: Validate the key below, then Arm (simulation).
+          </p>
         </div>
       )}
 
